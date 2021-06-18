@@ -1,6 +1,5 @@
 # Example mixing file for validation, producing 150 events in MDC2018 format.  created by JobConfig/examples/generate_CeEndpointMix.sh
 
-
 #include "JobConfig/mixing/CeEndpointMix.fcl"
 
 source.firstRun: 1002
