@@ -86,50 +86,12 @@ outputs : {
 	 "drop mu2e::CaloDigis_CaloDigiMaker_*_*",
          "drop mu2e::StrawDigiADCWaveforms_makeSD_*_*",
          "drop mu2e::StrawDigis_makeSD_*_*",
-	 "keep mu2e::CaloShowerSteps_compressDigiMCs_*_*",
-	 "keep mu2e::StatusG4_*_*_*"
-     ]
-  }
-}
-#include "JobConfig/primary/epilog.fcl"
-#include "JobConfig/digitize/epilog.fcl"
-#include "JobConfig/reco/epilog.fcl"
-physics.analyzers.digiCompressionCheck.SelectEvents : [ TriggerPath ]
-physics.analyzers.recoCompressionCheck.SelectEvents : [ TriggerPath ]
-#
-# on-spill EWM
-physics.producers.EWMProducer.SpillType : 1
-# add trigger paths
-# This doesn't currently work, as the step filter stops processing before digis are made, and
-# the digis are required for trigger FIXME!
-##include "gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
-
-# print summaries
-services.scheduler.wantSummary: true
-services.TimeTracker.printSummary: true
-
-# histogram file
-services.TFileService.fileName: "/dev/null"
-# art file 
-outputs.Output.fileName : "mcs.owner.val-ceSimReco.dsconf.seq.art"
-
-# run 1h by default
-source.maxEvents: 5000
-
-# Initialze seeding of random engines
-services.SeedService.baseSeed         :  8
-# setup the resampler g4 config.  for questions, ask A. Gaponenko
-physics.producers.g4run.inputs: {
-   primaryType: StageParticles
-   primaryTag: "generate"
-   inputMCTrajectories: ""
-   simStageOverride: 2
    inputPhysVolumeMultiInfo: "TargetStopResampler"
    updateEventLevelVolumeInfos: {
       input: "TargetStopResampler:eventlevel"
       outInstance: "eventlevel"
-   }
-}
+   
+
 # muon stops file from MDC2020 validation
 physics.filters.TargetStopResampler.fileNames : [
   "/cvmfs/mu2e.opensciencegrid.org/DataFiles/Validation/sim.brownd.MuminusStops.MDC2020d.001202_00000000.art"
