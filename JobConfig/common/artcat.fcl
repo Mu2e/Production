@@ -1,5 +1,5 @@
 // A configuration file for concatenating small art files into large ones
-// without changing the "physics" content.
+// without changing the "physics" content.   
 //
 // Because this is intended to be used on different datasets, we can not set
 // the correct output filename here.   Instead, the template file
