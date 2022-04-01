@@ -112,7 +112,7 @@ Digitize: {
   #
   TriggeredOutput : {
     module_type : RootOutput
-    SelectEvents : [ "*Seed*_trigger","*Helix*_trigger" ] # this selects events passing any 'physics' trigger.  This needs updating FIXME
+    SelectEvents : [ "*_trigger" ] # this selects events passing any trigger.  We should eventually exclude 'Service' triggers FIXME
     fileName    : @nil
   }
 
@@ -125,13 +125,13 @@ Digitize: {
 
   TrkOutput : {
     module_type : RootOutput
-    SelectEvents : [ "cst*_trigger", "*IPA*_trigger" ] # selects events passing tracker calibration trigger.  This should include a 'Calib' flag FIXME!
+    SelectEvents : [ "cst*_trigger" ] # selects events passing tracker calibration trigger.  This should include a 'Calib' flag FIXME!
     fileName    : @nil
   }
 
   CaloOutput : {
     module_type : RootOutput
-    SelectEvents : [ "calo*_trigger" ] # selects events passing calorimeter calibration trigger
+    SelectEvents : [ "caloCalib*_trigger" ] # selects events passing calorimeter calibration trigger
     fileName    : @nil
   }
 
