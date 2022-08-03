@@ -10,6 +10,7 @@
 # $5 is the kind of input stops (Muminus, Muplus, IPAMuminus, IPAMuplus, Piminus, Piplus, or Cosmic)
 # $6 is the number of jobs
 # $7 is the number of events/job
+# $8 is the (optional) BField file.  Ddfault is Offline/Mu2eG4/geom/bfgeom_no_tsu_ps_v01.txt
 if [[ $# -lt 7 ]]; then
   echo "Missing arguments, provided $# but there should be 7"
   return 1
@@ -20,6 +21,10 @@ primaryconf=$2$4
 stype=$5
 njobs=$6
 eventsperjob=$7
+bfield="Offline/Mu2eG4/geom/bfgeom_no_tsu_ps_v01.txt"
+if [[ $# -eq 8 ]]; then
+  bfield="Offline/Mu2eG4/geom/$8"
+fi
 
 dataset=sim.mu2e.${stype}StopsCat.${stopsconf}.art
 
@@ -40,13 +45,16 @@ nfiles=`samCountFiles.sh $dataset`
 nevts=`samCountEvents.sh $dataset`
 let nskip=nevts/nfiles
 # write the template
-rm primary.fcl
+if [[ -f "primary.fcl" ]]; then
+  rm primary.fcl
+fi
 if [[ "${stype}" == "Cosmic" ]]; then
   echo "#include \"Production/JobConfig/cosmic/S2Resampler${primary}.fcl\"" >> primary.fcl
 else
   echo "#include \"Production/JobConfig/primary/${primary}.fcl\"" >> primary.fcl
 fi
 echo physics.filters.${resampler}.mu2e.MaxEventsToSkip: ${nskip} >> primary.fcl
+echo "services.GeometryService.bFieldFile : \"$bfield\"" >> primary.fcl
 #
 # now generate the fcl
 #
@@ -57,6 +65,7 @@ for dirname in 000 001 002 003 004 005 006 007 008 009; do
   echo "found dir $dirname"
   rm -rf ${primary}\_$dirname
   mv $dirname ${primary}\_$dirname
+  echo "moving $dirname to ${primary}_${dirname}"
  fi
 done
 

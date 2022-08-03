@@ -10,6 +10,7 @@
 # $6 is the digitization type (OnSpill, OffSpill, NoField, Extracted)
 # $7 is the database purpose (perfect, best, startup)
 # $8 is the database version
+# $9  is the (optional) BField file.  Ddfault is Offline/Mu2eG4/geom/bfgeom_no_tsu_ps_v01.txt
 primary=$1
 name=$primary.$2$3
 conf=$2$4_$7_$8
@@ -18,7 +19,11 @@ digitype=$6
 digout=${primary}${digitype}
 dbpurpose=$2_$7
 dbver=$8
-#
+#bfield="Offline/Mu2eG4/geom/bfgeom_no_tsu_ps_v01.txt"
+if [[ $# -eq 9 ]]; then
+  bfield="Offline/Mu2eG4/geom/$9"
+fi
+
 #NoField and Extracted require consistency with the primary
 #
 usage() { echo "Usage:
@@ -70,7 +75,9 @@ else
 fi
 echo "Generating digitization scripts for $primary conf $conf output $digout database purpose, version $dbpurpose, $dbver"
 
-rm digitize.fcl
+if [[ -f "digitize.fcl" ]]; then
+  rm digitize.fcl
+fi
 samweb list-file-locations --schema=root --defname="dts.mu2e.${name}.art"  | cut -f1 > $name.txt
 echo \#include \"Production/JobConfig/digitize/Digitize.fcl\" >> digitize.fcl
 echo \#include \"Production/JobConfig/digitize/${digitype}.fcl\" >> digitize.fcl
@@ -91,6 +98,7 @@ fi
 echo services.DbService.purpose: $dbpurpose >> digitize.fcl
 echo services.DbService.version: $dbver >> digitize.fcl
 echo services.DbService.verbose : 2 >> digitize.fcl
+echo "services.GeometryService.bFieldFile : \"$bfield\"" >> digitize.fcl
 
 generate_fcl --dsconf="$conf" --dsowner=$dsowner --description="${digout}Digi" --embed digitize.fcl \
   --inputs="$name.txt" --merge-factor=$merge

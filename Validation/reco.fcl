@@ -30,10 +30,10 @@ physics.RecoPath : [
   RecoFilter
 ]
 #
-physics.producers.SelectRecoMC.KalSeedCollections : [ "KFFDeM", "KFFDeP", "KKSDeM", "KKSDeP"]
+physics.producers.SelectRecoMC.KalSeedCollections : [ "KFFDeM", "KFFDeP", "KKSDeM", "KKSDeP","KKFDeM", "KKFDeP"]
 physics.producers.SelectRecoMC.HelixSeedCollections  : ["MHDeM", "MHDeP" ]
-physics.filters.RecoFilter.TrkTags : [ "KFFDeM", "KFFDeP"]
-physics.filters.RecoFilter.MomentumCutoff : [ 60.0, 60.0 ]
+physics.filters.RecoFilter.TrkTags : [ "KFFDeM", "KFFDeP","KKFDeM", "KKFDeP"]
+physics.filters.RecoFilter.MomentumCutoff : [ 60.0, 60.0, 60.0, 60.0 ]
 physics.producers.KKDeMSeedFit.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
 physics.producers.KKDeMSeedFit.ModuleSettings.ComboHitCollection : "makeSH"
 physics.producers.KKDeMSeedFit.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"

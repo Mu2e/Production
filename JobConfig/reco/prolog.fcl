@@ -116,6 +116,28 @@ Reconstruction : {
         PrintLevel : 0
       }
     }
+    KKFDeM : {
+      @table::Mu2eKinKal.producers.KKDeMDriftFit
+      ModuleSettings : {
+        @table::Mu2eKinKal.producers.KKDeMDriftFit.ModuleSettings
+        HelixSeedCollections : [ "MHDeM" ]
+        ComboHitCollection : "makeSH"
+        StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+        CaloClusterCollection : "CaloClusterMaker"
+        PrintLevel : 0
+      }
+    }
+    KKFDeP : {
+      @table::Mu2eKinKal.producers.KKDePDriftFit
+      ModuleSettings : {
+        @table::Mu2eKinKal.producers.KKDePDriftFit.ModuleSettings
+        HelixSeedCollections : [ "MHDeP" ]
+        ComboHitCollection : "makeSH"
+        StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+        CaloClusterCollection : "CaloClusterMaker"
+        PrintLevel : 0
+      }
+    }
 
     # Implicit TrkPatRec config for Final Fits and upstream fits (no merging)
     #
@@ -200,15 +222,17 @@ Reconstruction : {
     CalTimePeakFinder, CalHelixFinderDe,  # CalPatRec
     MHDeM, MHDeP, # helix merging
     KSFDeM, KSFDeP, # Seed fit (chisquared, no drift)
+    KFFDeM, KFFDeP, # final Kalman filter fit
     KKSDeM, KKSDeP, # KinKal seed fits
-    KFFDeM, KFFDeP # final Kalman filter fit
+    KKFDeM, KKFDeP # KinKal drift fits
   ]
   # Upstream electron sequence (plus and minus): TrkPatRec only
   UeReco : [
     TimeClusterFinderUe, HelixFinderUe,
     MHUeM, MHUeP, # helix merging
     KSFUeM, KSFUeP, # Seed fit (chisquared, no drift)
-    KFFUeM, KFFUeP # final Kalman filter fit
+    KFFUeM, KFFUeP, # final Kalman filter fit
+    KKFUeM, KKFUeP # KinKal drift fits
   ]
   # Downstream muon sequence (plus and minus)
   DmuReco : [
@@ -216,15 +240,17 @@ Reconstruction : {
     CalTimePeakFinderMu, CalHelixFinderDmu,  # CalPatRec
     MHDmuM, MHDmuP, # helix merging
     KSFDmuM, KSFDmuP, # Seed fit (chisquared, no drift)
-    KFFDmuM, KFFDmuP # final Kalman filter fit
+    KFFDmuM, KFFDmuP, # final Kalman filter fit
+    KKFDmuM, KKFDmuP # KinKal drift fits
   ]
   # Upstream muon sequence (plus and minus)
   UmuReco : [
     TimeClusterFinderUmu, HelixFinderUmu,
     MHUmuM, MHUmuP, # helix merging
     KSFUmuM, KSFUmuP, # Seed fit (chisquared, no drift)
-    KFFUmuM, KFFUmuP # final Kalman filter fit
-  ]
+    KFFUmuM, KFFUmuP, # final Kalman filter fit
+    KKFUmuM, KKFUmuP # KinKal drift fits
+ ]
   # add protons for calibration TODO!
 
   # Track reco sequence
