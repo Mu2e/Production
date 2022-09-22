@@ -1,5 +1,5 @@
 #
-# Analyze STMHits and create histogram of energy spectrum
+# Plot STMWaveforms
 #
 
 #include "Offline/fcl/standardServices.fcl"
