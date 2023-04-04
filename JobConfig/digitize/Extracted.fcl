@@ -29,4 +29,5 @@ physics.producers.CrvCoincidence.PEthresholds : [  8 ,  8 ,  8 ]
 physics.producers.CrvCoincidence.adjacentPulseTimeDifferences  : [ 10 , 10 , 10 ]
 physics.producers.CrvCoincidence.maxTimeDifferences            : [ 10 , 10 , 10 ]
 physics.producers.CrvCoincidence.coincidenceLayers             : [  3 ,  3 ,  3 ]
-
+# turn off SIPM noise for now: it is very slow
+physics.producers.CrvSiPMCharges.ThermalRate : 0
