@@ -10,3 +10,4 @@ physics.EndPath : [ @sequence::Digitize.EndSequence, SignalOutput, DiagOutput, T
 physics.end_paths : [ EndPath ]
 # override the untriggered filter
 physics.filters.UntriggeredPrescale.prescaleFactor : 1 # record 100% of the untriggered
+#include "Production/JobConfig/digitize/offspill_epilog.fcl"
