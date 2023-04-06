@@ -121,7 +121,13 @@ else
   samListLocations ${SAMOPT} --defname="dig.${OWNER}.${PRIMARY}${DIGITYPE}${STREAM}.${RELEASE}${DIGI_VERSION}_${DB_PURPOSE}_${DB_VERSION}.art"  > Digis.txt
 fi
 
-echo '#include "Production/JobConfig/reco/Reco.fcl"' > template.fcl
+if [[ "${DIGITYPE}" == "Extracted" ]]; then
+  echo '#include "Production/JobConfig/reco/Extracted.fcl"' > template.fcl
+elif [[ "${DIGITYPE}" == "NoField" ]]; then
+  echo '#include "Production/JobConfig/reco/NoField.fcl"' > template.fcl
+else
+  echo '#include "Production/JobConfig/reco/Reco.fcl"' > template.fcl
+fi
 echo 'services.DbService.purpose:' ${RELEASE}'_'${DB_PURPOSE} >> template.fcl
 echo 'services.DbService.version:' ${DB_VERSION} >> template.fcl
 echo 'services.DbService.verbose : 2' >> template.fcl
