@@ -3,8 +3,11 @@ physics.producers.TTmakeSH.MinimumTime : 0.0
 physics.producers.TTmakeSH.MaximumTime : 100.0e3
 physics.producers.TTmakeSH.MinimumRadius : 0.0
 physics.producers.TTmakeSH.MaximumRadius : 800.0
-#physics.producers.TTmakeSH.MinimumEnergy : 0.0
-#physics.producers.TTmakeSH.MaximumEnergy : 0.01
-
+physics.producers.TTmakeSH.MinimumEnergy : 0.0
+physics.producers.TTmakeSH.MaximumEnergy : 0.01
 physics.producers.TTmakePH.MinimumTime : 0.0
 physics.producers.TTmakePH.MaximumTime : 100.0e3
+# Turn off calo digi noise
+physics.producers.CaloDigiMaker.addNoise : false
+# turn off SIPM noise for now
+physics.producers.CrvSiPMCharges.ThermalRate : 0
