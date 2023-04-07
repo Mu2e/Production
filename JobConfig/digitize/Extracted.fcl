@@ -15,14 +15,9 @@ services.GeometryService.bFieldFile: "Offline/Mu2eG4/geom/bfgeom_no_field.txt"
 physics.EndPath : [ @sequence::Digitize.EndSequence, TrkOutput, CaloOutput, UntriggeredOutput ]
 physics.end_paths : [ EndPath ]
 # setup CRV lookup tables to follow
-physics.producers.CrvPhotons.CRVSectors : ["EX","T1","T2"] # used only to match the vector entries below
-physics.producers.CrvPhotons.reflectors : [  0 ,  1 ,  0 ]
-physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions/v6_0/LookupTable_6000_0",  # EX
-  "CRVConditions/v6_0/LookupTable_2370_1",  # T1
-  "CRVConditions/v6_0/LookupTable_3200_0"]  # T2
+#include "Offline/CRVResponse/fcl/epilog_extracted.fcl"
 # number of photons per MeV visible energy deposited
 # for 68 PE/SiPM @ 1 m away from SiPM (Test beam June 2017)
 # using the pulse height calibration, this value gives 45 PE/SiPM @ 1 m away from SiPM
 physics.producers.CrvPhotons.scintillationYields  : [39400,39400,39400]
 #include "Production/JobConfig/digitize/offspill_epilog.fcl"
-

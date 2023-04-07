@@ -3,4 +3,4 @@ services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common_extracted.t
 services.GeometryService.bFieldFile: "Offline/Mu2eG4/geom/bfgeom_no_field.txt"
 
 #include "Production/JobConfig/reco/offspill_epilog.fcl"
-#include "Offline/CRVResponse/fcl/epilog_extracted_v03.fcl"
+#include "Offline/CRVResponse/fcl/epilog_extracted.fcl"
