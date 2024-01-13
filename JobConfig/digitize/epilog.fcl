@@ -18,8 +18,8 @@ services.ProditionsService.trackerStatus.Settings.useDb: true
 services.ProditionsService.trackerStatus.Settings.verbose: 0
 services.ProditionsService.strawElectronics.useDb: true
 services.ProditionsService.strawElectronics.verbose: 0
-services.ProditionsService.crvScintYield.useDb: true
-services.ProditionsService.crvScintYield.verbose: 0
+services.ProditionsService.crvPhotonYield.useDb: true
+services.ProditionsService.crvPhotonYield.verbose: 0
 services.ProditionsService.crvStatus.useDb: true
 services.ProditionsService.crvStatus.verbose: 0
 # don't use database time offsets in digitization
