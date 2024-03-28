@@ -10,3 +10,5 @@ services.ProditionsService.trackerStatus.Settings.useDb: true
 services.ProditionsService.trackerStatus.Settings.verbose: 0
 services.ProditionsService.strawElectronics.useDb: true
 services.ProditionsService.strawElectronics.verbose: 0
+services.ProditionsService.crvCalib.useDb: true
+services.ProditionsService.crvCalib.verbose: 0
