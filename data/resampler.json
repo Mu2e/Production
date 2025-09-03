@@ -172,6 +172,7 @@
         "fcl_overrides": {
             "services.GeometryService.bFieldFile": "Offline/Mu2eG4/geom/bfgeom_no_tsu_ps_v01.txt"
         },
+
         "resampler_name": "IPAMuminusStopResampler",
         "input_data": "sim.mu2e.IPAMuminusStopsCat.MDC2020at.art",
         "events": 10000,
