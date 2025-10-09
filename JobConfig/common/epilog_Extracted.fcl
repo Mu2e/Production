@@ -1,0 +1,4 @@
+# Overrides for extracted
+services.GeometryService.inputFile: "Production/JobConfig/cosmic/geom_cosmic_extracted.txt"
+services.GeometryService.bFieldFile: "Offline/Mu2eG4/geom/bfgeom_no_field.txt"
+

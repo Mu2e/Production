@@ -1,6 +1,6 @@
 # configure Extracted digitization
 #include "Production/JobConfig/digitize/NoField.fcl"
 # use extracted geometry
-services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common_extracted.txt"
+#include "Production/JobConfig/common/epilog_Extracted.fcl"
 # override CRV lookup tables, photon yields, etc. for the extracted position
 #include "Offline/CRVResponse/fcl/epilog_extracted.fcl"
