@@ -7,4 +7,4 @@ services.scheduler.wantSummary: true
 #show summary of error logger
 services.message.destinations.log.outputStatistics : true
 # define the default geometry. This overrides the Offline default
-services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common.txt"
+services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_run1_a.txt"
