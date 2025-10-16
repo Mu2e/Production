@@ -119,7 +119,7 @@ physics.analyzers.recoCompressionCheck.SelectEvents : [ TriggerPath ]
 # on-spill EWM
 physics.producers.EWMProducer.SpillType : 1
 # add trigger paths
-# This doesn't currently work, as the step filter stops processing before digis are made, and
+# This doesn't MDC2020ly work, as the step filter stops processing before digis are made, and
 # the digis are required for trigger FIXME!
 ##include "Offline/gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
 
@@ -156,7 +156,7 @@ physics.filters.TargetStopResampler.fileNames : [
 physics.filters.TargetStopResampler.mu2e.MaxEventsToSkip: 0
 physics.producers.FindMCPrimary.PrimaryProcess : "mu2eCeMinusEndpoint"
 
-services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_common_current.txt"
+services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_common_MDC2020.txt"
 services.GeometryService.bFieldFile: "Offline/Mu2eG4/geom/bfgeom_no_tsu_ps_v01.txt"
 
 #include "Production/Validation/database.fcl"

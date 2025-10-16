@@ -9,7 +9,7 @@
 #include "Offline/CaloReco/fcl/prolog.fcl"
 #include "Offline/CaloCluster/fcl/prolog.fcl"
 #include "Offline/CalPatRec/fcl/prolog.fcl"
-#include "Offline/CRVReco/fcl/prolog.fcl"
+#include "Offline/CRVReco/fcl/prolog_v11.fcl"
 #include "Offline/CosmicReco/fcl/prolog.fcl"
 #include "Offline/Filters/fcl/prolog.fcl"
 #
