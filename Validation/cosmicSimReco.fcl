@@ -151,3 +151,4 @@ source.maxEvents: 50000
 # Initialze seeding of random engines
 services.SeedService.baseSeed         :  8
 #include "Production/Validation/database.fcl"
+#include "Production/JobConfig/common/epilog.fcl"
