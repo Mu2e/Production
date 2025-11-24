@@ -1,16 +1,18 @@
 #!/usr/bin/bash
 # Generate fcl files for BeamToVD.fcl
 # Generates two sets of fcl files found in directories Ele_00X and Mu_00X
+# Also generates a directory for seeds used to generate these files
 # Stores the generated seeds in directory BeamToVDSeeds
-# Pawel Plesniak
-
-# $1 is the production (ie MDC2020)
-# $2 is the input production version
-# $3 is the output production version
-# $4 is the number of events per job for electrons
-# $5 is the number of jobs for electrons
-# $6 is the number of events per job for muons
-# $7 is the number of jobs for muons
+# Usage - Run this command as a shell script with the following arguments
+#  - $1 is the production (ie MDC2020)
+#  - $2 is the input production version
+#  - $3 is the output production version
+#  - $4 is the number of events per job for electrons
+#  - $5 is the number of jobs for electrons
+#  - $6 is the number of events per job for muons
+#  - $7 is the number of jobs for muons
+# Note - if generating a large simulation, it is recommended to make a copy of the input datasets (EleBeamCat and MuBeamCat) on resilient to distribute the file load, and use the commented out code
+# Adapted by: Pawel Plesniak
 
 # Validate the number of arguments
 if [[ ${7} == "" ]]; then
@@ -30,6 +32,15 @@ samweb list-file-locations --schema=root --defname="$eleDataset"  | cut -f1 > El
 nEleFiles=`samCountFiles.sh $eleDataset`
 nEleEvts=`samCountEvents.sh $eleDataset`
 nEleSkip=$((nEleEvts/nEleFiles))
+# For large simulation studies:
+#  - Copy the EleBeamCat files to resilient, 
+#  - Make a file containing a newline separated list of these files called EleBeamCat.txt
+#  - Comment out the above ten lines 
+#  - Uncomment the following three lines to use a fixed number of events to skip
+#  - Populate the variable nEleEvts below using a tool like eventCount on each input file or samCountEvents.sh on the initial dataset
+# nEleFiles=wc -l < EleBeamCat.txt
+# nEleEvts=LISTTHENUMBEROFEVENTSHERE
+# nEleSkip=$((nEleEvts/nEleFiles))
 echo "Electrons: found $nEleEvts events in $nEleFiles files, skipping max of $nEleSkip events per job"
 
 # Write the base propagation script for electrons
@@ -50,6 +61,8 @@ for dirname in 000 001 002 003 004 005 006 007 008 009; do
   mv $dirname Ele_$dirname
  fi
 done
+
+# Cleanup
 rm -f tmp.fcl
 
 
@@ -64,6 +77,15 @@ samweb list-file-locations --schema=root --defname="$muDataset"  | cut -f1 > MuB
 nMuFiles=`samCountFiles.sh $muDataset`
 nMuEvts=`samCountEvents.sh $muDataset`
 nMuSkip=$((nMuEvts/nMuFiles))
+# For large simulation studies:
+#  - Copy the MuBeamCat files to resilient, 
+#  - Make a file containing a newline separated list of these files called MuBeamCat.txt
+#  - Comment out the above ten lines 
+#  - Uncomment the following three lines to use a fixed number of events to skip
+#  - Populate the variable nMuEvts below using a tool like eventCount on each input file or samCountEvents.sh on the initial dataset
+# nEleFiles=wc -l < MuBeamCat.txt
+# nEleEvts=LISTTHENUMBEROFEVENTSHERE
+# nEleSkip=$((nEleEvts/nEleFiles))
 echo "Muons: found $nMuEvts events in $nMuFiles files, skipping max of $nMuSkip events per job"
 
 # Write the base propagation script for muons
