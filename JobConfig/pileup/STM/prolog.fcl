@@ -1,55 +1,301 @@
-#
-# Prolog to create pileup particle steps for mixing
-#
+# STM simulation prolog
+# Simulation defined in 51487
+# Original author: Pawel Plesniak
+
 #include "Offline/TrackerMC/fcl/prolog.fcl"
 #include "Offline/CaloMC/fcl/prolog.fcl"
 #include "Offline/CRVResponse/fcl/prolog.fcl"
 #include "Offline/Filters/fcl/prolog.fcl"
 #include "Offline/Compression/fcl/prolog.fcl"
-#
+
 BEGIN_PROLOG
 
-Pileup: {
+# Define the STM simulation data products for both simulation stages
+# It is expected that this will not change
+STMSimDataProducts : {
+  # Define general variables
+  EmptyString : ""
+
+  # Define data products generated in the two simulation stages
+  # NOTE - there are two general simulation TYPES for each stage
+  #  - BeamCatDatasets - propagation of the EleBeamCat and MuBeamCat datasets
+  #  - TargetStopsCatDataset - propagation of the TargetStopCat dataset (for 1809 keV photons)
+  Stage1 : {
+    # Define global Mu2eG4 input data product type
+    InputType : {
+      BeamCatDatasets : "StepPoints"
+      TargetStopsCatDataset : "StageParticles"
+    }
+
+    # Define the pre-simulated SD hits for input to Mu2eG4
+    PreSimulatedData : {
+        BeamCatDatasets : [
+            "beamResampler:virtualdetector"
+        ]
+        TargetStopsCatDataset : [
+            "TargetStopResampler:virtualdetector"
+        ]
+    }
+
+    # Define the output data products from Stage 1 Mu2eG4 run
+    GEANT : {
+        StepPointMCs : "g4run:virtualdetector"
+        SimParticles : "g4run:"
+    }
+
+    # Define the input data products tag that Mu2eG4 resamples from
+    InputTag : {
+        BeamCatDatasets : "beamResampler:Beam"
+        TargetStopsCatDataset : "generate"
+    }
+
+    # Define the PhysicalVolumeInfo data products used by Mu2eG4 (defines what materials the various particles interacted with)
+    InputPhysVolumeMultiInfo : {
+        BeamCatDatasets : "beamResampler"
+        TargetStopsCatDataset : "TargetStopResampler"
+    }
+
+    # Define the VolumeInfo data products that Mu2eG4 updates, and on what output product level this occurs at (OutInstance)
+    UpdateEventLevelVolumeInfos : {
+        Input : {
+            BeamCatDatasets : "beamResampler:eventlevel"
+            TargetStopsCatDataset : "TargetStopResampler:eventlevel"
+        }
+        OutInstance : "eventlevel"
+    }
+
+    # Define the extracted virtual detector StepPointMCs data product, which selects which events have interesting steps that we want to keep for output
+    ExtractedStepPointMCs : "extractVirtualDetectorSteps:virtualdetector"
+
+    # Define the compressed output data products
+    CompressedOutput : {
+      StepPointMCs : "compressDetStepMCsSTM:virtualdetector"
+      SimParticles : "compressDetStepMCsSTM:"
+    }
+  }
+
+  Stage2 : {
+    # Define global Mu2eG4 input data product type
+    InputType : "StepPoints"
+
+    # Define the pre-simulated SD hits for input to Mu2eG4
+    PreSimulatedData : {
+        BeamCatDatasets : [
+            "stmResamplerBeamCatDatasets:virtualdetector"
+        ]
+        TargetStopsCatDataset : [
+            "stmResamplerTargetStopsCatDataset:virtualdetector"
+        ]
+    }
+
+    # Define the input data products tag that Mu2eG4 resamples from
+    ResampledStepPointMCs : {
+      BeamCatDatasets : "stmResamplerBeamCatDatasets:virtualdetector"
+      TargetStopsCatDataset : "stmResamplerTargetStopsCatDataset:virtualdetector"
+    }
+
+    # Define the input data products tag that Mu2eG4 resamples from
+    InputTag : {
+      HPGe : "shiftStepsHPGe:"
+      LaBr : "shiftStepsLaBr:"
+    }
+
+    # Define the output data products from Stage 2 Mu2eG4 run
+    GEANT : {
+        StepPointMCs : [
+            "g4run:STMDet",
+            "g4run:virtualdetector"
+        ]
+        SimParticles : "g4run:"
+    }
+
+    # Define the PhysicalVolumeInfo data products used by Mu2eG4 (defines what materials the various particles interacted with)
+    InputPhysVolumeMultiInfo : "stmResamplerBeamCatDatasets"
+
+    # Define the VolumeInfo data products that Mu2eG4 updates, and on what output product level this occurs at (OutInstance)
+    UpdateEventLevelVolumeInfos : {
+        Input : "stmResamplerBeamCatDatasets:eventlevel"
+        OutInstance : "eventlevel"
+    }
+
+    # Define the mixing modules used for resampling
+    Resampler : {
+      InputType : "g4run"
+      SimParticleMixer : {
+        mixingMap : [
+          [ 
+            "compressDetStepMCsSTM",
+            ""
+          ]
+        ] 
+      }  
+      StepPointMCMixer : {
+        mixingMap : [
+          [ 
+            "compressDetStepMCsSTM:virtualdetector",
+            ":"
+          ]
+        ] 
+      }  
+    }
+
+    # Define the simulated time offset data product
+    SimulatedTimeOffset : "protonTimeOffset"
+
+    # Define the extracted virtual detector StepPointMCs data product, which selects which events have interesting steps that we want to keep for output
+    ExtractedStepPointMCs : "extractVirtualDetectorSteps:virtualdetector"
+
+    # Define the compressed output data products
+    CompressedOutput : {
+      StepPointMCs : {
+        Virtualdetector : "compressDetStepMCs:virtualdetector"
+        Detector : "compressDetStepMCs:STMDet"
+      }
+      SimParticles : "compressDetStepMCs:"
+    }
+  }
+
+  # Stage 1 products to keep
+  # Note - the process name fields are set to wildcards as the process name may change depending on the job configuration, supporting both BeamCatDatasets and TargetStopsCatDataset types
+  BeamToVDKeptProducts : [
+    "drop *_*_*_*",
+    "keep art::EventIDs_*_*_*",
+    "keep mu2e::GenParticles_*_*_*",
+    "keep mu2e::GenEventCount_*_*_*",
+    "keep mu2e::StepPointMCs_compressDetStepMCsSTM_*_*",
+    "keep mu2e::SimParticlemv_compressDetStepMCsSTM_*_*",
+    "keep mu2e::SimTimeOffset_*_*_*", # TODO - WHY?
+    "keep mu2e::PhysicalVolumeInfomvs_g4run_*_*",
+    "keep mu2e::StatusG4_*_*_*"
+  ]
+
+  # Stage 2 products to keep
+  # Note - the process name fields are set to wildcards as the process name may change depending on the job configuration, supporting both BeamCatDatasets and TargetStopsCatDataset types
+  STMResamplerKeptProducts : [
+    "drop *_*_*_*",
+    "keep mu2e::GenEventCount_*_*_*",
+    "keep art::EventIDs_*_*_*",
+    "keep mu2e::StepPointMCs_compressSTMDet_*_*",
+    "keep mu2e::SimParticlemv_compressSTMDet_*_*",
+    "keep mu2e::SimTimeOffset_protonTimeOffset_*_*", # TODO - WHY?
+    "keep mu2e::PhysicalVolumeInfomvs_*_*_*"
+  ]
+}
+
+# Define the STM pileup configuration, pointing to the STMSimDataProducts defined above wherever possible
+# It is expected that if there are changes in the simulation framework, this is the place in which the variables will be changed.
+STMPileup : {
+  # Generate the proton time offset for STM simulation
   producers : {
     protonTimeOffset : @local::CommonMC.protonTimeOffset
   }
 
+  # Define the STM resampler filters for both dataset types
   filters : {
-    stmResampler: {
-      module_type: ResamplingMixer
-      fileNames: @nil
-      readMode: "sequential" # randomNoReplace
-      wrapFiles: true
+    # Resampler for EleBemaCat and MuBeamCat datasets
+    stmResamplerBeamCatDatasets: {
+      module_type : ResamplingMixer
+      fileNames : @nil
+      readMode : "sequential" # Expect to read the same input data products over and over again, and sequential read mode is faster than randonNoReplace
+      wrapFiles : true
       mu2e: {
         writeEventIDs : true
         MaxEventsToSkip: @nil
         debugLevel : 1
         products: {
-          genParticleMixer: { mixingMap: [ [ "compressDetStepMCsSTM", "" ] ] }
-          simParticleMixer: { mixingMap: [ [ "compressDetStepMCsSTM", "" ] ] }
-          stepPointMCMixer: { mixingMap: [ [ "compressDetStepMCsSTM:", ":" ] ] } # virtualdetector
-          simTimeOffset : "protonTimeOffset"
-          volumeInfoMixer: {
-            srInput: "g4run"
-            evtOutInstanceName: "eventlevel"
+          genParticleMixer : @local::STMSimDataProducts.Stage2.Resampler.SimParticleMixer
+          simParticleMixer : @local::STMSimDataProducts.Stage2.Resampler.SimParticleMixer
+          stepPointMCMixer : @local::STMSimDataProducts.Stage2.Resampler.StepPointMCMixer
+          simTimeOffset : @local::STMSimDataProducts.Stage2.SimulatedTimeOffset
+          volumeInfoMixer : {
+            srInput : @local::STMSimDataProducts.Stage2.Resampler.InputType
+            evtOutInstanceName : @local::STMSimDataProducts.Stage2.UpdateEventLevelVolumeInfos.OutInstance
+          }
+        }
+      }
+    }
+
+    # Resampler for TargetStopCat dataset (for generation 1809 keV photons)
+    stmResamplerTargetStopsCatDataset : {
+      module_type : ResamplingMixer
+      fileNames : @nil
+      readMode : "randomNoReplace" # Different from the above as it is expected that we do not read all the events in the Stage 2 resampling
+      wrapFiles : true
+      mu2e: {
+        writeEventIDs : true
+        MaxEventsToSkip: @nil
+        debugLevel : 1
+        products: {
+          genParticleMixer : @local::STMSimDataProducts.Stage2.Resampler.SimParticleMixer
+          simParticleMixer : @local::STMSimDataProducts.Stage2.Resampler.SimParticleMixer
+          stepPointMCMixer : @local::STMSimDataProducts.Stage2.Resampler.StepPointMCMixer
+          simTimeOffset : @local::STMSimDataProducts.Stage2.SimulatedTimeOffset
+          volumeInfoMixer : {
+            srInput : @local::STMSimDataProducts.Stage2.Resampler.InputType
+            evtOutInstanceName : @local::STMSimDataProducts.Stage2.UpdateEventLevelVolumeInfos.OutInstance
           }
         }
       }
     }
   }
 
-  BeamToVDKeptProducts : [
-    "keep art::EventIDs_*_*_*",
-    "keep mu2e::GenParticles_*_*_*",
-    "keep mu2e::GenEventCount_*_*_*", 
-    "keep mu2e::StepPointMCs_compressDetStepMCsSTM_*_*",
-    "keep mu2e::SimParticlemv_compressDetStepMCsSTM_*_*",
-    "keep mu2e::SimTimeOffset_*_*_*",
-    "keep mu2e::PhysicalVolumeInfomvs_g4run_*_*",
-    "keep mu2e::StatusG4_*_*_*"
+  # Simulation data efficiency module configurations
+  # We are not interested in any of the standard data products aside from steps in virtual detectors and the STM detector.
+  # At the time of writing, the STMDet SensitiveDetector contains BOTH the HPGe and LaBr detectors.
+  ResamplingProducer : {
+      StepPointMCsTag : @local::STMSimDataProducts.Stage1.GEANT.StepPointMCs
+      VirtualDetectorID : 101
+  }
+  ResamplingFilterStepPointMCs : @local::STMSimDataProducts.Stage1.ExtractedStepPointMCs
+  CompressionParameters : {
+    NoCompressionString : "noCompression"
+    CompressionGenerations : -1
+  }
+
+  # Simulation data counter module configuration
+  VirtualDetectorCounter : {
+      StepPointMCs : @local::STMSimDataProducts.Stage1.GEANT.StepPointMCs
+      VirtualDetectorIDs : [10, 13, 15, 86, 115, 100, 101, 88, 89, 90]
+  }
+
+  # Parameters for shifting VD101 steps to just upstream of the STM shielding house absorbers ()
+  ShiftVD101Steps : {
+      StepPointMCsTag : @local::STMSimDataProducts.Stage1.ExtractedStepPointMCs
+      VirtualDetectorID : 101
+      InputRadius : 200 # VD101 aperture radius
+      OutputRadius : 3.98942280401 # SSC aperture radius
+      # Position just upstream of the STM shielding house absorber centered on the HPGe SSC aperture [mm]
+      HPGeUpStr : {
+          x : -3944.6
+          y : 0.0
+          z : 39906.0
+      }
+      # Position just upstream of the STM shielding house absorber centered on the LaBr SSC aperture [mm]
+      LaBrUpStr : {
+          x : -3863.4
+          y : 0.0
+          z : 40300.9
+      }
+      pdgID : 0
+  }
+
+  # Output filenames for the two simulation stages
+  SimulationOutputFilenames : {
+    Stage1 : "dts.owner.BeamToVD.version.sequencer.art"
+    Stage2 : "dts.owner.STMDet.version.sequencer.art"
+  }
+
+  # Define the STM resampler sequences
+  STMResamplerSequenceBeamCatDatasets : [
+    genCounter,
+    protonTimeOffset,
+    stmResamplerBeamCatDatasets
   ]
-  # define some common sequences
-  stmResamplerSequence : [genCounter, protonTimeOffset, stmResampler]
+  STMResamplerSequenceTargetStopsCatDataset : [
+    genCounter,
+    protonTimeOffset,
+    stmResamplerTargetStopsCatDataset
+  ]
 }
 
 END_PROLOG

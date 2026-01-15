@@ -1,11 +1,8 @@
 # Run Stage 2 of the STM simulation defined in docdb 51487 
-# Re-sample the propagated EleBeamCat and MuBeamCat datasets from the chosen virtual detector, and write out the events with SimParticles and StepPointMCs travelling through that virtual detector only
+# Re-sample the propagated TargetStopsCat datasets from the chosen virtual detector, and write out the events with SimParticles and StepPointMCs travelling through that virtual detector only
 # Note - this is configured to run from VD101 only.
 # Usage:
-#  - General modifications ARE REQUIRED FOR THIS FILE - you will need to populate each space there is a `@nil # Populate me!` with one of each of the following (use either HPGe* or LaBr* depending on your simulation use case)
-#   - trigger_paths - either HPGePath or LaBrPath
-#   - SelectEvents - either HPGePath or LaBrPath
-#   - physics.producers.g4run.inputs.primaryTag - replace the @nil with either HPGe or LaBr
+#  - General modifications are not required for this file
 #  - To generate fcl files that use this file, follow up with Production/Scripts/STM/gen_STMResampler.sh
 #  - To change the GEANT verbosity, see the bottom of this file
 # NOTE - When finalizing this script, there were some errors with the compression. I couldn't debug it and did not make time to run a separate simulation to propagate these changes. Debugging is left to the user.
@@ -24,24 +21,22 @@
 #include "Production/JobConfig/pileup/prolog.fcl"
 #include "Production/JobConfig/pileup/STM/prolog.fcl"
 
-process_name : STMResampler
+process_name : STMResampler1809
 
 source : {
   module_type : EmptyEvent
-  # maxEvents : @nil
+  maxEvents : @nil
 }
 
 services : @local::Services.Sim
-
 physics : {
   producers : {
     @table::Common.producers
     @table::Pileup.producers
     # TODO BEFORE NEXT CAMPAIGN - add the CompressPhysicalVolumes module here keeping the output from the FilterG4Out module label.
-    shiftStepsHPGe : {
-      # Shift the steps to upstream of the HPGe absorber along the SSC aperture
+    shiftStepsHPGe : { # Shift the steps to upstream of the HPGe absorber along the SSC aperture
       module_type : ShiftVirtualDetectorStepPointMCs
-      StepPointMCsTag : @local::STMSimDataProducts.Stage2.ResampledStepPointMCs.BeamCatDatasets
+      StepPointMCsTag : @local::STMSimDataProducts.Stage2.ResampledStepPointMCs.TargetStopsCatDataset
       VirtualDetectorID : @local::STMPileup.ShiftVD101Steps.VirtualDetectorID
       InputRadius : @local::STMPileup.ShiftVD101Steps.InputRadius
       OutputRadius : @local::STMPileup.ShiftVD101Steps.OutputRadius
@@ -53,10 +48,9 @@ physics : {
       OutputZ : @local::STMPileup.ShiftVD101Steps.HPGeUpStr.z
       pdgID : @local::STMPileup.ShiftVD101Steps.pdgID
     }
-    shiftStepsLaBr : {
-      # Shift the steps to upstream of the LaBr SSC aperture
+    shiftStepsLaBr : { # Shift the steps to upstream of the LaBr SSC aperture
       module_type : ShiftVirtualDetectorStepPointMCs
-      StepPointMCsTag : @local::STMSimDataProducts.Stage2.ResampledStepPointMCs.BeamCatDatasets
+      StepPointMCsTag : @local::STMSimDataProducts.Stage2.ResampledStepPointMCs.TargetStopsCatDataset
       VirtualDetectorID : @local::STMPileup.ShiftVD101Steps.VirtualDetectorID
       InputRadius : @local::STMPileup.ShiftVD101Steps.InputRadius
       OutputRadius : @local::STMPileup.ShiftVD101Steps.OutputRadius
@@ -110,19 +104,20 @@ physics : {
     }
   }
   HPGePath : [
-    @sequence::STMPileup.STMResamplerSequenceBeamCatDatasets,
+    @sequence::STMPileup.STMResamplerSequenceTargetStopsCatDataset,
     shiftStepsHPGe,
-    @sequence::Common.g4Sequence
+    @sequence::Common.g4Sequence,
     compressSTMDet
   ]
   LaBrPath : [
-    @sequence::STMPileup.STMResamplerSequenceBeamCatDatasets,
+    @sequence::STMPileup.STMResamplerSequenceTargetStopsCatDataset,
     shiftStepsLaBr,
     @sequence::Common.g4Sequence,
     compressSTMDet
   ]
   trigger_paths : [
-    @nil # Populate me!
+    HPGePath
+    # @nil # Populate me!
   ]
   outPathCompressed : [
     genCountLogger,
@@ -139,7 +134,8 @@ outputs : {
     module_type : RootOutput
     outputCommands : @local::STMSimDataProducts.STMResamplerKeptProducts
     SelectEvents : [
-      @nil # Populate me!
+      HPGePath
+      # @nil # Populate me!
     ]
     fileName : @local::STMPileup.SimulationOutputFilenames.Stage2
   }
@@ -149,7 +145,7 @@ outputs : {
 # Point Mu2eG4 to input data
 physics.producers.g4run.inputs : {
   primaryType : @local::STMSimDataProducts.Stage2.InputType
-  primaryTag : @local::STMSimDataProducts.Stage2.InputTag.@nil # Populate me!
+  primaryTag : @local::STMSimDataProducts.Stage2.InputTag.HPGe # @nil # Populate me!
   inputMCTrajectories : @local::STMSimDataProducts.EmptyString
   simStageOverride : 2
   inputPhysVolumeMultiInfo : @local::STMSimDataProducts.Stage2.InputPhysVolumeMultiInfo
@@ -160,7 +156,7 @@ physics.producers.g4run.inputs : {
 }
 
 # Specify pre-simulated hits for beam resampling
-physics.producers.g4run.SDConfig.preSimulatedHits : @local::STMSimDataProducts.Stage2.PreSimulatedData.BeamCatDatasets
+physics.producers.g4run.SDConfig.preSimulatedHits : @local::STMSimDataProducts.Stage2.PreSimulatedData.TargetStopsCatDataset
 
 # Enable the virtual detector sensitive detector - without this the virtualdetector data products will not be created
 physics.producers.g4run.SDConfig.enableSD : [
