@@ -43,7 +43,7 @@ nEleSkip=$((nEleEvts/nEleFiles))
 # nEleSkip=$((nEleEvts/nEleFiles))
 echo "Electrons: found $nEleEvts events in $nEleFiles files, skipping max of $nEleSkip events per job"
 
-# Write the base propagation script for electrons
+# Write the template fcl
 if [ -f tmp.fcl ]; then
     rm -f tmp.fcl
 fi
@@ -54,7 +54,7 @@ echo physics.filters.beamResampler.mu2e.MaxEventsToSkip: ${nEleSkip} >> tmp.fcl
 generate_fcl --dsconf=$1$3 --dsowner=$USER --run-number=1204 --description=BeamToVDEle --events-per-job=$4 --njobs=$5 \
   --embed tmp.fcl --auxinput=1:physics.filters.beamResampler.fileNames:EleBeamCat.txt 
 
-# Write the files to the correct directories
+# Move the generated fcl files (in their directories) to a uniquely identifiable area
 for dirname in 000 001 002 003 004 005 006 007 008 009; do
  if test -d $dirname; then
   rm -rf Ele_$dirname
@@ -91,10 +91,12 @@ echo "Muons: found $nMuEvts events in $nMuFiles files, skipping max of $nMuSkip 
 # Write the base propagation script for muons
 echo '#include "Production/JobConfig/pileup/STM/BeamToVD.fcl"' >> tmp.fcl
 echo physics.filters.beamResampler.mu2e.MaxEventsToSkip: ${nMuSkip} >> tmp.fcl
-# Generate the electrons fcl files
-generate_fcl --dsconf=$1$3 --dsowner=$USER --run-number=1205 --description=BeamToVDMu --events-per-job=$6 --njobs=$7 \
+
+# Generate the muons fcl files
+generate_fcl --dsconf=$1$3 --dsowner=$USER --run-number=1204 --description=BeamToVDMu --events-per-job=$6 --njobs=$7 \
   --embed tmp.fcl --auxinput=1:physics.filters.beamResampler.fileNames:MuBeamCat.txt 
-# Write the files to the correct directories
+
+# Move the generated fcl files (in their directories) to a uniquely identifiable area
 for dirname in 000 001 002 003 004 005 006 007 008 009; do
  if test -d $dirname; then
   rm -rf Mu_$dirname

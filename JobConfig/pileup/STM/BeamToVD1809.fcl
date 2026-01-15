@@ -41,6 +41,9 @@ physics : {
     @table::Pileup.producers # TODO - see if this can be deleted, following discussion with Andy
     generate : {
       # Generate the 1809 keV peaks from muon target stop positions
+      # Note - this is not the clearest thing immediately, thank you AE for clarifying this many times over. 
+      # The 1809 keV photons are only generated on muon CAPTURES, hence they are a part of the captureProducts list
+      # The 51.5% is then relative to the number of muon CAPTURES - see https://www.nndc.bnl.gov/ensnds/26/Mg/27al_mu-_nung.pdf
       module_type : Pileup
       inputSimParticles : TargetStopResampler
       stoppingTargetMaterial : "Al"

@@ -81,18 +81,24 @@ STMSimDataProducts : {
     # Define the pre-simulated SD hits for input to Mu2eG4
     PreSimulatedData : {
         BeamCatDatasets : [
-            "beamResampler:virtualdetector"
+            "stmResamplerBeamCatDatasets:virtualdetector"
         ]
         TargetStopsCatDataset : [
-            "TargetStopResampler:virtualdetector"
+            "stmResamplerTargetStopsCatDataset:virtualdetector"
         ]
     }
 
     # Define the input data products tag that Mu2eG4 resamples from
-    ResampledStepPointMCsTag : "stmResampler:"
+    ResampledStepPointMCs : {
+      BeamCatDatasets : "stmResamplerBeamCatDatasets:virtualdetector"
+      TargetStopsCatDataset : "stmResamplerTargetStopsCatDataset:virtualdetector"
+    }
 
     # Define the input data products tag that Mu2eG4 resamples from
-    InputTag : "shiftStepsHPGe:"
+    InputTag : {
+      HPGe : "shiftStepsHPGe:"
+      LaBr : "shiftStepsLaBr:"
+    }
 
     # Define the output data products from Stage 2 Mu2eG4 run
     GEANT : {
@@ -104,11 +110,11 @@ STMSimDataProducts : {
     }
 
     # Define the PhysicalVolumeInfo data products used by Mu2eG4 (defines what materials the various particles interacted with)
-    InputPhysVolumeMultiInfo : "stmResampler"
+    InputPhysVolumeMultiInfo : "stmResamplerBeamCatDatasets"
 
     # Define the VolumeInfo data products that Mu2eG4 updates, and on what output product level this occurs at (OutInstance)
     UpdateEventLevelVolumeInfos : {
-        Input : "stmResampler:eventlevel"
+        Input : "stmResamplerBeamCatDatasets:eventlevel"
         OutInstance : "eventlevel"
     }
 
@@ -279,11 +285,16 @@ STMPileup : {
     Stage2 : "dts.owner.STMDet.version.sequencer.art"
   }
 
-  # Define the STM resampler sequence
-  stmResamplerSequence : [
+  # Define the STM resampler sequences
+  STMResamplerSequenceBeamCatDatasets : [
     genCounter,
     protonTimeOffset,
-    stmResampler
+    stmResamplerBeamCatDatasets
+  ]
+  STMResamplerSequenceTargetStopsCatDataset : [
+    genCounter,
+    protonTimeOffset,
+    stmResamplerTargetStopsCatDataset
   ]
 }
 

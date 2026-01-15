@@ -49,7 +49,7 @@ echo '#include "Production/JobConfig/pileup/STM/BeamToVD1809.fcl"' >> tmp.fcl
 echo physics.filters.TargetStopResampler.mu2e.MaxEventsToSkip: ${nSkip} >> tmp.fcl
 
 # Generate the electrons fcl files
-generate_fcl --dsconf=$1$3 --dsowner=$USER --run-number=1206 --description=BeamToVD1809 --events-per-job=$4 --njobs=$5 \
+generate_fcl --dsconf=$1$3 --dsowner=$USER --run-number=1204 --description=BeamToVD1809 --events-per-job=$4 --njobs=$5 \
   --embed tmp.fcl --auxinput=1:physics.filters.TargetStopResampler.fileNames:TargetStopsCat.txt 
 
 # Write the files to the correct directories
