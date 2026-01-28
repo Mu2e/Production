@@ -1,123 +1,179 @@
-# Generate and propagate 1809 keV muon stop signal photons from muon target stops
-# Original author: Dave Brown, LBNL
+# Run Stage 1 of the STM simulation defined in docdb 51487 
+# Generate and propagate 1809 keV muon stop signal photons from muon target stop positions
+# Usage:
+#  - General modifications should not be required to this file.
+#  - To generate fcl files that use this file, follow up with Production/Scripts/STM/gen_BeamToVD1809.sh
+#  - To change the virtual detector ID, compression settings, or output data products, modify the relevant parameters in Production/JobConfig/pileup/STM/prolog.fcl
+#  - To change the GEANT verbosity, see the bottom of this file
+# Original author: Yuri Oksuzian, 2019
+# Updated for MDC2020 (DetectorSteps): D. Brown
 # Updated for STM studies: Pawel Plesniak
 
 # Offline includes
+# Offline/fcl/standardServices.fcl - contains standard Mu2e services
 #include "Offline/fcl/standardServices.fcl"
+# TODO - can this be deleted?
 #include "Offline/EventGenerator/fcl/prolog.fcl"
-#include "Offline/STMMC/fcl/prolog.fcl"
 
 # Production includes
+# Production/JobConfig/common/prolog.fcl - contains Mu2eG4 common configuration
 #include "Production/JobConfig/common/prolog.fcl"
+# Production/JobConfig/pileup/prolog.fcl - contains the protonTimeOffset definition (TODO - see if this can be deleted following discussion with Andy)
 #include "Production/JobConfig/pileup/prolog.fcl"
+# Production/JobConfig/primary/prolog.fcl - contains target stop resampling common configuration
 #include "Production/JobConfig/primary/prolog.fcl"
+# Production/JobConfig/pileup/STM/prolog.fcl - contains STM pileup common configuration
 #include "Production/JobConfig/pileup/STM/prolog.fcl"
 
-process_name: BeamToVD1809
+process_name : BeamToVD1809
 
-source: {
+source : {
   module_type : EmptyEvent
   maxEvents : @nil
 }
 
+# Import the current geomety, calibration, and conditions data, as well as the RandomNumberGenerator and seed services
 services : @local::Services.Sim
 
 physics : {
   producers : {
-    @table::Common.producers
-    @table::Pileup.producers
-    generate : { # Generates the 1809 keV peaks from muon target stop positions
-      module_type: Pileup
-      inputSimParticles: TargetStopResampler
+    @table::Common.producers # Contains Mu2eG4 common configuration (drives the Mu2eG4 simulation)
+    @table::Pileup.producers # TODO - see if this can be deleted, following discussion with Andy
+    generate : {
+      # Generate the 1809 keV peaks from muon target stop positions
+      # Note - this is not the clearest thing immediately, thank you AE for clarifying this many times over. 
+      # The 1809 keV photons are only generated on muon CAPTURES, hence they are a part of the captureProducts list
+      # The 51.5% is then relative to the number of muon CAPTURES - see https://www.nndc.bnl.gov/ensnds/26/Mg/27al_mu-_nung.pdf
+      module_type : Pileup
+      inputSimParticles : TargetStopResampler
       stoppingTargetMaterial : "Al"
-      verbosity: 0
-      captureProducts: [{tool_type : "MuCap1809keVGammaGenerator"}]
-      decayProducts: []
+      verbosity : 0
+      captureProducts : [
+        {
+          tool_type : "MuCap1809keVGammaGenerator"
+        }
+      ]
+      decayProducts : []
     }
     extractVirtualDetectorSteps : {
-      # Creates "mu2e::StepPointMCs_extractVirtualDetectorSteps__BeamToVD1809" products that only store StepPointMCs in the selected virtual detector
-      # Want to only keep events with the given virtual detector ID and filter out the rest
-      # Empty collections will be generated if the selected virtual detector has no associated StepPointMCs to allow the compression to take place
+      # Creates "mu2e::StepPointMCs_extractVirtualDetectorSteps_virtualdetecctor_BeamToVD" products that only store StepPointMCs in the selected virtual detector
+      # Want to only keep events if a SimParticle crosses the selected virtual detector
+      # Empty collections will be generated if the selected virtual detector has no associated StepPointMCs to allow the filtering to take place
       module_type : STMResamplingProducer
-      StepPointMCsTag : @local::ResamplingProducer.StepPointMCsTag
-      VirtualDetectorID : @local::ResamplingProducer.VirtualDetectorID
-    }
+      StepPointMCsTag : @local::STMPileup.ResamplingProducer.StepPointMCsTag
+      VirtualDetectorID : @local::STMPileup.ResamplingProducer.VirtualDetectorID
+    } 
     compressDetStepMCsSTM : {
-      # Creates "mu2e::SimParticlemv_compressDetStepMCsSTM__BeamToVD1809" and "mu2e::StepPointMCs_compressDetStepMCsSTM__BeamToVD1809" products from "mu2e::StepPointMCs_extractVirtualDetectorSteps__BeamToVD1809" products
-      # Keeps SimParticles and StepPointMCs going through the selected virtual detector only
+      # Creates "mu2e::StepPointMCs_compressDetStepMCsSTM_virtualdetecctor_BeamToVD" and "mu2e::SimParticlemv_compressDetStepMCsSTM_virtualdetecctor_BeamToVD" products from "mu2e::StepPointMCs_extractVirtualDetectorSteps_virtualdetecctor_BeamToVD" products.
+      # These collections contain the StepPointMCs and SimParticles that pass through the selected virtual detector only, any other daughter particles are removed.
+      # Keeps SimParticles and StepPointMCs going through the selected virtual detector only.
       module_type : CompressDetStepMCs
-      strawGasStepTag : ""
-      caloShowerStepTag : ""
-      surfaceStepTag : ""
-      crvStepTag : ""
-      simParticleTags : ["g4run"] 
+      strawGasStepTag : @local::STMSimDataProducts.EmptyString
+      caloShowerStepTag : @local::STMSimDataProducts.EmptyString
+      surfaceStepTag : @local::STMSimDataProducts.EmptyString
+      crvStepTag : @local::STMSimDataProducts.EmptyString
+      simParticleTags : [
+        @local::STMSimDataProducts.Stage1.GEANT.SimParticles
+      ]
       debugLevel : 0
-      stepPointMCTags : ["extractVirtualDetectorSteps"]
+      stepPointMCTags : [
+        @local::STMSimDataProducts.Stage1.ExtractedStepPointMCs
+      ]
       compressionOptions : {
-        strawGasStepCompressionLevel: "noCompression"
-        caloShowerStepCompressionLevel: "noCompression"
-        crvStepCompressionLevel: "noCompression"
-        surfaceStepCompressionLevel: "noCompression"
-        keepNGenerations : -1
-        simParticleCompressionLevel : "fullCompression"
-        stepPointMCCompressionLevel : "noCompression"
-        mcTrajectoryCompressionLevel : "noCompression"
+        strawGasStepCompressionLevel : @local::STMPileup.CompressionParameters.NoCompressionString
+        caloShowerStepCompressionLevel : @local::STMPileup.CompressionParameters.NoCompressionString
+        crvStepCompressionLevel : @local::STMPileup.CompressionParameters.NoCompressionString
+        surfaceStepCompressionLevel : @local::STMPileup.CompressionParameters.NoCompressionString
+       	simParticleCompressionLevel : @local::STMPileup.CompressionParameters.NoCompressionString
+       	stepPointMCCompressionLevel : @local::STMPileup.CompressionParameters.NoCompressionString
+       	keepNGenerations : @local::STMPileup.CompressionParameters.CompressionGenerations
+       	mcTrajectoryCompressionLevel : @local::STMPileup.CompressionParameters.NoCompressionString
       }
-      mcTrajectoryTag : ""
+      mcTrajectoryTag : @local::STMSimDataProducts.EmptyString
     }
   }
   filters : {
-    @table::Common.filters
-    @table::Pileup.filters
+    @table::Common.filters # Contains Mu2eG4 common filters (consistent filter, required for all Mu2eG4 jobs)
+    # @table::Primary.filters # Contains beam resampling common filters (contains the TargetStopResampler definition)
     TargetStopResampler : @local::Primary.filters.TargetStopResampler
-    filterVirtualDetectorSteps: {
-      # Filters events based on the size of "mu2e::StepPointMCs_compressDetStepMCsSTM__BeamToVD1809"
-      # If there are no StepPointMCs in the selected virtual detector, the event is not kept
-      # Required as extractVirtualDetectorSteps will create a StepPointMCCollection even if the collection is empty
-      module_type: STMResamplingFilter
-      StepPointMCsTag : @local::ResamplingFilter.StepPointMCsTag
+    filterVirtualDetectorSteps : {
+      # Filters events based on the size of "mu2e::StepPointMCs_compressDetStepMCsSTM_virtualdetector_BeamToVD".
+      # If there are no StepPointMCs in the selected virtual detector, the event is not kept.
+      # Required as extractVirtualDetectorSteps will create a StepPointMCCollection even if the collection is empty.
+      module_type : STMResamplingFilter
+      StepPointMCsTag : @local::STMPileup.ResamplingFilterStepPointMCs
     }
   }
   analyzers : {
-    @table::Common.analyzers
+    @table::Common.analyzers # Contains Mu2eG4 common analyzers (includes genCountLogger, which generates a nice generated event summary)
     countVirtualDetectorHits : {
       # Runs a counter over the virtual detectors to keep track of hits
       module_type : CountVirtualDetectorHits
-      stepPointMCsTag : @local::VirtualDetectorCounter.StepPointMCsTag
-      virtualDetectorIDs : @local::VirtualDetectorCounter.virtualDetectorIDs
+      stepPointMCsTag : @local::STMPileup.VirtualDetectorCounter.StepPointMCs
+      virtualDetectorIDs : @local::STMPileup.VirtualDetectorCounter.VirtualDetectorIDs
     }
   }
-  PileupPath : [TargetStopResampler, @sequence::Common.generateSequence, @sequence::Common.g4Sequence, extractVirtualDetectorSteps, compressDetStepMCsSTM, filterVirtualDetectorSteps]
-  trigger_paths : [PileupPath]
-  outPathCompressed : [genCountLogger, countVirtualDetectorHits, compressedOutput]
-  end_paths: [outPathCompressed]
+  PileupPath : [
+    TargetStopResampler, # Resample beam particles from input datasets
+    @sequence::Common.generateSequence, # Generate the 1809 keV photons from muon target stops
+    @sequence::Common.g4Sequence, # Run the Mu2eG4 simulation
+    extractVirtualDetectorSteps, # Extract StepPointMCs in the selected virtual detector
+    filterVirtualDetectorSteps, # Filter events based on presence of StepPointMCs in the selected virtual detector
+    compressDetStepMCsSTM # Compress to keep only SimParticles and StepPointMCs contributing to a particle crossing the selected virtual detector
+  ]
+  trigger_paths : [
+    PileupPath
+  ]
+  outPathCompressed : [
+    genCountLogger, # Generates a nice generated event summary
+    countVirtualDetectorHits, # Counts the number of hits in the selected virtual detector
+    compressedOutput # Output module to write out the compressed data products
+  ]
+  end_paths : [
+    outPathCompressed
+  ]
 }
 outputs : {
   compressedOutput : {
-    module_type: RootOutput
-    outputCommands : [
-      "drop *_*_*_*",
-      @sequence::Pileup.BeamToVDKeptProducts
+    module_type : RootOutput
+    outputCommands : @local::STMSimDataProducts.BeamToVDKeptProducts
+    SelectEvents : [ # Only write out events that pass through the selected virtual detector
+      PileupPath
     ]
-    SelectEvents: [ PileupPath ]
-    fileName: "dts.owner.MuStopPileup.version.sequencer.art"
+    fileName : @local::STMPileup.SimulationOutputFilenames.Stage1
   }
 }
 
-# resampling configuration
-physics.producers.g4run.inputs: {
-  primaryType: StageParticles
-  primaryTag: "generate"
-  inputMCTrajectories: ""
-  simStageOverride: 2
-  inputPhysVolumeMultiInfo: "TargetStopResampler"
-  updateEventLevelVolumeInfos: {
-    input: "TargetStopResampler:eventlevel"
-    outInstance: "eventlevel"
+# GEANT variables
+# Point Mu2eG4 to input data
+physics.producers.g4run.inputs : {
+  primaryType : @local::STMSimDataProducts.Stage1.InputType.TargetStopsCatDataset
+  primaryTag : @local::STMSimDataProducts.Stage1.InputTag.TargetStopsCatDataset
+  inputMCTrajectories : @local::STMSimDataProducts.EmptyString
+  simStageOverride : 2
+  inputPhysVolumeMultiInfo : @local::STMSimDataProducts.Stage1.InputPhysVolumeMultiInfo.TargetStopsCatDataset
+  updateEventLevelVolumeInfos : {
+    input : @local::STMSimDataProducts.Stage1.UpdateEventLevelVolumeInfos.Input.TargetStopsCatDataset
+    outInstance : @local::STMSimDataProducts.Stage1.UpdateEventLevelVolumeInfos.OutInstance
   }
 }
+# Specify pre-simulated hits for beam resampling
+physics.producers.g4run.SDConfig.preSimulatedHits : @local::STMSimDataProducts.Stage1.PreSimulatedData.TargetStopsCatDataset
+
+# Enable the virtual detector sensitive detector - without this the virtualdetector data products will not be created
+physics.producers.g4run.SDConfig.enableSD : [
+  virtualdetector
+]
+
+# Explicitly disable common cuts for STM pileup generation
+physics.producers.g4run.Mu2eG4CommonCut : {}
+
+# Optional debugging output - makes it very clear what is happening in GEANT
+# physics.producers.g4run.debug.trackingVerbosityLevel : 1
+# physics.producers.g4run.debug.steppingVerbosityLevel : 1
+
 
 # Epilog includes
 #include "Production/JobConfig/common/MT.fcl"
 #include "Production/JobConfig/common/epilog.fcl"
-#include "Production/JobConfig/pileup/epilog.fcl"
+# #include "Production/JobConfig/pileup/epilog.fcl" # Note - this was present for the study in 51487, and has been removed for subsequent studies to help quantify if this cut impacts results
