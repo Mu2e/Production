@@ -202,7 +202,7 @@ Digitize: {
   #
   Output : {
     module_type : RootOutput
-    fileName    : "dig.owner.output.version.sequencer.art"
+    fileName    : "dig.owner.desc.version.sequencer.art"
   }
   #
   # trigger selections that can be used to finalize the triggerOutput selection, depending on digitization mode and source
