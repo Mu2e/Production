@@ -40,4 +40,4 @@ physics : {
   trigger_paths : [ @sequence::Trig_physMenu.trigger_paths ]
 }
 # the following is a placeholder
-#include "Production/Validation/database.fcl"
+#include "Production/JobConfig/common/database_empty.fcl"
