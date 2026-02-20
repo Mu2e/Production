@@ -1,6 +1,5 @@
 #include "Production/JobConfig/pileup/epilog.fcl"
 physics.producers.g4run.SDConfig.sensitiveVolumes : ["TrackerSupportElecG10Downstream", "PanelEBKey", "PanelEBKeyShield"]
-
 enableSD: [
 "tracker",
 "calorimeter",
