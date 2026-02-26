@@ -10,10 +10,14 @@ physics.TriggerableBits  : [ "25:TriggerableCaloPath"]
 physics.filters.TriggerableCalo.MinParticleEnergy : 60.0
 
 # Use calorimeter-focused paths for the signal triggers
-physics.NoFieldTriggers : ["calo_cluster_60", "calo_cluster_70", "calo_cluster_80", "apr_TC_calo"]
+physics.NoFieldTriggers : ["calo_cluster_60", "calo_cluster_70", "calo_cluster_75", "calo_cluster_80", "apr_TC_calo"]
 
 # Re-define the trigger path
-physics.trigger_paths : [ "DigitizePath", @sequence::physics.TriggerableBits,  @sequence::Trig_physMenu.trigger_paths]
+physics.filters : { @table::physics.filters @table::Trig_noFieldMenuPSConfig }
+physics.trigger_paths : [ "DigitizePath", @sequence::physics.TriggerableBits,  @sequence::Trig_noFieldMenu.trigger_paths]
+
+# Turn the lumi stream on for 1.8 MeV photon analysis
+physics.filters.LumiStreamPS.eventModeConfig[0].prescale : 1
 
 # Configure the output to be signal triggers + MC triggerable
 outputs.Output.SelectEvents : [@sequence::physics.NoFieldTriggers, @sequence::physics.TriggerablePaths ]

@@ -1,16 +1,13 @@
 # configure NoField digitization
-# first, trigger filtesr and paths
-#include "mu2e-trig-config/gen/trig_extrPosMenuPSConfig.fcl"
-#include "mu2e-trig-config/gen/trig_extrPosMenu.fcl"
-# then generic digitization
+# generic digitization
 #include "Production/JobConfig/digitize/Digitize.fcl"
 # add trigger filters
-physics.filters : { @table::physics.filters @table::Trig_extrPosMenuPSConfig }
+physics.filters : { @table::physics.filters @table::Trig_noFieldMenuPSConfig }
 # Define the default list of triggerable paths
 physics.TriggerablePaths : [    "TriggerableLHPath",    "TriggerableCaloPath"]
 physics.TriggerableBits  : [ "20:TriggerableLHPath", "25:TriggerableCaloPath"]
 # add the trigger paths
-physics.trigger_paths : ["DigitizePath", @sequence::physics.TriggerableBits, @sequence::Trig_extrPosMenu.trigger_paths]
+physics.trigger_paths : ["DigitizePath", @sequence::physics.TriggerableBits, @sequence::Trig_noFieldMenu.trigger_paths]
 # configure 'Triggered' output to be calibration triggers
 outputs.Output.SelectEvents : [
   @sequence::Digitize.TrkTriggers,
