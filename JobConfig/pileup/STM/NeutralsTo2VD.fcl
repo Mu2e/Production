@@ -1,0 +1,173 @@
+# Re-sample EleBeamCat and MuBeamCat datasets, propagate them to a chosen virtual detector, and write out the events with SimParticles and StepPointMCs travelling through that virtual detector only
+# Original author: Yuri Oksuzian, 2019
+# Updated for MDC2020 (DetectorSteps): D. Brown
+# Updated for STM studies: P. Plesniak
+
+# Offline includes
+#include "Offline/CommonMC/fcl/prolog.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/STMMC/fcl/prolog.fcl"
+
+# Production includes
+#include "Production/JobConfig/common/prolog.fcl"
+#include "Production/JobConfig/pileup/prolog.fcl"
+#include "Production/JobConfig/pileup/STM/prolog.fcl"
+
+
+process_name: NeutralsToVD
+
+source : {
+  module_type : EmptyEvent
+  maxEvents : @nil
+}
+
+services : @local::Services.Sim
+
+physics: {
+  producers : {
+    @table::Common.producers
+    @table::Pileup.producers
+    extractVirtualDetectorSteps101 : {
+        # Creates "mu2e::StepPointMCs_extractVirtualDetectorSteps__BeamToVD" products that only store StepPointMCs in the selected virtual detector
+        # Want to only keep events with the given virtual detector ID and filter out the rest
+        # Empty collections will be generated if the selected virtual detector has no associated StepPointMCs to allow the compression to take place
+      module_type : STMResamplingProducer
+      StepPointMCsTag : @local::ResamplingProducer.StepPointMCsTag
+      VirtualDetectorID : 101
+    }
+    extractVirtualDetectorSteps116 : {
+      module_type : STMResamplingProducer
+      StepPointMCsTag : @local::ResamplingProducer.StepPointMCsTag
+      VirtualDetectorID : 116
+    } 
+    compressDetStepMCsSTM101 : {
+        # Creates "mu2e::SimParticlemv_compressDetStepMCsSTM__BeamToVD" and "mu2e::StepPointMCs_compressDetStepMCsSTM__BeamToVD" products from "mu2e::StepPointMCs_extractVirtualDetectorSteps__BeamToVD" products
+        # Keeps SimParticles and StepPointMCs going through the selected virtual detector only
+      module_type : CompressDetStepMCs
+      strawGasStepTag : ""
+      caloShowerStepTag : ""
+      surfaceStepTag : ""
+      crvStepTag : ""
+      simParticleTags : ["g4run"]
+      debugLevel : 0
+      stepPointMCTags : ["extractVirtualDetectorSteps101"]
+      compressionOptions : {
+        strawGasStepCompressionLevel: "noCompression"
+        caloShowerStepCompressionLevel: "noCompression"
+        crvStepCompressionLevel: "noCompression"
+        surfaceStepCompressionLevel: "noCompression"
+       	simParticleCompressionLevel : "noCompression"
+       	stepPointMCCompressionLevel : "noCompression"
+       	keepNGenerations : -1
+       	mcTrajectoryCompressionLevel : "noCompression"
+      }
+      mcTrajectoryTag : ""
+    }
+    compressDetStepMCsSTM116 : {
+        # Creates "mu2e::SimParticlemv_compressDetStepMCsSTM__BeamToVD" and "mu2e::StepPointMCs_compressDetStepMCsSTM__BeamToVD" products from "mu2e::StepPointMCs_extractVirtualDetectorSteps__BeamToVD" products
+        # Keeps SimParticles and StepPointMCs going through the selected virtual detector only
+      module_type : CompressDetStepMCs
+      strawGasStepTag : ""
+      caloShowerStepTag : ""
+      surfaceStepTag : ""
+      crvStepTag : ""
+      simParticleTags : ["g4run"]
+      debugLevel : 0
+      stepPointMCTags : ["extractVirtualDetectorSteps116"]
+      compressionOptions : {
+        strawGasStepCompressionLevel: "noCompression"
+        caloShowerStepCompressionLevel: "noCompression"
+        crvStepCompressionLevel: "noCompression"
+        surfaceStepCompressionLevel: "noCompression"
+       	simParticleCompressionLevel : "noCompression"
+       	stepPointMCCompressionLevel : "noCompression"
+       	keepNGenerations : -1
+       	mcTrajectoryCompressionLevel : "noCompression"
+      }
+      mcTrajectoryTag : ""
+    }
+  }
+  filters : {
+    @table::Common.filters
+    @table::Pileup.filters
+    neutralsResampler : @local::Pileup.filters.neutralsResampler
+    filterVirtualDetectorSteps101: {
+      # Filters events based on the size of "mu2e::StepPointMCs_compressDetStepMCsSTM__BeamToVD"
+      # If there are no StepPointMCs in the selected virtual detector, the event is not kept
+      # Required as extractVirtualDetectorSteps will create a StepPointMCCollection even if the collection is empty
+      module_type: STMResamplingFilter
+      StepPointMCsTag : "compressDetStepMCsSTM101"
+    }
+    filterVirtualDetectorSteps116: {
+      # Filters events based on the size of "mu2e::StepPointMCs_compressDetStepMCsSTM__BeamToVD"
+      # If there are no StepPointMCs in the selected virtual detector, the event is not kept
+      # Required as extractVirtualDetectorSteps will create a StepPointMCCollection even if the collection is empty
+      module_type: STMResamplingFilter
+      StepPointMCsTag : "compressDetStepMCsSTM116"
+    }
+  }
+  analyzers : {
+    @table::Common.analyzers
+    countVirtualDetectorHits : {
+      # Runs a counter over the virtual detectors to keep track of hits
+      module_type : CountVirtualDetectorHits
+      stepPointMCsTag : @local::VirtualDetectorCounter.StepPointMCsTag
+      virtualDetectorIDs : [88, 89, 90, 100, 101, 116]
+    }
+  }
+  # setup paths
+  STMCompressedPath101 : [@sequence::Pileup.neutralsResamplerSequence, @sequence::Common.g4Sequence, extractVirtualDetectorSteps101, compressDetStepMCsSTM101, filterVirtualDetectorSteps101]
+  STMCompressedPath116 : [@sequence::Pileup.neutralsResamplerSequence, @sequence::Common.g4Sequence, extractVirtualDetectorSteps116, compressDetStepMCsSTM116, filterVirtualDetectorSteps116]
+  trigger_paths: [STMCompressedPath101, STMCompressedPath116]
+  outPathCompressed : [genCountLogger, countVirtualDetectorHits, compressedOutput101, compressedOutput116]
+  end_paths: [outPathCompressed]
+}
+
+# Keep only the necessary data
+outputs: {
+  compressedOutput101 : {
+    module_type: RootOutput
+    outputCommands:   [
+      "drop *_*_*_*",
+      @sequence::STMPileup.BeamToVDKeptProducts
+    ]
+    SelectEvents: [STMCompressedPath101]
+    fileName : "dts.owner.NeutralsToVD101.version.sequencer.art"
+  }
+  compressedOutput116 : {
+    module_type: RootOutput
+    outputCommands:   [
+      "drop *_*_*_*",
+      @sequence::STMPileup.BeamToVDKeptProducts
+    ]
+    SelectEvents: [STMCompressedPath116]
+    fileName : "dts.owner.NeutralsToVD116.version.sequencer.art"
+  }
+}
+
+# Point Mu2eG4 to the pre-simulated data
+physics.producers.g4run.inputs: {
+  primaryType: "StepPoints"
+  primaryTag: "neutralsResampler:Neutrals"
+  inputMCTrajectories: ""
+  simStageOverride: 1
+  inputPhysVolumeMultiInfo: "neutralsResampler"
+  updateEventLevelVolumeInfos: {
+    input: "neutralsResampler:eventlevel"
+    outInstance: "eventlevel"
+  }
+}
+physics.producers.g4run.SDConfig.preSimulatedHits:  ["neutralsResampler:virtualdetector"]
+physics.producers.g4run.SDConfig.enableSD: [virtualdetector]
+physics.producers.g4run.Mu2eG4CommonCut: {}
+physics.filters.neutralsResampler.mu2e.products.stepPointMCMixer: { 
+  mixingMap: [
+    [ "NeutralsFilter:virtualdetector", ":" ],
+    [ "NeutralsFilter:Neutrals", ":" ]
+  ] 
+}
+                
+# Epilog includes
+# comment out of MT issue #include "Production/JobConfig/common/MT.fcl"
+#include "Production/JobConfig/common/epilog.fcl"
+#include "Production/JobConfig/pileup/epilog.fcl"
