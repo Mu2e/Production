@@ -6,5 +6,5 @@ source.inputCommands: ["keep *",
     "drop mu2e::TimeClusters_*_*_*",
     "drop mu2e::CosmicTrackSeeds_*_*_*",
     "drop mu2e::IntensityInfo*_*_*_*",
-    "drop mu2e::RecoCount_*_*_*"
-  ]
+    "drop mu2e::RecoCount_*_*_*",
+    "drop mu2e::PrescaleFilterFraction_*_*_*"  ]

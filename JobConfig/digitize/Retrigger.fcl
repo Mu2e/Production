@@ -1,0 +1,61 @@
+#
+# Job to drop the trigger results and re-run the trigger on existing digis
+#
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Production/JobConfig/digitize/prolog.fcl"
+
+#include "mu2e-trig-config/core/trigProducers.fcl"
+#include "mu2e-trig-config/core/trigFilters.fcl"
+#include "mu2e-trig-config/core/trigRecoSequences.fcl"
+
+BEGIN_PROLOG
+# override the trigger digitization sequence (must be before trigSequences)
+TrigRecoSequences.artFragmentsGen : []
+END_PROLOG
+
+#include "mu2e-trig-config/core/trigSequences.fcl"
+#include "mu2e-trig-config/gen/trig_physMenuPSConfig_OnSpill.fcl"
+#include "mu2e-trig-config/gen/trig_physMenu_OnSpill.fcl"
+#
+process_name: Retrigger
+source : {
+  module_type : RootInput
+  inputCommands: ["keep *",
+    "drop mu2e::HelixSeed*_*_*_*",
+    "drop mu2e::KalSeed*_*_*_*",
+    "drop mu2e::TriggerInfo_*_*_*",
+    "drop mu2e::CaloClusters_*_*_*",
+    "drop mu2e::TimeClusters_*_*_*",
+    "drop mu2e::CosmicTrackSeeds_*_*_*",
+    "drop mu2e::IntensityInfo*_*_*_*",
+    "drop mu2e::RecoCount_*_*_*",
+    "drop mu2e::PrescaleFilterFraction_*_*_Digitize"  ]
+}
+services : @local::Services.Reco
+physics : {
+  producers : {
+    @table::TrigProducers.producers
+  }
+  filters : {
+    @table::TrigFilters.filters
+    @table::Digitize.filters
+    @table::Trig_physMenuPSConfig
+  }
+  @table::TrigSequences
+  TriggerableLHPath : [ @sequence::Digitize.TriggerableLHSequence ]
+  TriggerableCHPath : [ @sequence::Digitize.TriggerableCHSequence ]
+  TriggerableTwoTrackPath : [ @sequence::Digitize.TriggerableTwoTrackSequence ]
+  TriggerableCaloPath : [ @sequence::Digitize.TriggerableCaloSequence ]
+  trigger_paths : [ @sequence::Trig_physMenu.trigger_paths,
+  "20:TriggerableLHPath", "21:TriggerableTwoTrackPath", "25:TriggerableCaloPath"]
+  OutputPath : [ Output ]
+}
+outputs : @local::Digitize.Outputs
+outputs.Output.SelectEvents : [@sequence::Digitize.SignalTriggers,
+"TriggerableLHPath",    "TriggerableTwoTrackPath",    "TriggerableCaloPath"]
+
+end_paths : [ OutputPath ]
+
+#include "Production/JobConfig/common/epilog.fcl"
+#include "mu2e-trig-config/core/trigDigiInputsEpilog.fcl"
