@@ -79,7 +79,7 @@ Where $R_{\mu e}$ is the **conversion rate relative to capture**.
 
 * **Result:** Samples the final event count from a **Poisson distribution** ($\text{np.random.poisson}(\lambda)$).
 
-Note: this function is used only in Stage3.
+Note: this function is used only in Stage 4.
 
 #### **`dio_normalization(on_spill_time, e_min, run_mode='1BB')`**
 

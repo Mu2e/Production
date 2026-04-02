@@ -1,5 +1,7 @@
 # 📤 Bash Script Documentation: Upload Configuration to Tape `Stage3_configure_ensemble_campaign.sh`
 
+**Note:** This is actually Stage 2b in the pipeline. It runs after Stage 2 (Stage2_build_sampler.sh) and before Stage 4 (Stage4_signal.sh).
+
 ## **1. Overview**
 
 This script uploads the ensemble job configuration TAR file to tape storage and registers it with the SAM (Sequential Access with Metadata) system. It serves as the bridge between job submission (Stage 2) and downstream processing stages, ensuring the configuration and metadata are archived for future reference.
