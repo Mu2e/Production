@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 usage() { echo "Usage: $0
-  e.g. Stage2_submitensemble.sh --tag MDS1a
+  e.g. Stage2_submitensemble_v2.sh --tag MDS3c
 "
 }
 
@@ -20,13 +20,14 @@ RMCVERSION=af
 RPCVERSION=af
 IPAVERSION=af
 
-
 SETUP=/cvmfs/mu2e.opensciencegrid.org/Musings/SimJob/${RELEASE}${CURRENT}/setup.sh
 
 echo "using" ${RELEASE}${CURRENT}
-NJOBS="" #to help calculate the number of events per job
-LIVETIME="" #seconds
-RUN=1430 # MDC2025
+
+# Default values
+NJOBS=""
+LIVETIME=""
+RUN=1430
 DIO_EMIN=95
 RPC_EMIN=""
 RMC_EMIN=""
@@ -36,7 +37,8 @@ BB=""
 SAMPLINGSEED=1
 COSMICTAG="MDC2025ac"
 GEN="CRY"
-# Loop: Get the next option;
+
+# Loop: Get the next option
 while getopts ":-:" options; do
   case "${options}" in
     -)
@@ -70,70 +72,53 @@ while getopts ":-:" options; do
           exit_abnormal
           ;;
         esac;;
-    :)                                    # If expected argument omitted:
+    :)
       echo "Error: -${OPTARG} requires an argument."
-      exit_abnormal                       # Exit abnormally.
+      exit_abnormal
       ;;
-    *)                                    # If unknown (any other) option:
-      exit_abnormal                       # Exit abnormally.
+    *)
+      exit_abnormal
       ;;
     esac
 done
 
-# extract config file from disk:
-CONFIG=${TAG}.txt #cnf.${OWNER}.ensemble${TAG}.${RELEASE}${CURRENT}.0.txt
+# Extract config file from disk - MUCH SIMPLER WITH SOURCING
+CONFIG=${TAG}.txt
 
+if [[ ! -f ${CONFIG} ]]; then
+  echo "Error: Configuration file ${CONFIG} not found"
+  exit 1
+fi
 
+echo "Sourcing configuration from ${CONFIG}"
+source ${CONFIG}
 
-while IFS='= ' read -r col1 col2
-do 
-    if [[ "${col1}" == "njobs" ]] ; then
-      NJOBS=${col2}
-    fi
-    if [[ "${col1}" == "DIO_emin" ]] ; then
-      DIO_EMIN=${col2}
-    fi
-    if [[ "${col1}" == "RPC_emin" ]] ; then
-      RPC_EMIN=${col2}
-    fi
-    if [[ "${col1}" == "RPC_tmin" ]] ; then
-      TMIN=${col2}
-    fi
-    if [[ "${col1}" == "RMC_emin" ]] ; then
-      RMC_EMIN=${col2}
-    fi
-    if [[ "${col1}" == "RMC_kmax" ]] ; then
-      RMC_kmax=${col2}
-    fi
-    if [[ "${col1}" == "IPA_emin" ]] ; then
-      IPA_EMIN=${col2}
-    fi
-    if [[ "${col1}" == "livetime" ]] ; then
-      LIVETIME=${col2}
-    fi
-    if [[ "${col1}" == "BB" ]] ; then
-      BB=${col2}
-    fi
-    if [[ "${col1}" == "CosmicGen" ]] ; then
-      GEN=${col2}
-    fi
-    if [[ "${col1}" == "CosmicTag" ]] ; then
-      COSMICTAG=${col2}
-    fi
-    
-done <${CONFIG}
-echo "extracted config from Stage 1"
-echo "will run ${LIVETIME} "
-echo ${LIVETIME} ${DIO_EMIN} ${BB}
+# Override DEM_emin from config if it exists
+if [[ ! -z ${DEM_emin} ]]; then
+  DIO_EMIN=${DEM_emin}
+fi
 
-rm filenames_CRYCosmic
-rm filenames_DIO
-rm filenames_RPCInternal
-rm filenames_RPCExternal
-rm filenames_RMCInternal
-rm filenames_RMCExternal
-rm filenames_IPAMichel
-rm *.tar
+echo "Extracted config from Stage 1:"
+echo "  njobs=${njobs}"
+echo "  livetime=${onspilltime}"
+echo "  BB=${BB}"
+echo "  CosmicGen=${CosmicGen}"
+echo "  CosmicJob=${CosmicJob}"
+
+# Use sourced variables directly
+NJOBS=${njobs}
+LIVETIME=${onspilltime}
+COSMICTAG=${CosmicJob}
+GEN=${CosmicGen}
+
+rm -f filenames_CRYCosmic
+rm -f filenames_DIO
+rm -f filenames_RPCInternal
+rm -f filenames_RPCExternal
+rm -f filenames_RMCInternal
+rm -f filenames_RMCExternal
+rm -f filenames_IPAMichel
+rm -f *.tar
 
 echo "accessing files, making file lists"
 mu2eDatasetFileList "dts.mu2e.CosmicSignal.${COSMICTAG}.art" | head -${NJOBS} > filenames_CRYCosmic
@@ -144,20 +129,19 @@ mu2eDatasetFileList "dts.mu2e.RPCInternalPhysical.${RELEASE}${RPCVERSION}.art" |
 mu2eDatasetFileList "dts.mu2e.RPCExternalPhysical.${RELEASE}${RPCVERSION}.art" | head -${NJOBS} > filenames_RPCExternal
 mu2eDatasetFileList "dts.mu2e.IPAMuminusMichel.${RELEASE}${IPAVERSION}.art" | head -${NJOBS} > filenames_IPAMichel
 
-
 echo "making template fcl"
 make_template_fcl.py --BB=${BB} --release=${RELEASE}${CURRENT}  --tag=${TAG} --verbose=${VERBOSE} --livetime=${LIVETIME} --run=${RUN} --dioemin=${DIO_EMIN} --rpcemin=${RPC_EMIN} --rmcemin=${RMC_EMIN} --rmckmax=${RMC_kmax} --ipaemin=${IPA_EMIN} --tmin=${TMIN} --samplingseed=${SAMPLINGSEED} --prc "DIO" "CRYCosmic" "RPCInternal" "RPCExternal" "RMCInternal" "RMCExternal" "IPAMichel"
 
 ##### Below is genEnsemble and Grid:
 echo "remove old files"
-rm cnf.${OWNER}.ensemble${TAG}.${RELEASE}${INVERSION}.0.tar
-rm filenames_CRYCosmic_${NJOBS}.txt
-rm filenames_DIO_${NJOBS}.txt
-rm filenames_RPCInternal_${NJOBS}.txt
-rm filenames_RPCExternal_${NJOBS}.txt
-rm filenames_RMCInternal_${NJOBS}.txt
-rm filenames_RMCExternal_${NJOBS}.txt
-rm filenames_IPAMichel_${NJOBS}.txt
+rm -f cnf.${OWNER}.ensemble${TAG}.${RELEASE}${CURRENT}.0.tar
+rm -f filenames_CRYCosmic_${NJOBS}.txt
+rm -f filenames_DIO_${NJOBS}.txt
+rm -f filenames_RPCInternal_${NJOBS}.txt
+rm -f filenames_RPCExternal_${NJOBS}.txt
+rm -f filenames_RMCInternal_${NJOBS}.txt
+rm -f filenames_RMCExternal_${NJOBS}.txt
+rm -f filenames_IPAMichel_${NJOBS}.txt
 
 echo "get NJOBS files and list"
 samweb list-files "dh.dataset=dts.mu2e.CosmicSignal.${COSMICTAG}.art" | head -${NJOBS} > filenames_CRYCosmic_${NJOBS}.txt
@@ -167,7 +151,6 @@ samweb list-files "dh.dataset=dts.mu2e.RMCExternal.${RELEASE}${RMCVERSION}.art  
 samweb list-files "dh.dataset=dts.mu2e.RPCInternalPhysical.${RELEASE}${RPCVERSION}.art  and availability:anylocation"  | head -${NJOBS}  >  filenames_RPCInternal_${NJOBS}.txt
 samweb list-files "dh.dataset=dts.mu2e.RPCExternalPhysical.${RELEASE}${RPCVERSION}.art  and availability:anylocation"  | head -${NJOBS}  >  filenames_RPCExternal_${NJOBS}.txt
 samweb list-files "dh.dataset=dts.mu2e.IPAMuminusMichel.${RELEASE}${IPAVERSION}.art  and availability:anylocation"  | head -${NJOBS}  >  filenames_IPAMichel_${NJOBS}.txt
-
 
 DSCONF=${RELEASE}${CURRENT}
 # note change setup to code to use a custom tarball
@@ -185,13 +168,7 @@ index_dataset=${index_dataset::-6}
 idx=$(mu2ejobquery --njobs cnf.*.tar)
 idx_format=$(printf "%07d" $idx)
 echo $idx
-echo "Creating index definiton with size: $idx"
+echo "Creating index definition with size: $idx"
 samweb create-definition idx_${index_dataset} "dh.dataset etc.mu2e.index.000.txt and dh.sequencer < ${idx_format}"
-echo "Created definiton: idx_${index_dataset}"
+echo "Created definition: idx_${index_dataset}"
 samweb describe-definition idx_${index_dataset}
-
-#echo "submit jobs"
-#cmd="mu2ejobsub --jobdef cnf.${OWNER}.ensemble${TAG}.${RELEASE}${CURRENT}.0.tar --firstjob=0 --njobs=${NJOBS}  --default-protocol ifdh --default-location tape"
-# --location dts.mu2e.RPCExternalPhysical.MDC2020az.art:disk "
-#echo "Running: $cmd"
-#$cmd
