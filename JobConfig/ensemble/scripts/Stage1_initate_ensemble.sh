@@ -77,33 +77,63 @@ done
 rm -f ${TAG}.txt
 rm -f ${COSMICS}
 
-echo "accessing files, making file lists"
+echo ""
+echo "═══════════════════════════════════════════════════════════════"
+echo "🚀 Stage 1: Generate Input Configuration for Ensemble"
+echo "   Tag: ${TAG} | Generator: ${GEN} | Dataset: ${COSMICS}"
+echo "═══════════════════════════════════════════════════════════════"
+echo ""
+
+echo "📁 [1/4] Accessing cosmic ray file lists..."
+echo "   Dataset: dts.mu2e.Cosmic${GEN}.${COSMICS}.art"
+echo "   Number of jobs: ${NJOBS}"
 mu2eDatasetFileList "dts.mu2e.Cosmic${GEN}.${COSMICS}.art" | head -${NJOBS} > ${COSMICS}
 
 # Get number of jobs
 NUM_JOBS=$(wc -l ${COSMICS} | awk '{print $1}')
+echo "   ✓ Retrieved ${NUM_JOBS} file(s)"
+echo ""
 
-echo "calculating livetime"
+echo "⏱️  [2/4] Calculating livetime from cosmic ray events..."
 mu2e -c Offline/Print/fcl/printCosmicLivetime.fcl -S ${COSMICS} | grep 'Livetime:' | awk -F: '{print $NF}' > ${COSMICS}.livetime
 LIVETIME=$(awk '{sum += $1} END {print sum}' ${COSMICS}.livetime)
+echo "   ✓ Total livetime: ${LIVETIME} seconds"
+echo ""
 
-# Run event calculations to get event counts for all processes
-# Using --verbose false to suppress debug output in config file
-# For beam_info: capture all lines (full POT calculation details)
+echo "📊 [3/4] Computing beam parameters and event yields..."
+echo "   Mode: ${BB} | DEM_emin: ${DEM_EMIN} | TMIN: ${TMIN}"
+echo "   Calculating POT and normalization..."
+
 BEAM_INFO=$(calculateEvents.py --livetime ${LIVETIME} --BB ${BB} --printpot "print" --verbose false 2>/dev/null)
 # Extract POT details as individual variables
 BEAM_ONSPILL_TIME=$(echo "${BEAM_INFO}" | grep "on_spill_time=" | awk '{print $NF}')
 BEAM_LIVETIME=$(echo "${BEAM_INFO}" | grep "livetime=" | awk '{print $NF}')
 BEAM_NPOT=$(echo "${BEAM_INFO}" | grep "^NPOT=" | awk '{print $NF}')
 BEAM_NMOT=$(echo "${BEAM_INFO}" | grep "^NMOT=" | awk '{print $NF}')
+BEAM_POT=$(echo "${BEAM_INFO}" | grep "^POT=" | awk '{print $NF}')
+echo "      • POT: ${BEAM_POT}"
+# Energy cut parameters (hardcoded for now)
+RPC_EMIN=50
+RMC_EMIN=85
+RMC_kmax=90.1
+IPA_EMIN=70
 # Extract just the numeric values from event yields (remove labels and spaces)
+echo "      • Calculating DIO events (emin=${DEM_EMIN})..."
 DIO_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "DIO" --BB ${BB} --dioemin ${DEM_EMIN} --printpot "no" --verbose false 2>/dev/null | tail -1 | awk '{print $NF}')
-IPA_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "IPAMichel" --BB ${BB} --ipaemin 70 --printpot "no" --verbose false 2>/dev/null | tail -1 | awk '{print $NF}')
-RPC_INTERNAL_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "RPC" --tmin ${TMIN} --internal 1 --rpcemin 50 --BB ${BB} --printpot "no" --verbose false 2>/dev/null | tail -1 | awk '{print $NF}')
-RPC_EXTERNAL_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "RPC" --tmin ${TMIN} --internal 0 --rpcemin 50 --BB ${BB} --printpot "no" --verbose false 2>/dev/null | tail -1 | awk '{print $NF}')
-RMC_INTERNAL_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "RMC" --tmin ${TMIN} --internal 1 --rmcemin 85 --BB ${BB} --printpot "no" --verbose false 2>/dev/null | tail -1 | awk '{print $NF}')
-RMC_EXTERNAL_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "RMC" --tmin ${TMIN} --internal 0 --rmcemin 85 --BB ${BB} --printpot "no" --verbose false 2>/dev/null | tail -1 | awk '{print $NF}')
-
+echo "      • Calculating IPA Michel events (emin=${IPA_EMIN})..."
+IPA_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "IPAMichel" --BB ${BB} --ipaemin ${IPA_EMIN} --printpot "no" --verbose false 2>/dev/null | tail -1 | awk '{print $NF}')
+echo "      • Calculating RPC Internal events (emin=${RPC_EMIN})..."
+RPC_INTERNAL_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "RPC" --tmin ${TMIN} --internal 1 --rpcemin ${RPC_EMIN} --BB ${BB} --printpot "no" --verbose false 2>/dev/null | tail -1 | awk '{print $NF}')
+echo "      • Calculating RPC External events (emin=${RPC_EMIN})..."
+RPC_EXTERNAL_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "RPC" --tmin ${TMIN} --internal 0 --rpcemin ${RPC_EMIN} --BB ${BB} --printpot "no" --verbose false 2>/dev/null | tail -1 | awk '{print $NF}')
+echo "      • Calculating RMC Internal events (emin=${RMC_EMIN})..."
+RMC_INTERNAL_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "RMC" --tmin ${TMIN} --internal 1 --rmcemin ${RMC_EMIN} --BB ${BB} --printpot "no" --verbose false 2>/dev/null | tail -1 | awk '{print $NF}')
+echo "      • Calculating RMC External events (emin=${RMC_EMIN})..."
+RMC_EXTERNAL_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "RMC" --tmin ${TMIN} --internal 0 --rmcemin ${RMC_EMIN} --BB ${BB} --printpot "no" --verbose false 2>/dev/null | tail -1 | awk '{print $NF}')
+echo "   ✓ All event yields calculated"
+echo ""
+echo "💾 [4/4] Writing configuration file..."
+echo "   Output: ${TAG}.txt"
 
 # Write configuration in shell-sourceable format
 {
@@ -118,12 +148,17 @@ RMC_EXTERNAL_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "RMC" --tm
   echo "BB=\"${BB}\""
   echo "DEM_emin=\"${DEM_EMIN}\""
   echo "TMIN=\"${TMIN}\""
+  echo "RPC_emin=\"${RPC_EMIN}\""
+  echo "RMC_emin=\"${RMC_EMIN}\""
+  echo "RMC_kmax=\"${RMC_kmax}\""
+  echo "IPA_emin=\"${IPA_EMIN}\"" 
   echo ""
   echo "# ===== POT Calculation Details ====="
   echo "beam_onspill_time=\"${BEAM_ONSPILL_TIME}\""
-  echo "beam_walltime=\"${BEAM_LIVETIME}\""
+  echo "beam_livetime=\"${BEAM_LIVETIME}\""
   echo "beam_npot=\"${BEAM_NPOT}\""
   echo "beam_nmot=\"${BEAM_NMOT}\""
+  echo "beam_pot=\"${BEAM_POT}\""
   echo ""
   echo "# ===== Event Yields (counts) ====="
   echo "dio_events=\"${DIO_EVENTS}\""
@@ -134,4 +169,11 @@ RMC_EXTERNAL_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "RMC" --tm
   echo "rmc_external_events=\"${RMC_EXTERNAL_EVENTS}\""
 } > ${TAG}.txt
 
-echo "Configuration written to ${TAG}.txt"
+echo "   ✓ Configuration file written successfully"
+echo ""
+echo "═══════════════════════════════════════════════════════════════"
+echo "✅ Stage 1 Complete!"
+echo "   Config file: ${TAG}.txt"
+echo "   Ready for Stage 2: Stage2_submitensemble_v2.sh --tag ${TAG}"
+echo "═══════════════════════════════════════════════════════════════"
+echo ""
