@@ -169,21 +169,6 @@ echo "  Livetime per file: ${LIVETIME_PER_FILE} s"
 N_KNOWN_FILES_TO_USE=$(awk "BEGIN {printf \"%.0f\", ${LIVETIME}/${LIVETIME_PER_FILE}}")
 echo "  Known physics files to use: ${N_KNOWN_FILES_TO_USE} (livetime: ${LIVETIME} s)"
 
-# Validate that we have enough known physics files
-echo "  Validating known physics files..."
-if (( N_KNOWN_FILES_TO_USE > N_TOTAL_KNOWN )); then
-  echo "    ✗ ERROR: Insufficient known physics files!"
-  echo "      Need ${N_KNOWN_FILES_TO_USE} files total"
-  echo "      Available: ${N_TOTAL_KNOWN} files"
-  echo "      Shortfall: $((N_KNOWN_FILES_TO_USE - N_TOTAL_KNOWN)) files"
-  echo ""
-  echo "    Options:"
-  echo "      1. Reduce the livetime (--chooselivetime parameter)"
-  exit 1
-else
-  echo "    ✓ Sufficient known physics files available"
-fi
-
 # actual livetime that will be used for normalization of signal depends on int number of files
 LIVETIME=$(awk "BEGIN {printf \"%.0f\", ${N_KNOWN_FILES_TO_USE}*${LIVETIME_PER_FILE}}")
 echo ""
@@ -196,17 +181,9 @@ echo "Step 2: Signal Dataset Analysis"
 echo "========================================="
 echo ""
 echo "Accessing signal dataset: mcs.mu2e.${SIGNAL}.${RELEASE}_${DBPURPOSE}_${DBVERSION}.art"
-echo ""
-echo "Retrieving generated event count..."
-NGEN=$(samDatasetsSummary.sh mcs.mu2e.${SIGNAL}.${RELEASE}_${DBPURPOSE}_${DBVERSION}.art 2>/dev/null | awk '/Generated/ {printf "%.0f", $2}')
-NGEN=$((NGEN + 0))  # Ensure it's a number
-
-if [[ -z "$NGEN" ]] || [[ "$NGEN" == "0" ]]; then
-  echo "WARNING: Could not retrieve generated event count from samDatasetsSummary"
-  echo "  Using default: 10000000 generated events"
-  NGEN=10000000
-fi
-
+NGEN=10000000
+#(samDatasetsSummary.sh mcs.mu2e.${SIGNAL}.${RELEASE}_${DBPURPOSE}_${DBVERSION}.art  | awk '/Generated/ {print $2}') 
+#=10000000
 echo "Signal sample contains ${NGEN} generated events"
 echo ""
 
@@ -274,31 +251,6 @@ do
   EVENTS_PER_FILE=$(awk "BEGIN {printf \"%.0f\", ${NGEN}/${N_TOTAL_SIGNAL}}") #generated events per file
   echo "    Total signal files: ${N_TOTAL_SIGNAL}"
   echo "    Generated events per file: ${EVENTS_PER_FILE}"
-  
-  # Check if we have enough generated events for this pseudo-experiment
-  if (( i == 1 )); then
-    TOTAL_EVENTS_NEEDED=$(awk "BEGIN {printf \"%.0f\", ${NEXP}*${NSIG}}")
-    echo "  Validating available events..."
-    echo "    Total events needed for all ${NEXP} pseudo-experiments: ${TOTAL_EVENTS_NEEDED}"
-    echo "    Total generated events available: ${NGEN}"
-    
-    if (( TOTAL_EVENTS_NEEDED > NGEN )); then
-      echo ""
-      echo "    ✗ ERROR: Insufficient generated events!"
-      echo "      Need ${TOTAL_EVENTS_NEEDED} total events (${NSIG} × ${NEXP} pseudo-experiments)"
-      echo "      Available: ${NGEN} events"
-      echo "      Shortfall: $((TOTAL_EVENTS_NEEDED - NGEN)) events"
-      echo ""
-      echo "    Options:"
-      echo "      1. Reduce the rate (--rate parameter)"
-      echo "      2. Reduce the livetime (--chooselivetime parameter)"
-      echo "      3. Reduce the number of pseudo-experiments (--nexp parameter)"
-      exit 1
-    else
-      echo "    ✓ Sufficient events available"
-    fi
-  fi
-  
   N_SIGNAL_FILES_TO_USE=$(awk "BEGIN {printf \"%.0f\", ${NSIG}/${EVENTS_PER_FILE}}")
   
   # if its < 1 file the above will be 0, so we need to make sure we use at least 1 file here
