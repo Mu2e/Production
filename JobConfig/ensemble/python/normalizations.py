@@ -35,7 +35,7 @@ from constants import (
 # These values get overwritten later in the script or during runtime.
 
 # Verbosity flag for debug output
-VERBOSE = True
+VERBOSE = False
 
 def set_verbose(verbose=True):
     """Enable or disable verbose debug output."""

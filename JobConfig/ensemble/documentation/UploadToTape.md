@@ -170,7 +170,7 @@ Stage3_configure_ensemble_campaign.sh --tag MDS3c --release MDC2025 --version bg
 ### **Expected Output:**
 ```
 ═══════════════════════════════════════════════════════════════
-📤 Stage 2b: Upload TAR file to Storage
+📤 Stage 3: Upload TAR file to Storage
    Tag: MDS3c | Release: MDC2025af | Owner: sophie
 ═══════════════════════════════════════════════════════════════
 
@@ -193,7 +193,7 @@ Stage3_configure_ensemble_campaign.sh --tag MDS3c --release MDC2025 --version bg
    ✓ File location registered
 
 ═══════════════════════════════════════════════════════════════
-✅ Stage 2b Complete!
+✅ Stage 3 Complete!
    TAR file uploaded: cnf.sophie.ensembleMDS3c.MDC2025af.0.tar
    Tape location: enstore:/pnfs/mu2e/tape/usr-etc/cnf/sophie/ensembleMDS3c/MDC2025af/tar/f9/6f
 ═══════════════════════════════════════════════════════════════
@@ -217,3 +217,36 @@ Stage 4+: Downstream processing uses ${TAG}.json for pipeline definition
 ```
 
 Downstream processing chains (digitization → reconstruction → analysis) reference the JSON metadata to understand input datasets, FCL configurations, and output locations.
+
+## 8. Using POMs for MDS campaigns
+
+The scripts first entry will be the generation of the actual mixed ensemble:
+
+```[
+{
+    "tarball": "${TAR_FILE}",
+    "njobs": ${njobs},
+    "inloc": "disk",
+    "outputs": [
+      {
+        "dataset": "*.art",
+        "location": "tape"
+      }
+    ]
+  }
+]```
+
+To begin the campiagn:
+
+1. go to: https://pomsgpvm02.fnal.gov/poms/index/mu2e/production
+2. select `Campaigns` and from the list of existing campaigns, select the most recent MDS version and the click the icon under `Clone Campaign`
+3. name the Campaign with an easy to understand name e.g. `MDC2025_MDS3c` and edit the parameters as needed using the GUI editor
+4. for the first stage of the campaign (the ensembling) we need to use `ifdh` instead of `xdroot` as the SamplingInput art module requires that. Therefore edit the `param_overrides` to include:
+
+```
+'-Oexecutable_1.arg_4=', '--copy-input'
+```
+
+this can be removed for the remaining splits (i.e. anything after the initial ensembling)
+
+5. use `prodtools` to upload the campaign `.json` to the production system and assign it correctly to the new POMs campaign.
