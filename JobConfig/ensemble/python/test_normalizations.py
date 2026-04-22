@@ -75,7 +75,7 @@ class TestNormalizations(unittest.TestCase):
 
         # Get POT for known inputs
         pot_1bb_spill = normalizations.get_pot(self.on_spill_time_1BB, run_mode='1BB', printout=False,method='spill')
-        pot_2bb_spill = normalizations.get_pot(self.on_spill_time_2BB, run_mode='2BB', printout=False,printout=False,method='spill')
+        pot_2bb_spill = normalizations.get_pot(self.on_spill_time_2BB, run_mode='2BB', printout=False,method='spill')
         
         # POT should be positive
         self.assertGreater(pot_1bb_spill, 0)
