@@ -9,31 +9,38 @@ import numpy as np
 
 
 #-------------------------------------------------------------------------------------#  
-# Constants related to muon and pion interactions.
-# References for these values can be found in the referenced documentation.
+# Import physical constants and interaction rates
 
-# --- Muon Interactions ---
-# Fraction of stopped muons that undergo nuclear capture
-CAPTURES_PER_STOPPED_MUON = 0.609
-# Rate of radiative muon capture (RMC) events resulting in a gamma ray > 57 MeV, per capture event
-RMC_GT_57_PER_CAPTURE  = 1.43e-5 # Source: Phys. Rev. C 59, 2853 (1999)
-# Fraction of stopped muons that undergo standard DIO (Decay In Orbit)
-DIO_PER_STOPPED_MUON = 0.391 # Calculated as: 1 - CAPTURES_PER_STOPPED_MUON
-# Rate of Incoming Particle Decay After Stopping (IPA)
-IPA_DECAYS_PER_STOPPED_MUON  = 0.92990
-
-# --- Pion Interactions ---
-# Fraction of stopped pions that result in a Radiative Pion Capture (RPC)
-RPC_PER_STOPPED_PION = 0.0215 # Source: Reference uploaded on DocDB-469
-# --- Internal Conversion Ratios ---
-# Ratio of internal conversion events per RMC event (assuming RPC value is applicable)
-INTERNAL_PER_RMC = 0.00690
-# Ratio of internal conversion events per RPC event
-INTERNAL_RPC_PER_RPC = 0.00690 # Source: Reference uploaded on DocDB-717
-
+from constants import (
+    CAPTURES_PER_STOPPED_MUON,
+    ONEBB_CYCLE,
+    RMC_GT_57_PER_CAPTURE,
+    DIO_PER_STOPPED_MUON,
+    IPA_DECAYS_PER_STOPPED_MUON,
+    RPC_PER_STOPPED_PION,
+    INTERNAL_PER_RMC,
+    INTERNAL_RPC_PER_RPC,
+    ONEBB_DF,
+    TWOBB_DF,
+    ONEBB_PROTONS_PER_SPILL,
+    ONEBB_POT_PER_CYCLE,
+    ONEBB_CYCLE,
+    TWOBB_POT_PER_CYCLE,
+    TWOBB_PROTONS_PER_SPILL,
+    TWOBB_CYCLE,
+    SPILL
+)
 
 # --- Configuration Placeholders (Mutable Variables) ---
 # These values get overwritten later in the script or during runtime.
+
+# Verbosity flag for debug output
+VERBOSE = False
+
+def set_verbose(verbose=True):
+    """Enable or disable verbose debug output."""
+    global VERBOSE
+    VERBOSE = verbose
 
 # Expected rates per Proton on Target (POT)
 target_stopped_muons_per_pot = 1.0
@@ -111,7 +118,7 @@ for line in lines:
     if words[0] == "IPAStopsCat" or words[0] == "MuBeamCat" :
         ipa_stopping_rate = ipa_stopping_rate * float(words[3])
         ipa_stopped_mu_per_POT = ipa_stopping_rate
-print("IPAStopMuonRate=", ipa_stopped_mu_per_POT)
+#print("IPAStopMuonRate=", ipa_stopped_mu_per_POT)
     
 #-------------------------------------------------------------------------------------#    
 def get_duty_factor(run_mode='1BB'):
@@ -127,18 +134,18 @@ def get_duty_factor(run_mode='1BB'):
     """
     if run_mode == '1BB':
         # Duty factor for a single beam batch operation
-        duty_factor = 0.323
+        duty_factor = ONEBB_DF
     elif run_mode == '2BB':
         # Duty factor for two beam batch operation
-        duty_factor = 0.246
+        duty_factor =TWOBB_DF
     else:
         # Handle unrecognized modes or provide a default fallback if necessary
         # print(f"Warning: Unknown run mode '{run_mode}'. Using default duty factor.")
-        duty_factor = 0.323
+        duty_factor = ONEBB_DF
 
     return duty_factor
 
-def get_pot(on_spill_time, run_mode='1BB', printout=False, frac=1):
+def get_pot(on_spill_time, run_mode='1BB', printout=False, method='spill',frac=False): # method can be spill or cycle
     """
     Calculates the total number of Protons on Target (POT) for a given live time.
 
@@ -159,40 +166,60 @@ def get_pot(on_spill_time, run_mode='1BB', printout=False, frac=1):
     mean_pbi = 0.0
     t_cycle = 0.0
     pot_per_cycle = 0.0
-
-    if run_mode == 'custom':
-        # Assume some fraction of 1BB
-        mean_pbi = 1.6e7 * frac
-        t_cycle = 1.33 # seconds
-        pot_per_cycle = 4e12 * (1 - frac)
-
-    elif run_mode == '1BB':
-        # Single beam batch operation
-        mean_pbi = 1.6e7
-        t_cycle = 1.33 # seconds
-        pot_per_cycle = 4e12
-
-    elif run_mode == '2BB':
-        # Two beam batch operation
-        mean_pbi = 3.9e7
-        t_cycle = 1.4 # seconds
-        pot_per_cycle = 8e12
-
-    else:
-        raise ValueError(f"Unknown run_mode specified: {run_mode}")
-
-    # --- Common Calculation Steps ---
-    num_cycles = on_spill_time / t_cycle
-    total_pot = num_cycles * pot_per_cycle
-
-    if printout:
+    total_pot = 0.0
+    if  method == 'cycle':
         current_duty_factor = get_duty_factor(run_mode) if run_mode != 'custom' else 'N/A'
-        
-        print(f"Tcycle= {t_cycle}")
-        print(f"POT_per_cycle= {pot_per_cycle:.2e}")
-        # 'Livetime' here seems to mean 'Total experiment duration accounting for gaps'
-        print(f"Total_Duration= {on_spill_time / current_duty_factor}")
-        print(f"NPOT= {total_pot:.2e}")
+        if run_mode == '1BB':
+            # Single beam batch operation
+            mean_pbi = ONEBB_PROTONS_PER_SPILL
+            t_cycle = ONEBB_CYCLE # seconds
+            pot_per_cycle = ONEBB_POT_PER_CYCLE/current_duty_factor
+
+        elif run_mode == '2BB':
+            # Two beam batch operation
+            mean_pbi = TWOBB_PROTONS_PER_SPILL
+            t_cycle = TWOBB_CYCLE # seconds
+            pot_per_cycle = TWOBB_POT_PER_CYCLE/current_duty_factor
+
+        else:
+            raise ValueError(f"Unknown run_mode specified: {run_mode}")
+
+        # --- Common Calculation Steps ---
+        num_cycles = on_spill_time / t_cycle
+        total_pot = num_cycles * pot_per_cycle
+
+        if printout:
+            if VERBOSE:
+                print(f"Tcycle= {t_cycle}")
+                print(f"POT_per_cycle= {pot_per_cycle:.2e}")
+                # 'Livetime' here seems to mean 'Total experiment duration accounting for gaps'
+                print(f"livetime= {on_spill_time / current_duty_factor}")
+                print(f"NPOT= {total_pot:.2e}")
+                print(f"NMOT= {total_pot * target_stopped_muons_per_pot:.2e}")
+
+    if  method == 'spill':
+        if run_mode == '1BB':
+            # Single beam batch operation
+            number_of_spills=on_spill_time/SPILL
+            number_of_protons=number_of_spills*ONEBB_PROTONS_PER_SPILL
+
+        elif run_mode == '2BB':
+            # Two beam batch operation
+            number_of_spills=on_spill_time/SPILL
+            number_of_protons=number_of_spills*TWOBB_PROTONS_PER_SPILL
+
+        else:
+            raise ValueError(f"Unknown run_mode specified: {run_mode}")
+
+        if printout:
+            if VERBOSE:
+                current_duty_factor = get_duty_factor(run_mode) if run_mode != 'custom' else 'N/A'
+                print(f"on_spill_time= {on_spill_time}")
+                # 'Livetime' here seems to mean 'Total experiment duration accounting for gaps'
+                print(f"livetime= {on_spill_time / current_duty_factor}")
+                print(f"NPOT= {number_of_protons:.2e}")
+                print(f"NMOT= {number_of_protons * target_stopped_muons_per_pot:.2e}")
+        total_pot = number_of_protons
 
     return total_pot
 
@@ -213,18 +240,25 @@ def ce_normalization(on_spill_time, rue, run_mode='1BB'):
     Returns:
         int: The number of expected CE events, sampled from a Poisson distribution.
     """
+
     # 1. Calculate total Protons on Target (POT) for the given live time
     total_pot = get_pot(on_spill_time, run_mode)
 
     # 2. Calculate the expected mean number of CE events (lambda)
     # The formula combines:
     # Total POT * Muons stopped/POT * Muon captures/stopped muon * RUE
+
     mean_expected_events = (
         total_pot *
         target_stopped_muons_per_pot *
         CAPTURES_PER_STOPPED_MUON *
         rue
     )
+    if VERBOSE:
+        print("CE Norm",total_pot,
+            target_stopped_muons_per_pot,
+            CAPTURES_PER_STOPPED_MUON,
+            rue)
 
     # 3. Sample from a Poisson distribution to get the observed event count
     observed_event_count = np.random.poisson(lam=mean_expected_events)
@@ -294,8 +328,9 @@ def dio_normalization(on_spill_time, e_min, run_mode='1BB'):
     # 5. Apply the energy cut fraction
     expected_events_above_emin = base_physics_events * fraction_sampled
     
-    print("DIO_emin=",e_min)
-    print("DIO_fraction_sampled=",fraction_sampled )
+    if VERBOSE:
+        print("DIO_emin=",e_min)
+        print("DIO_fraction_sampled=",fraction_sampled )
     return expected_events_above_emin
 
 
@@ -375,10 +410,11 @@ def rpc_normalization(on_spill_time, t_min, internal, e_min, run_mode='1BB'):
 
     if is_internal_conversion:
 
-        print("RPC_emin=",e_min)
-        print("RPC_tmin=",t_min)
-        print("RPC_fraction_sampled=",rpc_e_sample_frac)
-        print("pistoprate=",target_stopped_pions_per_pot)
+        if VERBOSE:
+            print("RPC_emin=",e_min)
+            print("RPC_tmin=",t_min)
+            print("RPC_fraction_sampled=",rpc_e_sample_frac)
+            print("pistoprate=",target_stopped_pions_per_pot)
     
         base_physics_events *= INTERNAL_RPC_PER_RPC
     
@@ -456,9 +492,10 @@ def rmc_normalization(on_spill_time, internal, e_min, k_max=90.1, run_mode='1BB'
     is_internal_conversion = bool(int(internal)) # Ensure robust boolean check
 
     if is_internal_conversion:
-        print("RMC_emin=",e_min)
-        print("RMC_kmax=",k_max)
-        print("RMC_fraction_sampled=",fraction_sampled)
+        if VERBOSE:
+            print("RMC_emin=",e_min)
+            print("RMC_kmax=",k_max)
+            print("RMC_fraction_sampled=",fraction_sampled)
 
         base_physics_events *= INTERNAL_PER_RMC
         
@@ -503,8 +540,9 @@ def ipaMichel_normalization(on_spill_time, ipa_de_min, run_mode='1BB'):
                     
                     if energy_threshold > float(ipa_de_min):
                         fraction_sampled = efficiency_fraction
-                        print("IPA_emin=", ipa_de_min)
-                        print("IPA_fraction_sampled=", fraction_sampled)
+                        if VERBOSE:
+                            print("IPA_emin=", ipa_de_min)
+                            print("IPA_fraction_sampled=", fraction_sampled)
                         # Calculate and return the result immediately upon finding the match
                         n_ipa = (
                             total_pot *

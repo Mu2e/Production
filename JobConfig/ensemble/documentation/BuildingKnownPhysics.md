@@ -1,4 +1,4 @@
-## 🚀 Bash Script Documentation: Building Known Physics `Stage2_submitensemble.sh`
+## 🚀 Bash Script Documentation: Building Known Physics `Stage2_build_sampler.sh`
 
 ### **1. Overview**
 
@@ -7,15 +7,15 @@ This script orchestrates the creation and submission of a grid job (an "ensemble
 | Component | Description |
 | :--- | :--- |
 | **Purpose** | Reads configuration from Stage 1, gathers input file lists for all physics processes, generates a job configuration (FCL), and submits the ensemble simulation job to the computing grid. |
-| **Prerequisites** | Must be run after `Stage1_makeinputs.sh` has successfully created the configuration file (`cnf.<owner>.ensemble<tag>.<release><current>.0.txt`). Requires Mu2e grid tools (`samweb`, `mu2eDatasetFileList`, `mu2ejobdef`, `mu2ejobsub`). |
-| **Outcome** | A multi-component simulation job is queued on the grid, ready to process events.  |
+| **Prerequisites** | Must be run after `Stage1_initate_ensemble.sh` has successfully created the configuration file (`${TAG}.txt`). Requires Mu2e grid tools (`samweb`, `mu2eDatasetFileList`, `mu2ejobdef`, `mu2ejobsub`). |
+| **Outcome** | A multi-component simulation job is queued on the grid, ready to process events. A TAR configuration file (`cnf.${OWNER}.ensemble${TAG}.${RELEASE}${VERSION}.0.tar`) is created for use in Stage 3. |
 
 ### **2. Usage**
 
 The script takes a single required argument: the tag used in Stage 1.
 
 ```
-Stage2_submitensemble.sh [OPTIONS]
+Stage2_build_sampler.sh [OPTIONS]
 ```
 ### **3. Arguments & Default Parameters**
 
@@ -23,14 +23,14 @@ The following arguments primarily control file naming, software versioning, and 
 
 | Argument | Variable | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `--tag` | `TAG` | `""` | **REQUIRED.** The project tag (e.g., `MDS1a`) used to locate the Stage 1 config file. |
+| `--tag` | `TAG` | `""` | **REQUIRED.** The project tag (e.g., `MDS3c`) used to locate the Stage 1 config file. |
 | `--owner` | `OWNER` | `mu2e` | The owner of the dataset definition (usually `mu2e` or a username). |
 | `--verbose` | `VERBOSE` | `1` | Controls verbosity in the FCL template generation. |
 | `--setup` | `SETUP` | `/cvmfs/.../setup.sh` | Path to the Mu2e software environment setup script. |
-| `--dioversion` | `DIOVERSION` | `at` | Software version tag for DIO events. |
-| `--rmcversion` | `RMCVERSION` | `at` | Software version tag for RMC events. |
-| `--rpcversion` | `RPCVERSION` | `az` | Software version tag for RPC events. |
-| `--ipaversion` | `IPAVERSION` | `ax` | Software version tag for IPA events. |
+| `--dioversion` | `DIOVERSION` | `af` | Software version tag for DIO events. |
+| `--rmcversion` | `RMCVERSION` | `af` | Software version tag for RMC events. |
+| `--rpcversion` | `RPCVERSION` | `af` | Software version tag for RPC events. |
+| `--ipaversion` | `IPAVERSION` | `af` | Software version tag for IPA events. |
 
 ---
 
@@ -42,13 +42,14 @@ The script executes in three main phases: Configuration Loading, File List Creat
 
 1.  **Locate Config File:**
     ```bash
-    CONFIG=cnf.${OWNER}.ensemble${TAG}.${RELEASE}${CURRENT}.0.txt
+    CONFIG=${TAG}.txt
+    source ${CONFIG}
     ```
-    The script first attempts to locate the configuration file created by `Stage1_makeinputs.sh` based on the provided `TAG`.
+    The script sources the configuration file created by `Stage1_initate_ensemble.sh` based on the provided `TAG`. The config file is in shell-sourceable format with key="value" pairs.
 
-2.  **Copy and Parse Config:** It uses `mu2eDatasetFileList` to find the config file on disk, copies it locally, and then parses it line-by-line (`while IFS='= ' read...`) to populate variables like `NJOBS`, `LIVETIME`, `BB`, `DIO_EMIN`, `RPC_EMIN`, etc.
+2.  **Load Configuration:** All physics parameters (`njobs`, `onspilltime`, `BB`, `CosmicGen`, `CosmicJob`, `DEM_emin`, `RPC_emin`, `RMC_emin`, `IPA_emin`, `RMC_kmax`) are sourced directly from the config file and mapped to script variables.
 
-    > **Key Concept:** This step ensures all physics parameters calculated and defined in Stage 1 are consistently used for the ensemble job submission in Stage 2.
+    > **Key Concept:** The shell-sourceable format ensures clean, reliable variable assignment without complex parsing logic. All physics parameters calculated and defined in Stage 1 are consistently propagated to Stage 2.
 
 #### **Phase B: Create Input File Lists (SAM Queries)**
 
