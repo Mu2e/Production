@@ -186,6 +186,7 @@ Digitize: {
     "keep mu2e::IntensityInfo*_CaloHitMakerFast_*_*",
     "keep mu2e::IntensityInfo*_Trig*_*_*",
     "keep mu2e::IntensityInfo*_TT*_*_*",
+    "keep mu2e::IntensityInfo*_LumiBuffer_*_*",
     "keep mu2e::*FilterFraction_*_*_*"
   ]
     #    "keep mu2e::SimParticlemv_compressDetStepMCs_*_*",
