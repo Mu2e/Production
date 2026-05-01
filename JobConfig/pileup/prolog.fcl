@@ -44,6 +44,15 @@ Pileup: {
       stoppingMaterial: "StoppingTarget_Al"
       verbosityLevel: 1
     }
+    PolyMuonFinder: {
+      module_type: "StoppedParticlesFinder"
+      particleInput: "g4run"
+      particleTypes: [ 13, -13 ]
+      physVolInfoInput: "g4run:eventlevel"
+      useEventLevelVolumeInfo: true
+      stoppingMaterial: "COL5Poly"
+      verbosityLevel: 1
+    }
     WireGammaFinder: {
       module_type: "StoppedParticlesFinder"
       particleInput: "g4run"
@@ -81,11 +90,24 @@ Pileup: {
       processes: [ "DIO", "NuclearCapture" ] //TODO
     }
 
+    stoppedPolyMuonDaughters: {
+      module_type: SimParticleDaughterSelector
+      particleInput: "PolyMuonFinder"
+      # EMCascade should not be vetoed because we do not re-simulate it
+      processes: [ "DIO", "NuclearCapture" ] //TODO
+    }
+
     compressPVTargetStops: {
       module_type: CompressPhysicalVolumes
       volumesInput : "g4run"
       hitInputs : []
       particleInputs : [ "TargetStopFilter" ]
+    }
+    compressPVPolyStops: {
+      module_type: CompressPhysicalVolumes
+      volumesInput : "g4run"
+      hitInputs : []
+      particleInputs : [ "PolyStopFilter" ]
     }
     compressPVWireStops: {
       module_type: CompressPhysicalVolumes
@@ -135,6 +157,12 @@ Pileup: {
       extraHitInputs: [ "g4run:virtualdetector" ]
       mainSPPtrInputs: [ "TargetMuonFinder" ]
     }
+    PolyStopFilter: {
+      module_type: FilterG4Out
+      mainHitInputs: []
+      extraHitInputs: [ "g4run:virtualdetector" ]
+      mainSPPtrInputs: [ "PolyMuonFinder" ]
+    }
     WireStopFilter: {
       module_type: FilterG4Out
       mainHitInputs: []
@@ -164,6 +192,9 @@ Pileup: {
     }
 
     TargetStopPrescaleFilter : {
+      module_type : RandomPrescaleFilter
+    }
+    PolyStopPrescaleFilter : {
       module_type : RandomPrescaleFilter
     }
     EarlyPrescaleFilter : {
@@ -333,6 +364,7 @@ Pileup: {
   EarlyMuBeamFlashPrescale : 30
   EarlyNeutralsFlashPrescale : 20
   MuminusTargetStopPrescale : 1000
+  PolyStopPrescale : 1000
 }
 # DetctorStepFilter instance to select DetSteps outside the flash
 Pileup.filters.DetStepFilter : {
