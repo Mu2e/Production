@@ -365,21 +365,16 @@ Reconstruction.OnSpillPath : [
   SelectReco
 ]
 
-# OffSpill paths. Separate by fit type
-Reconstruction.OffSpillPath : [
+Reconstruction.CentralHelixPath : [
   @sequence::Reconstruction.PreTrk,
   @sequence::Reconstruction.OffSpillTrk,
-  SelectReco
-]
-
-Reconstruction.CentralHelixPath : [
-  @sequence::Reconstruction.OffSpillPath,
   CHFilter,
   SelectReco
 ]
 
 Reconstruction.LoopHelixPath : [
-  @sequence::Reconstruction.OffSpillPath,
+  @sequence::Reconstruction.PreTrk,
+  @sequence::Reconstruction.OffSpillTrk,
   LHFilter,
   SelectReco
 ]
