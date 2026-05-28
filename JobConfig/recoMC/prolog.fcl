@@ -67,7 +67,7 @@ Reconstruction : {
   @table::Reconstruction
   # full MC sequence; form the Calo and CRV matching, and compress based on reco content
   # temporary build surface steps from StepPointMCs; this is a patch
-  MCReco :  [@sequence::CaloMC.TruthMatch,  CrvCoincidenceClusterMatchMC, SelectReco, compressRecoMCs, CrvCoincidenceClusterMCAssns ]
+  MCReco :  [@sequence::CaloMC.TruthMatch, CrvCoincidenceClusterMatchMC, compressRecoMCs, CrvCoincidenceClusterMCAssns ]
 
   # MC truth matched to reco
   HighRecoMCProducts : [
@@ -92,11 +92,6 @@ Reconstruction.NoFieldPath : [
 
 Reconstruction.OnSpillPath : [
   @sequence::Reconstruction.OnSpillPath,
-  @sequence::Reconstruction.MCReco
-]
-
-Reconstruction.OffSpillPath : [
-  @sequence::Reconstruction.OffSpillPath,
   @sequence::Reconstruction.MCReco
 ]
 
