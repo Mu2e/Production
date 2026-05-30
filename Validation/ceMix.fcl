@@ -3,8 +3,6 @@
 #
 #include "Production/JobConfig/mixing/Mix.fcl"
 physics.producers.MakeSS : { module_type : NullProducer }
-# temporary fix: this won't be needed after starting MDC2025 production
-physics.producers.compressDigiMCs.surfaceStepTags : [ "compressDetStepMCs" ]
 # complete the mixing config
 services.SeedService.baseSeed         :  8
 source.fileNames : [ "dts.owner.ceSteps.dsconf.seq.art" ]
@@ -24,11 +22,12 @@ physics.filters.NeutralsFlashMixer.mu2e.simStageEfficiencyTags: []
 physics.filters.NeutralsFlashMixer.fileNames : [ "dts.owner.muDauSteps.dsconf.seq.art" ] # needed for art but not used
 physics.filters.NeutralsFlashMixer.mu2e.MaxEventsToSkip: 0
 physics.filters.NeutralsFlashMixer.mu2e.meanEventsPerProton : 0.0
-physics.producers.PBISim.SDF: 0.6
+physics.producers.PBISim.SDF: 0.8
 physics.producers.PBISim.extendedMean: 1.0e5
 physics.producers.PBISim.cutMax: 2.0e5
 
 #physics.producers.PBISim.debugLevel : 2
-outputs.TriggeredOutput.fileName: "dig.owner.ceMix.dsconf.seq.art"
-outputs.TriggerableOutput.fileName: "/dev/null"
+outputs.Output.fileName: "dig.owner.ceMix.dsconf.seq.art"
 #include "Production/Validation/database.fcl"
+#include "Offline/CRVResponse/fcl/epilog_run1a_v01.fcl"
+

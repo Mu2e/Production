@@ -166,8 +166,7 @@ if [[ "${PRIMARY}" == *"Cosmic"* && "${DIGITYPE}" != "Extracted" ]]; then
     echo \#include \"Production/JobConfig/digitize/cosmic_epilog.fcl\" >> digitize.fcl
 fi
 
-echo outputs.TriggeredOutput.fileName: \"dig.owner.${DIGOUT}Triggered.version.sequencer.art\" >> digitize.fcl
-echo outputs.TriggerableOutput.fileName: \"dig.owner.${DIGOUT}Triggerable.version.sequencer.art\" >> digitize.fcl
+echo outputs.Output.fileName: \"dig.owner.${DIGOUT}Triggered.version.sequencer.art\" >> digitize.fcl
 # setup database access for digi parameters
 echo services.DbService.purpose: ${CAMPAIGN}_${DBPURPOSE} >> digitize.fcl
 echo services.DbService.version: ${DBVERSION} >> digitize.fcl

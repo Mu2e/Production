@@ -33,11 +33,12 @@ physics: {
   }
   # setup paths
   targetStopPath : [ @sequence::Pileup.beamResamplerSequence, @sequence::Common.g4Sequence, TargetStopPrescaleFilter, TargetMuonFinder, TargetStopFilter, compressPVTargetStops]
+  polyStopPath : [ @sequence::Pileup.beamResamplerSequence, @sequence::Common.g4Sequence, PolyStopPrescaleFilter, PolyMuonFinder, PolyStopFilter, compressPVPolyStops]
   IPAStopPath : [ @sequence::Pileup.beamResamplerSequence, @sequence::Common.g4Sequence, IPAMuonFinder, IPAStopFilter, compressPVIPAStops]
   flashPath : [ @sequence::Pileup.beamResamplerSequence, @sequence::Common.g4Sequence, @sequence::Pileup.flashSequence, @sequence::Pileup.DetStepSequence ]
   earlyFlashPath : [ @sequence::Pileup.beamResamplerSequence, @sequence::Common.g4Sequence, @sequence::Pileup.flashSequence, @sequence::Pileup.EarlyDetStepSequence ]
-  trigger_paths: [ flashPath, earlyFlashPath, targetStopPath, IPAStopPath ]
-  outPath : [ FlashOutput, EarlyFlashOutput, TargetStopOutput, IPAStopOutput ]
+  trigger_paths: [ flashPath, earlyFlashPath, targetStopPath, polyStopPath, IPAStopPath ]
+  outPath : [ FlashOutput, EarlyFlashOutput, TargetStopOutput, PolyStopOutput, IPAStopOutput ]
   end_paths: [outPath]
 }
 
@@ -49,6 +50,15 @@ outputs: {
     ]
     SelectEvents: [targetStopPath]
     fileName : "sim.owner.TargetStops.version.sequencer.art"
+  }
+
+  PolyStopOutput : {
+    module_type: RootOutput
+    outputCommands:   [ "drop *_*_*_*",
+      @sequence::Pileup.SimKeptProducts
+    ]
+    SelectEvents: [polyStopPath]
+    fileName : "sim.owner.PolyStops.version.sequencer.art"
   }
 
   IPAStopOutput : {
@@ -79,8 +89,9 @@ outputs: {
   }
 }
 # set prescale factors
-physics.filters.TargetStopPrescaleFilter.nPrescale         : @local::Pileup.MuminusTargetStopPrescale
-physics.filters.EarlyPrescaleFilter.nPrescale         : @local::Pileup.EarlyMuBeamFlashPrescale
+physics.filters.TargetStopPrescaleFilter.nPrescale : @local::Pileup.MuminusTargetStopPrescale
+physics.filters.PolyStopPrescaleFilter.nPrescale   : @local::Pileup.PolyStopPrescale
+physics.filters.EarlyPrescaleFilter.nPrescale      : @local::Pileup.EarlyMuBeamFlashPrescale
 
 # Point Mu2eG4 to the pre-simulated data
 physics.producers.g4run.inputs: {

@@ -1,7 +1,5 @@
 #include "Production/JobConfig/digitize/OnSpill.fcl"
 physics.producers.MakeSS : { module_type : NullProducer }
-# temporary fix: this won't be needed after starting MDC2025 production
-physics.producers.compressDigiMCs.surfaceStepTags : [ "compressDetStepMCs" ]
 
 services.scheduler.wantSummary: true
 services.TimeTracker.printSummary: true
@@ -13,7 +11,7 @@ services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_common_MDC2020.tx
 # file produced by ceSteps.fcl
 source.fileNames : [ "dts.owner.ceSteps.dsconf.seq.art" ]
 
-outputs.TriggeredOutput.fileName : "dts.owner.ceDigi.dsconf.seq.art"
-outputs.TriggerableOutput.fileName : "/dev/null"
+outputs.Output.fileName : "dts.owner.ceDigi.dsconf.seq.art"
 #include "Production/Validation/database.fcl"
+#include "Offline/CRVResponse/fcl/epilog_run1a_v01.fcl"
 

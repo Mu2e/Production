@@ -6,7 +6,7 @@ physics.filters.EleBeamFlashMixer.mu2e.MaxEventsToSkip: 25650
 physics.filters.NeutralsFlashMixer.mu2e.MaxEventsToSkip: 91132
 physics.filters.MuStopPileupMixer.mu2e.MaxEventsToSkip: 872769
 services.GeometryService.bFieldFile : "Offline/Mu2eG4/geom/bfgeom_no_tsu_ps_v01.txt"
-outputs.TriggeredOutput.fileName: "dig.owner.CeEndpointMix1BBTriggered.version.sequencer.art"
+outputs.Output.fileName: "dig.owner.CeEndpointMix1BBTriggered.version.sequencer.art"
 
 
 #----------------------------------------------------------------
@@ -112,13 +112,13 @@ physics.filters.NeutralsFlashMixer.fileNames : [
 ]
 outputs.CaloOutput.fileName : "dig.MU2EGRIDDSOWNER.FlateMinusMix1BBCalo.MU2EGRIDDSCONF.001210_00000129.art"
 outputs.DiagOutput.fileName : "dig.MU2EGRIDDSOWNER.FlateMinusMix1BBDiag.MU2EGRIDDSCONF.001210_00000129.art"
-outputs.TriggeredOutput.fileName : "dig.MU2EGRIDDSOWNER.FlateMinusMix1BBSignal.MU2EGRIDDSCONF.001210_00000129.art"
+outputs.Output.fileName : "dig.MU2EGRIDDSOWNER.FlateMinusMix1BBSignal.MU2EGRIDDSCONF.001210_00000129.art"
 outputs.TrkOutput.fileName : "dig.MU2EGRIDDSOWNER.FlateMinusMix1BBTrk.MU2EGRIDDSCONF.001210_00000129.art"
 outputs.UntriggeredOutput.fileName : "dig.MU2EGRIDDSOWNER.FlateMinusMix1BBUntriggered.MU2EGRIDDSCONF.001210_00000129.art"
 mu2emetadata.fcl.prologkeys: [  ]
 mu2emetadata.fcl.inkeys: [ "source.fileNames", "physics.filters.MuStopPileupMixer.fileNames", "physics.filters.EleBeamFlashMixer.fileNames", "physics.filters.MuBeamFlashMixer.fileNames", "physics.filters.NeutralsFlashMixer.fileNames" ]
-mu2emetadata.fcl.outkeys: [ "outputs.CaloOutput.fileName", "outputs.DiagOutput.fileName", "outputs.TriggeredOutput.fileName", "outputs.TrkOutput.fileName", "outputs.UntriggeredOutput.fileName" ]
+mu2emetadata.fcl.outkeys: [ "outputs.CaloOutput.fileName", "outputs.DiagOutput.fileName", "outputs.Output.fileName", "outputs.TrkOutput.fileName", "outputs.UntriggeredOutput.fileName" ]
 # End code added by generate_fcl:
 #----------------------------------------------------------------
 #include "Production/Validation/nightly/ceMix_epilog.fcl"
-outputs.TriggeredOutput.fileName : "ceMix_14.art"
+outputs.Output.fileName : "ceMix_14.art"
