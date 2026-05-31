@@ -8,7 +8,6 @@
 #include "Production/JobConfig/digitize/prolog.fcl"
 #include "Production/JobConfig/cosmic/prolog.fcl"
 #include "Production/JobConfig/reco/prolog.fcl"
-#include "Offline/CRVReco/fcl/prolog_v11.fcl"
 
 process_name : cosmicSimReco
 
