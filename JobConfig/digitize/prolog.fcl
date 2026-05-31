@@ -62,6 +62,7 @@ Digitize: {
       mean : 1
       halfWidth : 0
     }
+    MakeSS : { module_type : NullProducer } # temporary patch for older MDC2020 output
 # Trigger MC matching instances for each helix algorithm
     TrigAprDeKSFMC : {
       @table::CommonMC.TTSelectRecoMC
@@ -158,6 +159,7 @@ Digitize: {
 
   DigitizeSequence : [
     PBISim,
+    MakeSS,
     @sequence::CommonMC.DigiSim,
     @sequence::TrackerMC.DigiSim,
     @sequence::CaloMC.DigiSim,
