@@ -120,9 +120,12 @@ physics : {
 outputs : {
   compressedOutput : {
     module_type : RootOutput
-    outputCommands : @local::STMSimDataProducts.BeamToVDKeptProducts
     SelectEvents : [ # Only write out events that pass through the selected virtual detector
       STMCompressedPath
+    ]
+    outputCommands:   [
+      "drop *_*_*_*",
+      @sequence::STMPileup.BeamToVDKeptProducts
     ]
     fileName : @local::STMPileup.SimulationOutputFilenames.Stage1
   }
@@ -158,6 +161,6 @@ physics.producers.g4run.Mu2eG4CommonCut : {}
 
 
 # Epilog includes
-#include "Production/JobConfig/common/MT.fcl"
+# comment out of MT issue #include "Production/JobConfig/common/MT.fcl"
 #include "Production/JobConfig/common/epilog.fcl"
 # #include "Production/JobConfig/pileup/epilog.fcl" # Note - this was present for the study in 51487, and has been removed for subsequent studies to help quantify if this cut impacts results

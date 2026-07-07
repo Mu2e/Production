@@ -1,0 +1,14 @@
+#
+# Generate 1809 keV muon capture photons, aimed at the calorimeter
+#
+# Original author: Michael MacKenzie, 2026
+#
+#include "Production/JobConfig/primary/MuCap1809keV.fcl"
+
+physics.producers.generate.decayProducts.czmin : 0.99
+physics.producers.generate.decayProducts.czmax : 1.
+outputs.PrimaryOutput.fileName: "dts.owner.MuCap1809keVCalo.version.sequencer.art"
+
+physics.filters.PrimaryFilter.MinimumCaloPartMom  : 0.
+physics.filters.PrimaryFilter.MinimumSumCaloStepE : 0.1
+physics.filters.PrimaryFilter.MinimumSumCaloE     : 0.1

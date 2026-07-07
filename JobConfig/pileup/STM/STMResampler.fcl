@@ -109,29 +109,11 @@ physics : {
       virtualDetectorIDs : @local::STMPileup.VirtualDetectorCounter.VirtualDetectorIDs
     }
   }
-  HPGePath : [
-    @sequence::STMPileup.STMResamplerSequenceBeamCatDatasets,
-    shiftStepsHPGe,
-    @sequence::Common.g4Sequence
-    compressSTMDet
-  ]
-  LaBrPath : [
-    @sequence::STMPileup.STMResamplerSequenceBeamCatDatasets,
-    shiftStepsLaBr,
-    @sequence::Common.g4Sequence,
-    compressSTMDet
-  ]
-  trigger_paths : [
-    @nil # Populate me!
-  ]
-  outPathCompressed : [
-    genCountLogger,
-    countVirtualDetectorHits,
-    CompressedOutput
-  ]
-  end_paths : [
-    outPathCompressed
-  ]
+  HPGePath : [@sequence::STMPileup.stmResamplerSequence, shiftStepsHPGe, @sequence::Common.g4Sequence, compressSTMDet ]
+  LaBrPath : [@sequence::STMPileup.stmResamplerSequence, shiftStepsLaBr, @sequence::Common.g4Sequence, compressSTMDet ]
+  trigger_paths: [HPGePath]
+  outPathCompressed : [genCountLogger, countVirtualDetectorHits, CompressedOutput]
+  end_paths: [outPathCompressed]
 }
 
 outputs : {
