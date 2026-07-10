@@ -188,7 +188,8 @@ Primary: {
     "keep mu2e::EventWeight_*_*_*",
     "keep art::TriggerResults_*_*_*",
     "keep mu2e::StepPointMCs_CosmicResampler_crvStage1_*", # this is needed to keep track of low/all CRV split
-    "keep mu2e::PrimaryParticle_*_*_*"
+    "keep mu2e::PrimaryParticle_*_*_*",
+    "keep mu2e::SpectrumConfig_*_*_*"
   ]
 
   StepProducts : [
