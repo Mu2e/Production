@@ -1,14 +1,16 @@
 #!/usr/bin/bash
 # Generate fcl files for BeamToVD1809.fcl
-# Generates two sets of fcl files found in directories 1809_00X
+# Generates a sets of fcl files found in directories 1809_00X
+# Also generates a directory for seeds used to generate these files
 # Stores the generated seeds in directory BeamToVD1809Seeds
-# Pawel Plesniak
-
-# $1 is the production (ie MDC2020)
-# $2 is the input production version
-# $3 is the output production version
-# $4 is the number of events per job
-# $5 is the number of jobs
+# Usage - Run this command as a shell script with the following arguments
+#  - $1 is the production (ie MDC2020)
+#  - $2 is the input production version
+#  - $3 is the output production version
+#  - $4 is the number of events per job
+#  - $5 is the number of jobs
+# Note - if generating a large simulation, it is recommended to make a copy of the input dataset (TargetStopsCat) on resilient to distribute the file load, and use the commented out code
+# Adapted by: Pawel Plesniak
 
 # Validate the number of arguments
 if [[ ${5} == "" ]]; then
@@ -17,10 +19,10 @@ if [[ ${5} == "" ]]; then
 fi
 
 
-# Generate the dataset list for electrons
+# Generate the dataset list for target stop positions
 muStopDataset=sim.mu2e.TargetStopsCat.$1$2.art
 echo $eleDataset
-if [ -f EleBeamCat.txt ]; then
+if [ -f TargetStopsCat.txt ]; then
     rm -f TargetStopsCat.txt
 fi
 # Generate a list of all the staged EleBeamCat files and count the events
@@ -28,6 +30,15 @@ samweb list-file-locations --schema=root --defname="$muStopDataset"  | cut -f1 >
 nFiles=`samCountFiles.sh $muStopDataset`
 nEvts=`samCountEvents.sh $muStopDataset`
 nSkip=$((nEvts/nFiles))
+# For large simulation studies:
+#  - Copy the TargetStops files to resilient, 
+#  - Make a file containing a newline separated list of these files called TargetStopsCat.txt
+#  - Comment out the above ten lines 
+#  - Uncomment the following three lines to use a fixed number of events to skip
+#  - Populate the variable nEleEvts below using a tool like eventCount on each input file or samCountEvents.sh on the initial dataset
+# nFiles=wc -l < TargetStopsCat.txt
+# nEvts=LISTTHENUMBEROFEVENTSHERE
+# nSkip=$((nEleEvts/nEleFiles))
 echo "Target stops: found $nEvts events in $nFiles files, skipping max of $nSkip events per job"
 
 # Write the base propagation script for electrons
@@ -38,7 +49,7 @@ echo '#include "Production/JobConfig/pileup/STM/BeamToVD1809.fcl"' >> tmp.fcl
 echo physics.filters.TargetStopResampler.mu2e.MaxEventsToSkip: ${nSkip} >> tmp.fcl
 
 # Generate the electrons fcl files
-generate_fcl --dsconf=$1$3 --dsowner=$USER --run-number=1206 --description=BeamToVD1809 --events-per-job=$4 --njobs=$5 \
+generate_fcl --dsconf=$1$3 --dsowner=$USER --run-number=1204 --description=BeamToVD1809 --events-per-job=$4 --njobs=$5 \
   --embed tmp.fcl --auxinput=1:physics.filters.TargetStopResampler.fileNames:TargetStopsCat.txt 
 
 # Write the files to the correct directories
