@@ -92,28 +92,40 @@ with open(output_csv_file_name, 'w', newline='') as csvfile:
 
     # Write the header row
     csv_writer.writerow(header)
+    # Write the data rows and aggregate counts per dataset
+    totals = {}
 
-    # Write the data rows
-    
     for line in data_lines:
-        
         # Split the line by whitespace
         row_data = line.split()
-        if(len(row_data) > 6 and row_data[0] != 'Dataset' ):
-          # Reconstruct the row for CSV
-          cleaned_row = []
-          print(row_data)
-          cleaned_row.append(row_data[0]) # Dataset
-          cleaned_row.append(row_data[1]) # Counts
-          cleaned_row.append(row_data[2]) # fraction_sampled
-          cleaned_row.append(row_data[4]) # fraction_expected (skip '|' and first fraction of the second block)
-          cleaned_row.append(row_data[5]) # weight
+        # Accept lines that have at least dataset and counts
+        if len(row_data) >= 2 and row_data[0] != 'Dataset':
+          dataset = row_data[0]
+          counts = row_data[1]
+          fraction_sampled = row_data[2] if len(row_data) > 2 else ''
+          fraction_expected = row_data[4] if len(row_data) > 4 else ''
+          weight = row_data[5] if len(row_data) > 5 else ''
 
-          # The 'Next event' column might have multiple words
-          #next_event_data = " ".join(row_data[6:])
-          #cleaned_row.append(next_event_data)
-          
+          cleaned_row = [dataset, counts, fraction_sampled, fraction_expected, weight]
           csv_writer.writerow(cleaned_row)
+
+          # Aggregate counts for dataset totals (handle commas and floats)
+          count_str = counts
+          try:
+              count_val = int(count_str.replace(',',''))
+          except ValueError:
+              try:
+                  count_val = int(float(count_str.replace(',','')))
+              except Exception:
+                  count_val = 0
+
+          totals[dataset] = totals.get(dataset, 0) + count_val
+
+# Print dataset totals summary
+if totals:
+    print("Total Counts per Dataset:")
+    for ds, tot in totals.items():
+        print(f"{ds}: {tot}")
 
 print(f"Data has been written to {output_csv_file_name}")
 

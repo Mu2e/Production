@@ -27,7 +27,7 @@ setup mu2ejobtools
 2. Enter the new directory. Run the following command:
 
 ```
-Stage3_addsignal_easy.sh --known MDS2c --signal CeMLeadingLog --rate 1e-14 --nexp 10 --chooselivetime 1209600
+Stage4_signal.sh --known MDS2c --signal CeMLeadingLog --rate 1e-14 --nexp 10 --chooselivetime 1209600
 ```
 
 here the parameters are:
@@ -48,14 +48,14 @@ The output of this command will include
 3. Now you have random sets of ntuples you want to combine these into a merged dataset (for some blinding effect). To do that run a second script:
 
 ```
-combine_ntuples.sh 1 MDS2c
+Stage6_blind_and_mix.sh 1 MDS2c
 ```
 
-where the first argumenet is the iteration of the list (1 to nexp) and the second arguement is the MDS tag version name (should be the same as before). You will need to run this for every nexp.
+where the first argument is the iteration of the list (1 to nexp) and the second argument is the MDS tag version name (should be the same as before). You will need to run this for every nexp.
 
 In the current directory you will see that for every nexp (i) you will now see a directory: ``merged_files_i``.
 
-In this directory there will be a set of files (merge factor can be altered within the combine_ntuple.sh script). The filenames will be for example:
+In this directory there will be a set of files (merge factor can be altered within the Stage6_blind_and_mix.sh script). The filenames will be for example:
 
 ```
 nts.mu2e.ensembleMDS2cMix1BB_CeMLeadingLog_1e-14_1223190.2_16.root

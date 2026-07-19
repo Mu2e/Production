@@ -1,4 +1,4 @@
-## ⚙️ Bash Script Documentation: Building your Configuration `Stage1_makeinputs.sh`
+## ⚙️ Bash Script Documentation: Building your Configuration `Stage1_initate_ensemble.sh`
 
 ### **1. Overview**
 
@@ -8,14 +8,14 @@ This script handles the first stage of generating inputs for a new mock simulati
 2.  **File Access:** Locate and create a file list of raw simulation events from the cosmic ray generator.
 3.  **Calculate Live Time:** Determine the total live time (in seconds) contained in the selected event files.
 4.  **Event Normalization:** Run `calculateEvents.py` multiple times to compute the expected number of events for the signal and all major backgrounds, normalizing them to the calculated live time.
-5.  **Output:** Write all parameters and calculated event normalizations into a single output file (`${TAG}.txt`).
+5.  **Output:** Write all parameters and calculated event normalizations into a single output file (`${TAG}.txt`) in shell-sourceable format.
 
 ### **2. Usage**
 
 The script uses long-form arguments (`--option value`).
 
 ```
-Stage1_makeinputs.sh [OPTIONS]
+Stage1_initate_ensemble.sh [OPTIONS]
 ```
 
 ### **3. Arguments & Parameters**
@@ -32,9 +32,9 @@ The following parameters control the script's behavior, file selection, and norm
 | `--tmin` | `TMIN` | `350` | **Time Cut $T_{\text{min}}$:** Minimum time (in ns) used in the RPC/RMC calculation (though passed, the `calculateEvents.py` logic often handles the time cut internally). |
 | `--tag` | `TAG` | `MDS2a_test` | **Output Tag:** The prefix for the output file (e.g., `MDS2a_test.txt`). |
 | `--stops` | `STOPS` | `MDC2020p` | The dataset tag used for muon/pion stopping distributions (used for normalization). |
-| `--release` | `RELEASE` | `MDC2020` | The main Mu2e software release tag. |
-| `--version` | `VERSION` | `aw` | The version sub-tag of the software release. |
-| `--gen` | `GEN` | `CRYSignal` | The cosmic ray generator used: `CRYSignal` or `CORSIKASignal`. |
+| `--release` | `RELEASE` | `MDC2025` | The main Mu2e software release tag. |
+| `--version` | `VERSION` | `af` | The version sub-tag of the software release. |
+| `--gen` | `GEN` | `CRY` | The cosmic ray generator used: `CRY` or `CORSIKA` |
 
 ### **4. Execution Flow**
 
@@ -49,7 +49,7 @@ The following parameters control the script's behavior, file selection, and norm
     * The output is truncated to the desired number of jobs (`-${NJOBS}`) and saved to a file list named after the cosmic tag. 
 
 2.  **Parameter Logging:**
-    The script appends all set parameters (NJOBS, CosmicGen, primary release/version, muon stops tag) to the output file (`${TAG}.txt`).
+    The script writes all set parameters (njobs, CosmicGen, BB, CosmicJob, primary release/version, energy cuts, beam POT info, and event yields) to the output file (`${TAG}.txt`) in shell-sourceable format (key="value" pairs).
 
 3.  **Live Time Calculation:**
     ```bash
@@ -62,7 +62,7 @@ The following parameters control the script's behavior, file selection, and norm
 
 4.  **Normalization Calculations (`calculateEvents.py` calls):**
 
-    The script makes multiple calls to `calculateEvents.py` which uses `normalizations.py` (the Python script documented previously) to calculate the expected event counts for different processes. All results are appended to the output file (`${TAG}.txt`).
+    The script makes multiple calls to `calculateEvents.py` which uses `normalizations.py` (the Python script documented previously) to calculate the expected event counts for different processes. All results are appended to the output file (`${TAG}.txt`) in shell-sourceable format.
 
     | Process (`--prc`) | Description | Key Parameters |
     | :--- | :--- | :--- |
