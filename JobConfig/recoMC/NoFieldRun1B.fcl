@@ -48,10 +48,29 @@ physics.producers.CalTimeClusterFinder : {
 physics.producers.LineFinder.TimeClusterCollection : "CalTimeClusterFinder"
 physics.producers.LineFinder.ComboHitCollection: "makePH"
 
+# Add proton reco
+physics.producers.ProtonCalTimeClusterFinder : {
+  @table::physics.producers.CalTimeClusterFinder
+  StrawEDepMin               : 0.002 # proton-like
+  StrawEDepMax               : 0.005
+}
+physics.producers.ProtonLineFinder : {
+  @table::physics.producers.LineFinder
+  TimeClusterCollection: "ProtonCalTimeClusterFinder"
+}
+physics.producers.ProtonKKLine : {
+  @table::physics.producers.KKLine
+}
+physics.producers.ProtonKKLine.ModuleSettings.CosmicTrackSeedCollections : [ "ProtonLineFinder" ]
+physics.producers.ProtonKKLine.ModuleSettings.FitParticle: 2212
+physics.producers.ProtonKKLine.ModuleSettings.SeedMomentum  : 400. # ~80 MeV KE
+physics.producers.SelectReco.KalSeedCollections : [ @sequence::physics.producers.SelectReco.KalSeedCollections, "ProtonKKLine" ]
+
 outputs.KinematicLineOutput.outputCommands: [
    @sequence::outputs.KinematicLineOutput.outputCommands,
    "keep mu2e::CosmicTrackSeeds_*_*_*",
-   "keep mu2e::TimeClusters_*_*_*"
+   "keep mu2e::TimeClusters_*_*_*",
+   "keep mu2e::KalSeeds_ProtonKKLine_*_*"
    ]
 
 physics.RecoPath: [
@@ -70,6 +89,9 @@ physics.RecoPath: [
       "TimeAndPhiClusterFinder",
       "LineFinder",
       "KKLine",
+      "ProtonCalTimeClusterFinder",
+      "ProtonLineFinder",
+      "ProtonKKLine",
       "SelectReco",
       "CaloHitTruthMatch",
       "CaloClusterTruthMatch",
