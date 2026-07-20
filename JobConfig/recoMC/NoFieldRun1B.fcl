@@ -91,6 +91,12 @@ outputs.KinematicLineOutput.outputCommands: [
    "keep mu2e::KalSeeds_CosmicKKLine_*_*"
    ]
 
+physics.producers.SelectReco.TimeClusterCollections : [
+  "CalTimeClusterFinder",
+  "ProtonCalTimeClusterFinder",
+  "TZClusterFinder"
+]
+
 physics.RecoPath: [
       "CaloRecoDigiMaker",
       "CaloHitMaker",
