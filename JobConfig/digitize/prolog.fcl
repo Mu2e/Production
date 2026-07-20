@@ -67,26 +67,31 @@ Digitize: {
       @table::CommonMC.TTSelectRecoMC
       ComboHitCollection : "TrigFlagPH"
       KalSeedCollections  : [ "TrigAprKSF" ]
+      TimeClusterCollections : [ ]
     }
     TrigAprUeKSFMC : {
       @table::CommonMC.TTSelectRecoMC
       ComboHitCollection : "TrigFlagPH"
       KalSeedCollections  : [ "TrigAprUeKSF" ]
+      TimeClusterCollections : [ ]
     }
     TrigTprDeKSFMC : {
       @table::CommonMC.TTSelectRecoMC
       ComboHitCollection : "TrigFlagPH"
       KalSeedCollections  : [ "TrigKSFDe" ]
+      TimeClusterCollections : [ ]
     }
     TrigMprDeKSFMC : {
       @table::CommonMC.TTSelectRecoMC
       ComboHitCollection : "TrigFlagPH"
       KalSeedCollections  : [ "TrigKSFMprDe" ]
+      TimeClusterCollections : [ ]
     }
     TrigCprDeKSFMC : {
       @table::CommonMC.TTSelectRecoMC
       ComboHitCollection : "TrigFlagPH"
       KalSeedCollections  : [ "TrigCalSeedFitDe" ]
+      TimeClusterCollections : [ ]
     }
   }
   filters : {
