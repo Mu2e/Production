@@ -20,7 +20,8 @@ physics: {
       stage2ModelFile : ""
       allAtOnceModelFile : ""
       useHeun : true
-      diffusionSteps : 200
+      useSDE : true
+      diffusionSteps : 2000
       # VDz0 : 37700.39 # z-coordinates of VD116. Only change when another VD is used
       # VDr : 2000.0 # radius of VD116. Only change when another VD is used
       doROOTDump: true
@@ -41,6 +42,8 @@ physics: {
 }
 
 services.SeedService.baseSeed : 8
+
+services.message.destinations.log.categories.default.limit: -1
 
 # if allows ROOTDump, specify output file name
 services.TFileService.fileName : @nil 

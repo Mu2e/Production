@@ -22,7 +22,8 @@ physics: {
       ModelFileDir: "Offline/STMMC/VDResamplerFiles"
       # VirtualDetectorID : 116 # default break-off point for STM downstream
       useHeun : true
-      diffusionSteps : 200
+      useSDE : true
+      diffusionSteps : 2000
       # VDz0 : 37700.39 # z-coordinates of VD116. Only change when another VD is used
       # VDr : 2000.0 # radius of VD116. Only change when another VD is used
       doROOTDump: true
