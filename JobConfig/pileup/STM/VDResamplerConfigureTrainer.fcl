@@ -17,8 +17,8 @@ physics: {
       module_type : VDResamplerConfigure
       StepPointMCsTag : "compressDetStepMCsSTM116:"
       SimParticlemvTag : "compressDetStepMCsSTM116:"
-      VirtualDetectorID : 116
       VDResamplerDir : "Offline/STMMC/VDResamplerFiles"
+      trainingPlanFile : "Offline/STMMC/fcl/VDResamplerTrainingPlan.fcl"
       fclDir : "Production/JobConfig/pileup/STM"
       dataSourceTag : MuBeam
       trainingThreshold : 100
