@@ -112,6 +112,7 @@ Reconstruction : {
       CaloClusterCollection : "CaloClusterMaker"
       CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
       KalSeedCollections  : [ "KKDe", "KKDmu", "KKUe", "KKUmu", "KKLine", "KKCHmu" ]
+      TimeClusterCollections : [ ]
     }
     # regrow
     RegrowSH : {
