@@ -1,9 +1,14 @@
 #
 # Detector configuration for Run 1B: geometry and field, set together.
 #
-# Include LAST, after the job's own epilogs, so that it wins:
+# To select Run 1B for a job, include this LAST, after the job's own
+# epilogs, so that it wins:
 #
 #   #include "Production/JobConfig/common/Run1B.fcl"
+#
+# Production includes it earlier instead, as a campaign default that an
+# entry's own keys still beat, so that campaigns frozen on an older
+# geometry keep it (prodtools data/Run1B/common.json).
 #
 # bfgeom_DSOff is the detector solenoid off with the PS and TS maps still
 # present and unscaled. It is not bfgeom_no_field, which is zero everywhere.
