@@ -1,6 +1,9 @@
 # Provides a pass of the data and set up fcl's to train the SBDM models that 
 # describe particle distributions at a selected VD.
 
+# Update services.TFileService.fileName, dataSourceTag for different data sources
+# Keep run number consistent with Offline/STMMC/fcl/VDResamplerTrainingPlan.fcl
+
 #include "Offline/STMMC/fcl/prolog.fcl"
 #include "Offline/fcl/standardServices.fcl"
 #include "Production/JobConfig/pileup/STM/prolog.fcl"
@@ -17,10 +20,10 @@ physics: {
       module_type : VDResamplerConfigure
       StepPointMCsTag : "compressDetStepMCsSTM116:"
       SimParticlemvTag : "compressDetStepMCsSTM116:"
-      VDResamplerDir : "Offline/STMMC/VDResamplerFiles"
+      # VDResamplerDir : "" # defaulted empty, i.e. placing in the current working directory
+      # fclDir : "" # defaulted empty
       trainingPlanFile : "Offline/STMMC/fcl/VDResamplerTrainingPlan.fcl"
-      fclDir : "Production/JobConfig/pileup/STM"
-      dataSourceTag : MuBeam
+      dataSourceTag : MuBeam # EleBeam, MuBeam, TargetStops1809, or Neutrals
       trainingThreshold : 100
       doROOTDump: true
     }
@@ -30,4 +33,6 @@ physics: {
 }
 
 # if allows ROOTDump, specify output file name
-services.TFileService.fileName : @nil 
+# for consistency, recommended name being "nts.mu2e.STMVDResamplerConfigure_VD<id>_hitDump.<ver>.<run6>_<src8>.root"
+# src8 is the 8-digit encoding of the data source, e.g. 00000000 for EleBeam, 00000001 for MuBeam, 00000002 for TargetStops1809, and 00000003 for Neutrals
+services.TFileService.fileName : @nil
