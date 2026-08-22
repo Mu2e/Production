@@ -10,40 +10,47 @@ source : @local::STMPileup.VDResamplerGenSource
 
 services : @local::STMPileup.VDResamplerGenServices
 
-physics: {
+physics : {
   producers : {
     # replace either a pair of stage 1 and stage 2 model files or an allAtOnceModelFile for the placeholder while running this module
     VDResamplerGenerator : {
       module_type : VDResamplerGenerateFromModel
-      useTwoStageModel: false
+      useTwoStageModel : false
       stage1ModelFile : ""
       stage2ModelFile : ""
       allAtOnceModelFile : ""
+      SBDMstage1Method : INVERSE_CDF # stage-1 pTotal source: DIFFUSION (require stage1ModelFile) / INVERSE_CDF / SPLINE_CDF / KDE (require resamplerSourceRootFile).
+      resamplerSourceRootFile : "" # required for SBDMstage1Method = INVERSE_CDF / SPLINE_CDF / KDE, same for the tree name below
+      resamplerSourceTreeName : "VDResamplerTrainingSetup/ttree" 
       useHeun : true
       useSDE : true
-      diffusionSteps : 2000
+      sdeToOdeSigmaThreshold : 0.1
+      useEMANetworkIfAvailable : true
+      diffusionSteps : 500
+      # VirtualDetectorID : 116 # only change when another VD is used
       # VDz0 : 37700.39 # z-coordinates of VD116. Only change when another VD is used
       # VDr : 2000.0 # radius of VD116. Only change when another VD is used
-      doROOTDump: true
+      doROOTDump : true
+      doValidationPlots : true
     }
-    genCounter: {
-      module_type: GenEventCounter
+    genCounter : {
+      module_type : GenEventCounter
     }
   }
   analyzers : {
-    genCountLogger: {
-      module_type: GenEventCountReader
+    genCountLogger : {
+      module_type : GenEventCountReader
     }
   }
   genSample : [VDResamplerGenerator, genCounter]
   ana : [genCountLogger]
   trigger_paths : [genSample]
-  end_paths: [ana]
+  end_paths : [ana]
 }
 
 services.SeedService.baseSeed : 8
 
-services.message.destinations.log.categories.default.limit: -1
+services.message.destinations.log.categories.default.limit : -1
 
 # if allows ROOTDump, specify output file name
 services.TFileService.fileName : @nil 
