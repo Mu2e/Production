@@ -14,25 +14,8 @@ services : @local::STMPileup.VDResamplerGenServices
 
 physics : {
   producers : {
-    VDResamplerGenerator : {
-      module_type : VDResamplerGenerateMix
-      hitSummaryFiles : @nil # requiring a list
-      potsPerFile : @nil # list of corresponding POTs
-      # ModelFileDir is now overridden by ModelFileList
-      ModelFileList : @nil # path to a .txt catalog listing one model-file path per line
-      resamplerSourceRootFiles : @nil # list of root files containing raw data, same order as hitSummaryFiles. needed for SBDMstage1Method != DIFFUSION, specified in hitSummaryFiles
-      # resamplerSourceTreeNames : "VDResamplerTrainingSetup/ttree" # default
-      useHeun : true
-      useSDE : true
-      sdeToOdeSigmaThreshold : 0.1
-      useEMANetworkIfAvailable : true
-      diffusionSteps : 500
-      # VirtualDetectorID : 116 # only change when another VD is used
-      # VDz0 : 37700.39 # z-coordinates of VD116. Only change when another VD is used
-      # VDr : 2000.0 # radius of VD116. Only change when another VD is used
-      doROOTDump : true
-      doValidationPlots: true
-    }
+    # Shared with VDResamplerToCrystals.fcl, see Production/JobConfig/pileup/STM/prolog.fcl
+    VDResamplerGenerator : @local::STMPileup.producers.VDResamplerGenerator
     genCounter: {
       module_type: GenEventCounter
     }

@@ -1,0 +1,342 @@
+# Propagate the Score-Based Diffusion Model samples from the VD resampler to the STM crystals.
+# The generator (VDResamplerGenerateMix) emits GenParticles on the VD116 surface, these are
+# tracked through the full geometry by Mu2eG4 and the resulting STMDet steps are written into
+# TTrees by HPGeTree and LaBrTree so the energy depositions in the STM detector crystals can be
+# studied.
+#
+# The generator and the G4 stage are shared, then the job branches into four independent paths,
+# each with its own extraction, compression and filter so that only events reaching that
+# surface are kept on that path:
+#   STMCrystalPath - STMDet steps, i.e. events depositing energy in the crystals
+#   STMVD101Path   - VD101 crossings, directly comparable to the stage 1 resampler samples
+#   STMVD89Path    - VD89 (STM_Det1UpStr) crossings, the LaBr front face
+#   STMVD90Path    - VD90 (STM_Det2UpStr) crossings, the HPGe front face
+# Filters only act on the path they sit on. Analyzers and outputs pick their path with
+# SelectEvents, so each one sees only the events that passed its own filter.
+#
+# Everything lands in a single TFileService file, one directory per module label:
+#   VDResamplerGenerator/ttree      - the generated samples at VD116 (doROOTDump)
+#   VDResamplerGenerator/validation - generated vs source comparison plots (doValidationPlots)
+#   Stage2HPGe/ttree                - energy depositions in the HPGe crystal
+#   Stage2LaBr/ttree                - energy depositions in the LaBr crystal, see the note below
+#   Stage2virtualdetector/ttree     - VD crossings of the events reaching the crystals
+#   VD101tree/ttree                 - VD101 crossings
+#   VD89tree/ttree, VD90tree/ttree  - LaBr and HPGe front face crossings
+#
+# NOTE - Stage2LaBr reports the raw ionizing energy deposited in the LaBr crystal, not a LaBr
+# detector response - no scintillation light yield, non-proportionality or resolution is applied.
+# See the FIXME at the top of Offline/STMMC/src/LaBrTree_module.cc.
+#
+# Structure follows BeamToVD.fcl / NeutralsTo2VD.fcl (VD extraction, compression, filtering) and
+# STMResampler.fcl (STMDet compression), with the analyzer setup of Offline/STMMC/fcl/MakeTree.fcl.
+
+# Offline includes
+# ------------------------------------------------------------------------------------------------
+# Nothing is used from here. Kept for consistency with BeamToVD.fcl and STMResampler.fcl, which
+# take CommonMC.protonTimeOffset for their resampler sequences - this job generates its own
+# primaries, so it has no resampler and no time offset. Production/JobConfig/pileup/prolog.fcl
+# pulls this in transitively anyway.
+#include "Offline/CommonMC/fcl/prolog.fcl"
+# ------------------------------------------------------------------------------------------------
+# The STM specific tags and geometry, <actual value> -> <used element name>:
+#   "g4run:virtualdetector"          -> extractVirtualDetectorSteps101.StepPointMCsTag
+#   101                              -> extractVirtualDetectorSteps101.VirtualDetectorID
+#   "compressDetStepMCsSTM"          -> filterVirtualDetectorSteps101.StepPointMCsTag
+#   "g4run:virtualdetector"          -> countVirtualDetectorHits.stepPointMCsTag
+#   "compressDetStepMCsSTM:"         -> VD101tree.StepPointMCsTag
+#   "compressDetStepMCsSTM"          -> VD101tree.SimParticlemvTag
+#   "compressSTMDet:STMDet"          -> Stage2HPGe.StepPointMCsTag, Stage2LaBr.StepPointMCsTag
+#   "compressSTMDet:virtualdetector" -> Stage2virtualdetector.StepPointMCsTag
+#   "compressSTMDet"                 -> Stage2HPGe.SimParticlemvTag, Stage2LaBr.SimParticlemvTag,
+#                                       Stage2virtualdetector.SimParticlemvTag
+#   "HPGe"                           -> Stage2HPGe.Detector
+#include "Offline/STMMC/fcl/prolog.fcl"
+# ------------------------------------------------------------------------------------------------
+# Services.Sim = Services.Core + Services.SimOnly, <actual value> -> <used element name>:
+#   default_message                                              -> services.message
+#   "Offline/Mu2eG4/geom/geom_common.txt"                        -> services.GeometryService.inputFile
+#   "Offline/GlobalConstantsService/data/globalConstants_01.txt" -> services.GlobalConstantsService.inputFile
+#   DbEmpty, Proditions                                          -> services.DbService, services.ProditionsService
+#   "MixMaxRng"                                                  -> services.RandomNumberGenerator.defaultEngineKind
+#   automaticSeeds                                               -> services.SeedService, overridden by baseSeed : 8 below
+#   {}                                                           -> services.Mu2eG4Helper
+# TFileService is not part of Services.Sim - services.TFileService.fileName below creates it.
+#include "Offline/fcl/standardServices.fcl"
+
+# Production includes
+# ------------------------------------------------------------------------------------------------
+# <actual value> -> <used element name>:
+#   mu2eg4runDefaultSingleStage    -> physics.producers.g4run, target of the g4run overrides below
+#   {module_type: GenEventCounter} -> physics.producers.genCounter
+#   FilterStatusG4 on "g4run", maxAcceptedStatus 9
+#                                  -> physics.filters.g4consistentFilter
+#   {module_type: GenEventCountReader, makeHistograms: false}
+#                                  -> physics.analyzers.genCountLogger
+#   [g4run, g4consistentFilter]    -> Common.g4Sequence, the prefix shared by all four paths
+# Also brings in Offline/Mu2eG4/fcl/prolog.fcl, which the physics.producers.g4run.* lines act on.
+#include "Production/JobConfig/common/prolog.fcl"
+# ------------------------------------------------------------------------------------------------
+# Nothing is used from here - Pileup.* covers resampling, and this job generates its own
+# primaries. The include stays because Production/JobConfig/pileup/epilog.fcl, at the bottom of
+# this file, depends on it.
+#include "Production/JobConfig/pileup/prolog.fcl"
+# ------------------------------------------------------------------------------------------------
+# <actual value> -> <used element name>:
+#   {module_type: EmptyEvent, maxEvents: @nil}   -> source
+#   STMPileup.producers.VDResamplerGenerator     -> physics.producers.VDResamplerGenerator,
+#                                                   shared with VDResamplerGenerateMix.fcl
+# The rest of STMPileup (protonTimeOffset, stmResampler, BeamToVDKeptProducts,
+# VDResamplerGenServices) is unused - this job needs the full G4 service stack, so it takes
+# Services.Sim over VDResamplerGenServices.
+#include "Production/JobConfig/pileup/STM/prolog.fcl"
+
+process_name: STMVDResamplerToCrystals
+
+source : @local::STMPileup.VDResamplerGenSource
+
+services : @local::Services.Sim
+
+physics : {
+  producers : {
+    @table::Common.producers # g4run, genCounter
+    # Shared with VDResamplerGenerateMix.fcl, see Production/JobConfig/pileup/STM/prolog.fcl.
+    # Dumps the generated VD116 samples into the same TFileService file as the crystal trees, so
+    # the generated distribution and its downstream effect can be compared in one file.
+    # To turn off the ROOT dump and the validation plots, add the following lines to the end of 
+    # the fcl file:
+    #   physics.producers.VDResamplerGenerator.doROOTDump : false
+    #   physics.producers.VDResamplerGenerator.doValidationPlots : false
+    # To turn off sources (in the order of EleBeam, MuBeam, TargetStops1809, Neutrals), add the 
+    # following line (or other boolean sequence) to the end of the fcl file:
+    #   physics.producers.VDResamplerGenerator.useSummaryFile : [false, true, true, true]
+    VDResamplerGenerator : @local::STMPileup.producers.VDResamplerGenerator
+    compressSTMDet : { # Keeps only the wanted StepPoints and SimParticles for this study
+      # Creates "mu2e::SimParticlemv_compressSTMDet__STMVDResamplerToCrystals" and
+      # "mu2e::StepPointMCs_compressSTMDet_*_STMVDResamplerToCrystals" products from the g4run output
+      module_type : CompressDetStepMCs
+      strawGasStepTag : ""
+      caloShowerStepTag : ""
+      surfaceStepTag : ""
+      crvStepTag : ""
+      simParticleTags : [ "g4run" ]
+      debugLevel : 0
+      stepPointMCTags : [ "g4run:STMDet", "g4run:virtualdetector" ]
+      compressionOptions : {
+        strawGasStepCompressionLevel : "noCompression"
+        caloShowerStepCompressionLevel : "noCompression"
+        crvStepCompressionLevel : "noCompression"
+        surfaceStepCompressionLevel : "noCompression"
+        stepPointMCCompressionLevel : "noCompression"
+        simParticleCompressionLevel : "noCompression"
+        keepNGenerations : -1
+        mcTrajectoryCompressionLevel : "noCompression"
+      }
+      mcTrajectoryTag : ""
+    }
+    extractVirtualDetectorSteps101 : {
+      # Creates "mu2e::StepPointMCs_extractVirtualDetectorSteps101__STMVDResamplerToCrystals" products
+      # holding only the StepPointMCs in VD101. Empty collections are produced when there are no
+      # VD101 hits, so the filtering is done downstream by filterVirtualDetectorSteps101.
+      module_type : STMResamplingProducer
+      StepPointMCsTag : @local::ResamplingProducer.StepPointMCsTag
+      VirtualDetectorID : @local::ResamplingProducer.VirtualDetectorID # 101
+    }
+    compressDetStepMCsSTM : { # Keeps SimParticles and StepPointMCs going through VD101 only
+      module_type : CompressDetStepMCs
+      strawGasStepTag : ""
+      caloShowerStepTag : ""
+      surfaceStepTag : ""
+      crvStepTag : ""
+      simParticleTags : [ "g4run" ]
+      debugLevel : 0
+      stepPointMCTags : [ "extractVirtualDetectorSteps101" ]
+      compressionOptions : {
+        strawGasStepCompressionLevel : "noCompression"
+        caloShowerStepCompressionLevel : "noCompression"
+        crvStepCompressionLevel : "noCompression"
+        surfaceStepCompressionLevel : "noCompression"
+        stepPointMCCompressionLevel : "noCompression"
+        simParticleCompressionLevel : "noCompression"
+        keepNGenerations : -1
+        mcTrajectoryCompressionLevel : "noCompression"
+      }
+      mcTrajectoryTag : ""
+    }
+    # VD89 - STM_Det1UpStr, the LaBr front face
+    extractVirtualDetectorSteps89 : @local::physics.producers.extractVirtualDetectorSteps101
+    compressDetStepMCsSTM89 : @local::physics.producers.compressDetStepMCsSTM
+    # VD90 - STM_Det2UpStr, the HPGe front face
+    extractVirtualDetectorSteps90 : @local::physics.producers.extractVirtualDetectorSteps101
+    compressDetStepMCsSTM90 : @local::physics.producers.compressDetStepMCsSTM
+  }
+  filters : {
+    @table::Common.filters # g4consistentFilter
+    filterSTMDetSteps : {
+      # Only keep events that actually deposit energy in the STM crystals.
+      # STMDet steps are produced for both the HPGe and LaBr crystals.
+      module_type : STMResamplingFilter
+      StepPointMCsTag : "compressSTMDet:STMDet"
+    }
+    filterVirtualDetectorSteps101 : {
+      # Only keep events that cross VD101 - extractVirtualDetectorSteps101 creates a collection
+      # even when it is empty, so this is required
+      module_type : STMResamplingFilter
+      StepPointMCsTag : @local::ResamplingFilter.StepPointMCsTag # compressDetStepMCsSTM
+    }
+    filterVirtualDetectorSteps89 : {
+      module_type : STMResamplingFilter
+      StepPointMCsTag : "compressDetStepMCsSTM89"
+    }
+    filterVirtualDetectorSteps90 : {
+      module_type : STMResamplingFilter
+      StepPointMCsTag : "compressDetStepMCsSTM90"
+    }
+  }
+  analyzers : {
+    @table::Common.analyzers # genCountLogger
+    countVirtualDetectorHits : {
+      # Runs a counter over the virtual detectors to keep track of hits
+      module_type : CountVirtualDetectorHits
+      stepPointMCsTag : @local::VirtualDetectorCounter.StepPointMCsTag
+      virtualDetectorIDs : [88, 89, 90, 100, 101, 116]
+    }
+    Stage2virtualdetector : { # VDs seen by the events reaching the crystals
+      module_type : VirtualDetectorTree
+      StepPointMCsTag : @local::SimplifyStage2Data.StepPointMCsTagVirtualdetector
+      SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag
+      SelectEvents : [STMCrystalPath]
+    }
+    Stage2HPGe : { # Energy depositions in the HPGe crystal
+      module_type : HPGeTree
+      StepPointMCsTag : @local::SimplifyStage2Data.StepPointMCsTagSTMDet
+      SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag
+      Detector : @local::SimplifyStage2Data.DetectorName.HPGe
+      SelectEvents : [STMCrystalPath]
+    }
+    Stage2LaBr : { # Raw ionizing energy deposited in the LaBr crystal, NOT a LaBr response
+      module_type : LaBrTree
+      StepPointMCsTag : @local::SimplifyStage2Data.StepPointMCsTagSTMDet
+      SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag
+      SelectEvents : [STMCrystalPath]
+    }
+    VD101tree : { # VD101 crossings, directly comparable to the stage 1 resampler samples
+      module_type : VirtualDetectorTree
+      StepPointMCsTag : @local::SimplifyStage1Data.StepPointMCsTag # compressDetStepMCsSTM:
+      SimParticlemvTag : @local::SimplifyStage1Data.SimParticlemvTag
+      SelectEvents : [STMVD101Path]
+    }
+    VD89tree : { # LaBr front face
+      module_type : VirtualDetectorTree
+      StepPointMCsTag : "compressDetStepMCsSTM89:"
+      SimParticlemvTag : "compressDetStepMCsSTM89"
+      SelectEvents : [STMVD89Path]
+    }
+    VD90tree : { # HPGe front face
+      module_type : VirtualDetectorTree
+      StepPointMCsTag : "compressDetStepMCsSTM90:"
+      SimParticlemvTag : "compressDetStepMCsSTM90"
+      SelectEvents : [STMVD90Path]
+    }
+  }
+  # setup paths - the generator and G4 stage are shared, each path then applies its own filter
+  STMCrystalPath : [VDResamplerGenerator, genCounter, @sequence::Common.g4Sequence, compressSTMDet, filterSTMDetSteps]
+  STMVD101Path : [VDResamplerGenerator, genCounter, @sequence::Common.g4Sequence, extractVirtualDetectorSteps101, compressDetStepMCsSTM, filterVirtualDetectorSteps101]
+  STMVD89Path : [VDResamplerGenerator, genCounter, @sequence::Common.g4Sequence, extractVirtualDetectorSteps89, compressDetStepMCsSTM89, filterVirtualDetectorSteps89]
+  STMVD90Path : [VDResamplerGenerator, genCounter, @sequence::Common.g4Sequence, extractVirtualDetectorSteps90, compressDetStepMCsSTM90, filterVirtualDetectorSteps90]
+  trigger_paths : [STMCrystalPath, STMVD101Path, STMVD89Path, STMVD90Path]
+  outPathCompressed : [genCountLogger, countVirtualDetectorHits, Stage2virtualdetector, Stage2HPGe, Stage2LaBr, VD101tree, VD89tree, VD90tree, crystalOutput, VD101Output, VD89Output, VD90Output]
+  end_paths : [outPathCompressed]
+}
+
+# The VD89 and VD90 chains only differ from the VD101 one in which VD they select
+physics.producers.extractVirtualDetectorSteps89.VirtualDetectorID : 89
+physics.producers.extractVirtualDetectorSteps90.VirtualDetectorID : 90
+physics.producers.compressDetStepMCsSTM89.stepPointMCTags : ["extractVirtualDetectorSteps89"]
+physics.producers.compressDetStepMCsSTM90.stepPointMCTags : ["extractVirtualDetectorSteps90"]
+
+# Keep only the necessary data
+outputs : {
+  crystalOutput : {
+    module_type : RootOutput
+    outputCommands : [
+      "drop *_*_*_*",
+      "keep mu2e::GenEventCount_*_*_*",
+      "keep art::EventIDs_*_*_*",
+      "keep mu2e::GenParticles_VDResamplerGenerator_*_*",
+      "keep mu2e::StepPointMCs_compressSTMDet_*_STMVDResamplerToCrystals",
+      "keep mu2e::SimParticlemv_compressSTMDet_*_STMVDResamplerToCrystals",
+      "keep mu2e::PhysicalVolumeInfomvs_*_*_*",
+      "keep mu2e::StatusG4_*_*_*"
+    ]
+    SelectEvents : [STMCrystalPath]
+    fileName : "dts.owner.STMVDResamplerToCrystals.version.sequencer.art"
+  }
+  VD101Output : {
+    module_type : RootOutput
+    outputCommands : [
+      "drop *_*_*_*",
+      "keep mu2e::GenEventCount_*_*_*",
+      "keep art::EventIDs_*_*_*",
+      "keep mu2e::GenParticles_VDResamplerGenerator_*_*",
+      "keep mu2e::StepPointMCs_compressDetStepMCsSTM_*_STMVDResamplerToCrystals",
+      "keep mu2e::SimParticlemv_compressDetStepMCsSTM_*_STMVDResamplerToCrystals",
+      "keep mu2e::PhysicalVolumeInfomvs_*_*_*",
+      "keep mu2e::StatusG4_*_*_*"
+    ]
+    SelectEvents : [STMVD101Path]
+    fileName : "dts.owner.STMVDResamplerToVD101.version.sequencer.art"
+  }
+  VD89Output : {
+    module_type : RootOutput
+    outputCommands : [
+      "drop *_*_*_*",
+      "keep mu2e::GenEventCount_*_*_*",
+      "keep art::EventIDs_*_*_*",
+      "keep mu2e::GenParticles_VDResamplerGenerator_*_*",
+      "keep mu2e::StepPointMCs_compressDetStepMCsSTM89_*_STMVDResamplerToCrystals",
+      "keep mu2e::SimParticlemv_compressDetStepMCsSTM89_*_STMVDResamplerToCrystals",
+      "keep mu2e::PhysicalVolumeInfomvs_*_*_*",
+      "keep mu2e::StatusG4_*_*_*"
+    ]
+    SelectEvents : [STMVD89Path]
+    fileName : "dts.owner.STMVDResamplerToVD89.version.sequencer.art"
+  }
+  VD90Output : {
+    module_type : RootOutput
+    outputCommands : [
+      "drop *_*_*_*",
+      "keep mu2e::GenEventCount_*_*_*",
+      "keep art::EventIDs_*_*_*",
+      "keep mu2e::GenParticles_VDResamplerGenerator_*_*",
+      "keep mu2e::StepPointMCs_compressDetStepMCsSTM90_*_STMVDResamplerToCrystals",
+      "keep mu2e::SimParticlemv_compressDetStepMCsSTM90_*_STMVDResamplerToCrystals",
+      "keep mu2e::PhysicalVolumeInfomvs_*_*_*",
+      "keep mu2e::StatusG4_*_*_*"
+    ]
+    SelectEvents : [STMVD90Path]
+    fileName : "dts.owner.STMVDResamplerToVD90.version.sequencer.art"
+  }
+}
+
+# Point Mu2eG4 at the generated particles. These start on the VD116 surface, so this is a
+# fresh single-stage G4 job rather than a resampled stage.
+physics.producers.g4run.inputs : {
+  primaryType : "GenParticles"
+  primaryTag : "VDResamplerGenerator"
+}
+physics.producers.g4run.physics.physicsListName : "QGSP_BERT_EMZ" # as used in Offline/STMMC/fcl/Absorber.fcl
+physics.producers.g4run.SDConfig.enableSD : [STMDet, virtualdetector]
+physics.producers.g4run.Mu2eG4CommonCut : {}
+
+# physics.producers.g4run.debug.trackingVerbosityLevel : 1
+# physics.producers.g4run.debug.steppingVerbosityLevel : 1
+
+services.SeedService.baseSeed : 8
+
+# Holds the generated sample dump, the validation plots and the crystal/VD trees
+services.TFileService.fileName : @nil
+
+# Epilog includes
+# comment out of MT issue #include "Production/JobConfig/common/MT.fcl"
+#include "Production/JobConfig/common/epilog.fcl"
+#include "Production/JobConfig/pileup/epilog.fcl"
