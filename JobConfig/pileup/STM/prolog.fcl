@@ -27,10 +27,10 @@ STMPileup: {
         "root://fndcadoor.fnal.gov:1094/mu2e/resilient/users/yongyiwu/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025ai.001430_00000003.txt"  # Neutrals
       ] # requiring a list
       potsPerFile : [ # <number of simulated events> / <number of output from last stage> * <POT of the last stage>
-        98360017778.32725, # dts.mu2e.STMBeamToVDEle116.MDC2025ai.art : 5441845688 / 5532579  * 1e8
-        467691847195.7197, # dts.mu2e.STMBeamToVDMu116.MDC2025ai.art  : 1e9        / 213816   * 1e8
-        5186958594225.648, # dts.mu2e.STM1809ToVD116.MDC2025au.art    : 4e9     / 1442670/1e3 * 4e9 / 213816  * 1e8
-        3743491962.619810  # dts.mu2e.STMNeutralsToVD116.MDC2025av.art: 2000000000 / 53426053 * 1e8
+        98360017778.32725, # dts.mu2e.STMBeamToVDEle116.MDC2025ai.art    : 5441845688 / 5532579  * 1e8
+        467691847195.7197, # dts.mu2e.STMBeamToVDMu116.MDC2025ai.art     : 1e9        / 213816   * 1e8
+        5186958594225.648, # dts.mu2e.STM1809ToVD116.MDC2025au.art       : 4e9     / 1442670/1e3 * 4e9 / 213816  * 1e8
+        3743491962.619810  # dts.mu2e.STMNeutralsToVD116Cat.MDC2025av.art: 2000000000 / 53426053 * 1e8
       ] # list of corresponding POTs
       # ModelFileDir is now overridden by ModelFileList
       ModelFileList : "root://fndcadoor.fnal.gov:1094/mu2e/resilient/users/yongyiwu/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerModels_VD116_catalog.MDC2025ai.001430_00000000.txt" # path to a .txt catalog listing one model-file path per line
