@@ -52,6 +52,7 @@ STMPileup: {
       # VDr : 2000.0 # radius of VD116. Only change when another VD is used
       doROOTDump : true
       doValidationPlots : true # requires a resamplerSourceRootFiles entry for every source
+      trainingPlanFile : "Offline/STMMC/fcl/VDResamplerTrainingPlan.fcl"
     }
   }
 

@@ -30,6 +30,8 @@ physics : {
       # VirtualDetectorID : 116 # only change when another VD is used
       # VDz0 : 37700.39 # z-coordinates of VD116. Only change when another VD is used
       # VDr : 2000.0 # radius of VD116. Only change when another VD is used
+      # SBDMpeakTagCenters : [1.809] # if trained model TargetStops1809 photon model using 2-stage with inverse CDF stage-1, and trained with peak tagging
+      # SBDMpeakTagHalfWidths : [0.001]
       doROOTDump : true
       doValidationPlots : true
     }
