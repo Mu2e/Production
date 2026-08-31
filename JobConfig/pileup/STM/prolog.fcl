@@ -21,10 +21,10 @@ STMPileup: {
     VDResamplerGenerator : {
       module_type : VDResamplerGenerateMix
       hitSummaryFiles : [
-        "root://fndcadoor.fnal.gov:1094/mu2e/resilient/users/yongyiwu/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025ai.001430_00000000.txt", # EleBeam
-        "root://fndcadoor.fnal.gov:1094/mu2e/resilient/users/yongyiwu/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025ai.001430_00000001.txt", # MuBeam
-        "root://fndcadoor.fnal.gov:1094/mu2e/resilient/users/yongyiwu/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025ai.001430_00000002.txt", # TargetStops1809
-        "root://fndcadoor.fnal.gov:1094/mu2e/resilient/users/yongyiwu/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025ai.001430_00000003.txt"  # Neutrals
+        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025ai.001430_00000000.txt", # EleBeam
+        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025ai.001430_00000001.txt", # MuBeam
+        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025ai.001430_00000002.txt", # TargetStops1809
+        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025ai.001430_00000003.txt"  # Neutrals
       ] # requiring a list
       potsPerFile : [ # <number of simulated events> / <number of output from last stage> * <POT of the last stage>
         98360017778.32725, # dts.mu2e.STMBeamToVDEle116.MDC2025ai.art    : 5441845688 / 5532579  * 1e8
@@ -33,12 +33,12 @@ STMPileup: {
         3743491962.619810  # dts.mu2e.STMNeutralsToVD116Cat.MDC2025av.art: 2000000000 / 53426053 * 1e8
       ] # list of corresponding POTs
       # ModelFileDir is now overridden by ModelFileList
-      ModelFileList : "root://fndcadoor.fnal.gov:1094/mu2e/resilient/users/yongyiwu/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerModels_VD116_catalog.MDC2025ai.001430_00000000.txt" # path to a .txt catalog listing one model-file path per line
+      ModelFileList : "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerModels_VD116_catalog.MDC2025ai.001430_00000000.txt" # path to a .txt catalog listing one model-file path per line
       resamplerSourceRootFiles : [
-        "root://fndcadoor.fnal.gov:1094/mu2e/resilient/users/yongyiwu/STMVDResampler/MDC2025ai/nts.yongyiwu.STMVDResamplerConfigure_VD116_hitDump.MDC2025ai.001430_00000000.root", # EleBeam
-        "root://fndcadoor.fnal.gov:1094/mu2e/resilient/users/yongyiwu/STMVDResampler/MDC2025ai/nts.yongyiwu.STMVDResamplerConfigure_VD116_hitDump.MDC2025ai.001430_00000001.root", # MuBeam
-        "root://fndcadoor.fnal.gov:1094/mu2e/resilient/users/yongyiwu/STMVDResampler/MDC2025ai/nts.yongyiwu.STMVDResamplerConfigure_VD116_hitDump.MDC2025ai.001430_00000002.root", # TargetStops1809
-        "root://fndcadoor.fnal.gov:1094/mu2e/resilient/users/yongyiwu/STMVDResampler/MDC2025ai/nts.yongyiwu.STMVDResamplerConfigure_VD116_hitDump.MDC2025ai.001430_00000003.root"  # Neutrals
+        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/nts.yongyiwu.STMVDResamplerConfigure_VD116_hitDump.MDC2025ai.001430_00000000.root", # EleBeam
+        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/nts.yongyiwu.STMVDResamplerConfigure_VD116_hitDump.MDC2025ai.001430_00000001.root", # MuBeam
+        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/nts.yongyiwu.STMVDResamplerConfigure_VD116_hitDump.MDC2025ai.001430_00000002.root", # TargetStops1809
+        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/nts.yongyiwu.STMVDResamplerConfigure_VD116_hitDump.MDC2025ai.001430_00000003.root"  # Neutrals
       ] # list of root files containing raw data, same order as hitSummaryFiles. needed for SBDMstage1Method != DIFFUSION, specified in hitSummaryFiles
       # resamplerSourceTreeNames : "VDResamplerTrainingSetup/ttree" # default
       # useSummaryFile : [true, true, true, true] # optional, default to all true, if false, the corresponding hitSummaryFiles entry will be skipped
@@ -78,6 +78,42 @@ STMPileup: {
         }
       }
     }
+  }
+
+  # Templates for a single virtual detector extraction + compression chain, used by
+  # VDResamplerToCrystals.fcl to build one chain per VD (101, 89, 90). Defined here rather than
+  # in the job fcl because FHiCL does not formally support @local:: references into a table that
+  # is still being defined - a producer cannot be cloned from a sibling inside the same
+  # physics.producers block. Set VirtualDetectorID and stepPointMCTags in the including file.
+  extractVirtualDetectorStepsTemplate : {
+    # Creates StepPointMCs products holding only the StepPointMCs in the selected virtual
+    # detector. Empty collections are produced when there are no hits, so the filtering has to be
+    # done downstream by an STMResamplingFilter.
+    module_type : STMResamplingProducer
+    StepPointMCsTag : @local::ResamplingProducer.StepPointMCsTag
+    VirtualDetectorID : @local::ResamplingProducer.VirtualDetectorID # 101, override per VD
+  }
+  compressDetStepMCsSTMTemplate : {
+    # Keeps SimParticles and StepPointMCs going through the selected virtual detector only
+    module_type : CompressDetStepMCs
+    strawGasStepTag : ""
+    caloShowerStepTag : ""
+    surfaceStepTag : ""
+    crvStepTag : ""
+    simParticleTags : [ "g4run" ]
+    debugLevel : 0
+    stepPointMCTags : [ "extractVirtualDetectorSteps101" ] # override per VD
+    compressionOptions : {
+      strawGasStepCompressionLevel : "noCompression"
+      caloShowerStepCompressionLevel : "noCompression"
+      crvStepCompressionLevel : "noCompression"
+      surfaceStepCompressionLevel : "noCompression"
+      stepPointMCCompressionLevel : "noCompression"
+      simParticleCompressionLevel : "noCompression"
+      keepNGenerations : -1
+      mcTrajectoryCompressionLevel : "noCompression"
+    }
+    mcTrajectoryTag : ""
   }
 
   BeamToVDKeptProducts : [

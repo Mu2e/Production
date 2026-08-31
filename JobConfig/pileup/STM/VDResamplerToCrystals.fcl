@@ -133,41 +133,20 @@ physics : {
       }
       mcTrajectoryTag : ""
     }
-    extractVirtualDetectorSteps101 : {
-      # Creates "mu2e::StepPointMCs_extractVirtualDetectorSteps101__STMVDResamplerToCrystals" products
-      # holding only the StepPointMCs in VD101. Empty collections are produced when there are no
-      # VD101 hits, so the filtering is done downstream by filterVirtualDetectorSteps101.
-      module_type : STMResamplingProducer
-      StepPointMCsTag : @local::ResamplingProducer.StepPointMCsTag
-      VirtualDetectorID : @local::ResamplingProducer.VirtualDetectorID # 101
-    }
-    compressDetStepMCsSTM : { # Keeps SimParticles and StepPointMCs going through VD101 only
-      module_type : CompressDetStepMCs
-      strawGasStepTag : ""
-      caloShowerStepTag : ""
-      surfaceStepTag : ""
-      crvStepTag : ""
-      simParticleTags : [ "g4run" ]
-      debugLevel : 0
-      stepPointMCTags : [ "extractVirtualDetectorSteps101" ]
-      compressionOptions : {
-        strawGasStepCompressionLevel : "noCompression"
-        caloShowerStepCompressionLevel : "noCompression"
-        crvStepCompressionLevel : "noCompression"
-        surfaceStepCompressionLevel : "noCompression"
-        stepPointMCCompressionLevel : "noCompression"
-        simParticleCompressionLevel : "noCompression"
-        keepNGenerations : -1
-        mcTrajectoryCompressionLevel : "noCompression"
-      }
-      mcTrajectoryTag : ""
-    }
+    # One extraction + compression chain per virtual detector, all cloned from the shared
+    # templates in Production/JobConfig/pileup/STM/prolog.fcl. The per-VD differences
+    # (VirtualDetectorID, stepPointMCTags) are applied after this physics block closes - FHiCL
+    # does not formally support @local:: references into a table that is still being defined,
+    # so the chains cannot be cloned from each other here.
+    # VD101
+    extractVirtualDetectorSteps101 : @local::STMPileup.extractVirtualDetectorStepsTemplate
+    compressDetStepMCsSTM : @local::STMPileup.compressDetStepMCsSTMTemplate
     # VD89 - STM_Det1UpStr, the LaBr front face
-    extractVirtualDetectorSteps89 : @local::physics.producers.extractVirtualDetectorSteps101
-    compressDetStepMCsSTM89 : @local::physics.producers.compressDetStepMCsSTM
+    extractVirtualDetectorSteps89 : @local::STMPileup.extractVirtualDetectorStepsTemplate
+    compressDetStepMCsSTM89 : @local::STMPileup.compressDetStepMCsSTMTemplate
     # VD90 - STM_Det2UpStr, the HPGe front face
-    extractVirtualDetectorSteps90 : @local::physics.producers.extractVirtualDetectorSteps101
-    compressDetStepMCsSTM90 : @local::physics.producers.compressDetStepMCsSTM
+    extractVirtualDetectorSteps90 : @local::STMPileup.extractVirtualDetectorStepsTemplate
+    compressDetStepMCsSTM90 : @local::STMPileup.compressDetStepMCsSTMTemplate
   }
   filters : {
     @table::Common.filters # g4consistentFilter
@@ -248,9 +227,13 @@ physics : {
   end_paths : [outPathCompressed]
 }
 
-# The VD89 and VD90 chains only differ from the VD101 one in which VD they select
+# Per-VD settings for the three chains cloned from the prolog templates above. These are applied
+# at top level, after the physics block has closed, which is the form FHiCL formally supports.
+# VD101 matches the template defaults but is set explicitly so all three chains read the same way.
+physics.producers.extractVirtualDetectorSteps101.VirtualDetectorID : 101
 physics.producers.extractVirtualDetectorSteps89.VirtualDetectorID : 89
 physics.producers.extractVirtualDetectorSteps90.VirtualDetectorID : 90
+physics.producers.compressDetStepMCsSTM.stepPointMCTags : ["extractVirtualDetectorSteps101"]
 physics.producers.compressDetStepMCsSTM89.stepPointMCTags : ["extractVirtualDetectorSteps89"]
 physics.producers.compressDetStepMCsSTM90.stepPointMCTags : ["extractVirtualDetectorSteps90"]
 
@@ -337,6 +320,6 @@ services.SeedService.baseSeed : 8
 services.TFileService.fileName : @nil
 
 # Epilog includes
-# comment out of MT issue #include "Production/JobConfig/common/MT.fcl"
+#include "Production/JobConfig/common/MT.fcl"
 #include "Production/JobConfig/common/epilog.fcl"
 #include "Production/JobConfig/pileup/epilog.fcl"
