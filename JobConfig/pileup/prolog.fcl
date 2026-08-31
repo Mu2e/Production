@@ -83,6 +83,16 @@ Pileup: {
       verbosityLevel: 1
     }
 
+    IPAEndRingMuonFinder : {
+      module_type : StoppedParticlesFinder
+      particleInput : "g4run"
+      useEventLevelVolumeInfo: true
+      physVolInfoInput: "g4run:eventlevel"
+      stoppingMaterial : "IPAPolystyrene"
+      particleTypes : [ 13, -13 ]
+      verbosityLevel: 1
+    }
+
     stoppedMuonDaughters: {
       module_type: SimParticleDaughterSelector
       particleInput: "TargetMuonFinder"
@@ -122,12 +132,18 @@ Pileup: {
       particleInputs : [ "TargetPiStopFilter" ]
     }
 
-
     compressPVIPAStops: {
       module_type: CompressPhysicalVolumes
       volumesInput : "g4run"
       hitInputs : []
       particleInputs : [ "IPAStopFilter" ]
+    }
+
+    compressPVIPAEndRingStops: {
+      module_type: CompressPhysicalVolumes
+      volumesInput : "g4run"
+      hitInputs : []
+      particleInputs : [ "IPAEndRingStopFilter" ]
     }
 
     protonTimeOffset : @local::CommonMC.protonTimeOffset
@@ -177,12 +193,18 @@ Pileup: {
       mainSPPtrInputs: [ "TargetPionFinder" ]
     }
 
-
     IPAStopFilter: {
       module_type: FilterG4Out
       mainHitInputs: []
       extraHitInputs: [ "g4run:virtualdetector" ]
       mainSPPtrInputs: [ "IPAMuonFinder" ]
+    }
+
+    IPAEndRingStopFilter: {
+      module_type: FilterG4Out
+      mainHitInputs: []
+      extraHitInputs: [ "g4run:virtualdetector" ]
+      mainSPPtrInputs: [ "IPAEndRingMuonFinder" ]
     }
 
     FlashFilter: {
@@ -297,6 +319,7 @@ Pileup: {
     spectrum: {
       spectrumShape: tabulated
       spectrumFileName: "Offline/EventGenerator/data/neutronSpectrum.txt"
+      BinCenter : true
     }
   }
 

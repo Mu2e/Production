@@ -112,6 +112,7 @@ Reconstruction : {
       CaloClusterCollection : "CaloClusterMaker"
       CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
       KalSeedCollections  : [ "KKDe", "KKDmu", "KKUe", "KKUmu", "KKLine", "KKCHmu" ]
+      TimeClusterCollections : [ ]
     }
     # regrow
     RegrowSH : {
@@ -400,11 +401,10 @@ Reconstruction.RegrowOutput : {
   module_type : RootOutput
   fileName    : @nil
   outputCommands : [
+    "drop *_*_*_*",
     @sequence::Reconstruction.GeneralProducts,
     @sequence::Reconstruction.HighRecoProducts,
     @sequence::Reconstruction.MidRecoProducts,
-    "drop *_*_*_Digitize",
-    "drop *_*_*_Mix",
     "drop *_*_*_Reconstruct",
     "keep *_EWMProducer_*_*",
     "keep *_PBISim_*_*",
