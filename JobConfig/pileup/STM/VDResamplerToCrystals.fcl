@@ -317,7 +317,7 @@ physics.producers.g4run.Mu2eG4CommonCut : {}
 services.SeedService.baseSeed : 8
 
 # Holds the generated sample dump, the validation plots and the crystal/VD trees
-services.TFileService.fileName : @nil
+services.TFileService.fileName : dts.owner.STMVDResamplerToCrystals.version.sequencer.root
 
 # Epilog includes
 #include "Production/JobConfig/common/MT.fcl"
