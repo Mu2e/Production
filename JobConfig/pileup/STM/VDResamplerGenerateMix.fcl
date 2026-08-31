@@ -7,11 +7,8 @@
 # Splitting it this way means the expensive diffusion sampling is done once and its output can be
 # re-propagated as many times as needed.
 #
-# The generated sample dump and the validation plots are off by default so this stage produces
-# only the art file. To also get them, add to the end of this file (or on the command line):
-#   physics.producers.VDResamplerGenerator.doROOTDump : true
-#   physics.producers.VDResamplerGenerator.doValidationPlots : true
-#   services.TFileService.fileName : "nts.owner.STMVDResamplerGenerateMix.version.sequencer.root"
+# The generated sample dump and the validation plots are on by default so this stage also produces
+# a ROOT file. To turn them off, toggle the lines near the end.
 
 #include "Offline/STMMC/fcl/prolog.fcl"
 #include "Offline/fcl/standardServices.fcl"
@@ -57,13 +54,12 @@ outputs : {
   }
 }
 
-# This stage writes an art file only - the sample dump and the validation plots belong to the
-# separate ROOT making step, swap the commented section to enable ROOT dump
-physics.producers.VDResamplerGenerator.doROOTDump : false
-physics.producers.VDResamplerGenerator.doValidationPlots : false
-# physics.producers.VDResamplerGenerator.doROOTDump : true
-# physics.producers.VDResamplerGenerator.doValidationPlots : true
-# services.TFileService.fileName : "nts.owner.STMVDResamplerGenerateMix.version.sequencer.root"
+# This stage toggles the ROOT dump on/off that allows inspection of the quality of the outputs
+# physics.producers.VDResamplerGenerator.doROOTDump : false
+# physics.producers.VDResamplerGenerator.doValidationPlots : false
+physics.producers.VDResamplerGenerator.doROOTDump : true
+physics.producers.VDResamplerGenerator.doValidationPlots : true
+services.TFileService.fileName : "nts.owner.STMVDResamplerGenerateMix.version.sequencer.root"
 
 outputs.genOutput.fileName : "sim.owner.STMVDResamplerGenerateMix.version.sequencer.art"
 
