@@ -1,6 +1,17 @@
-# Generate samples from multiple Score-Based Diffusion Models from a list of sources. 
-# The samples from each source are mixed according to their corresponding POTs. 
-# A demonstrator of module function and allows root sample dump for study. 
+# Generate samples from multiple Score-Based Diffusion Models from a list of sources.
+# The samples from each source are mixed according to their corresponding POTs.
+#
+# Stage 1 of 2. This job only generates the GenParticles on the VD116 surface and writes them to
+# an art file. VDResamplerToCrystals.fcl then reads that file and propagates them to the STM
+# crystals, and the ROOT tree making is a separate step again (Offline/STMMC/fcl/MakeTree.fcl).
+# Splitting it this way means the expensive diffusion sampling is done once and its output can be
+# re-propagated as many times as needed.
+#
+# The generated sample dump and the validation plots are off by default so this stage produces
+# only the art file. To also get them, add to the end of this file (or on the command line):
+#   physics.producers.VDResamplerGenerator.doROOTDump : true
+#   physics.producers.VDResamplerGenerator.doValidationPlots : true
+#   services.TFileService.fileName : "nts.owner.STMVDResamplerGenerateMix.version.sequencer.root"
 
 #include "Offline/STMMC/fcl/prolog.fcl"
 #include "Offline/fcl/standardServices.fcl"
@@ -14,7 +25,9 @@ services : @local::STMPileup.VDResamplerGenServices
 
 physics : {
   producers : {
-    # Shared with VDResamplerToCrystals.fcl, see Production/JobConfig/pileup/STM/prolog.fcl
+    # To turn off sources (in the order of EleBeam, MuBeam, TargetStops1809, Neutrals), add the
+    # following line (or other boolean sequence) to the end of this file:
+    #   physics.producers.VDResamplerGenerator.useSummaryFile : [false, true, true, true]
     VDResamplerGenerator : @local::STMPileup.producers.VDResamplerGenerator
     genCounter: {
       module_type: GenEventCounter
@@ -26,13 +39,32 @@ physics : {
     }
   }
   genSample : [VDResamplerGenerator, genCounter]
-  ana : [genCountLogger]
+  ana : [genCountLogger, genOutput]
   trigger_paths : [genSample]
   end_paths: [ana]
 }
 
+outputs : {
+  genOutput : {
+    module_type : RootOutput
+    outputCommands : [
+      "drop *_*_*_*",
+      "keep art::EventIDs_*_*_*",
+      "keep mu2e::GenParticles_*_*_*",
+      "keep mu2e::GenEventCount_*_*_*"
+    ]
+    SelectEvents : [genSample]    
+  }
+}
+
+# This stage writes an art file only - the sample dump and the validation plots belong to the
+# separate ROOT making step, swap the commented section to enable ROOT dump
+physics.producers.VDResamplerGenerator.doROOTDump : false
+physics.producers.VDResamplerGenerator.doValidationPlots : false
+# physics.producers.VDResamplerGenerator.doROOTDump : true
+# physics.producers.VDResamplerGenerator.doValidationPlots : true
+# services.TFileService.fileName : "nts.owner.STMVDResamplerGenerateMix.version.sequencer.root"
+
+outputs.genOutput.fileName : "sim.owner.STMVDResamplerGenerateMix.version.sequencer.art"
+
 services.SeedService.baseSeed : 8
-
-# if allows ROOTDump, specify output file name
-services.TFileService.fileName : @nil 
-
