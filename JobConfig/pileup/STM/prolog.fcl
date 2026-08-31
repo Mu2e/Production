@@ -27,8 +27,8 @@ STMPileup: {
       hitSummaryFiles : [
         "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025ai.001430_00000000.txt", # EleBeam
         "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025ai.001430_00000001.txt", # MuBeam
-        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025ai.001430_00000002.txt", # TargetStops1809
-        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025ai.001430_00000003.txt"  # Neutrals
+        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025au.001430_00000002.txt", # TargetStops1809
+        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025av.001430_00000003.txt"  # Neutrals
       ] # requiring a list
       potsPerFile : [ # <number of simulated events> / <number of output from last stage> * <POT of the last stage>
         98360017778.32725, # dts.mu2e.STMBeamToVDEle116.MDC2025ai.art    : 5441845688 / 5532579  * 1e8
@@ -41,8 +41,8 @@ STMPileup: {
       resamplerSourceRootFiles : [
         "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/nts.yongyiwu.STMVDResamplerConfigure_VD116_hitDump.MDC2025ai.001430_00000000.root", # EleBeam
         "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/nts.yongyiwu.STMVDResamplerConfigure_VD116_hitDump.MDC2025ai.001430_00000001.root", # MuBeam
-        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/nts.yongyiwu.STMVDResamplerConfigure_VD116_hitDump.MDC2025ai.001430_00000002.root", # TargetStops1809
-        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/nts.yongyiwu.STMVDResamplerConfigure_VD116_hitDump.MDC2025ai.001430_00000003.root"  # Neutrals
+        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/nts.yongyiwu.STMVDResamplerConfigure_VD116_hitDump.MDC2025au.001430_00000002.root", # TargetStops1809
+        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/nts.yongyiwu.STMVDResamplerConfigure_VD116_hitDump.MDC2025av.001430_00000003.root"  # Neutrals
       ] # list of root files containing raw data, same order as hitSummaryFiles. needed for SBDMstage1Method != DIFFUSION, specified in hitSummaryFiles
       # resamplerSourceTreeNames : "VDResamplerTrainingSetup/ttree" # default
       # useSummaryFile : [true, true, true, true] # optional, default to all true, if false, the corresponding hitSummaryFiles entry will be skipped
