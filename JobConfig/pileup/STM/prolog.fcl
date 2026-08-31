@@ -7,6 +7,10 @@
 #include "Offline/Filters/fcl/prolog.fcl"
 #include "Offline/Compression/fcl/prolog.fcl"
 #include "Offline/fcl/standardServices.fcl"
+# Defines ResamplingProducer / ResamplingFilter, used by the VD chain templates below. Needed
+# here so this prolog stands on its own rather than relying on the including file to have pulled
+# the STMMC prolog in first.
+#include "Offline/STMMC/fcl/prolog.fcl"
 #
 BEGIN_PROLOG
 
