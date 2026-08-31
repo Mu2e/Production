@@ -33,6 +33,11 @@ physics : {
   analyzers : {
     genCountLogger: {
       module_type: GenEventCountReader
+      # GenEventCountReader defaults makeHistograms to true, which grabs TFileService in endJob.
+      # That service only exists here when the generator's doROOTDump is on, so leaving the
+      # default would make this job fail at endJob whenever the dump is off. The counts are still
+      # printed to the log either way - only the numEvents/numSubRuns histograms are dropped.
+      makeHistograms : false
     }
   }
   genSample : [VDResamplerGenerator, genCounter]
@@ -54,7 +59,12 @@ outputs : {
   }
 }
 
-# This stage toggles the ROOT dump on/off that allows inspection of the quality of the outputs
+# This stage toggles the ROOT dump on/off that allows inspection of the quality of the outputs.
+# The art file is written either way - only the diagnostic ROOT file is affected.
+# Swap which pair is commented out to switch modes. The prolog defaults both to true, so turning
+# the dump off needs the explicit falses, not just commenting the trues out. Drop the
+# TFileService line along with the dump: the generator is the only module that creates that
+# service, so naming a file for it when nothing instantiates it is misleading.
 # physics.producers.VDResamplerGenerator.doROOTDump : false
 # physics.producers.VDResamplerGenerator.doValidationPlots : false
 physics.producers.VDResamplerGenerator.doROOTDump : true
