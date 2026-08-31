@@ -71,6 +71,6 @@ physics.producers.VDResamplerGenerator.doROOTDump : true
 physics.producers.VDResamplerGenerator.doValidationPlots : true
 services.TFileService.fileName : "nts.owner.STMVDResamplerGenerateMix.version.sequencer.root"
 
-outputs.genOutput.fileName : "sim.owner.STMVDResamplerGenerateMix.version.sequencer.art"
+outputs.genOutput.fileName : "dts.owner.STMVDResamplerGenerateMix.version.sequencer.art"
 
 services.SeedService.baseSeed : 8
