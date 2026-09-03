@@ -51,11 +51,10 @@ STMPileup: {
       sdeToOdeSigmaThreshold : 0.1
       useEMANetworkIfAvailable : true
       diffusionSteps : 500
-      # VirtualDetectorID : 116 # only change when another VD is used
-      # VDz0 : 37700.39 # z-coordinates of VD116. Only change when another VD is used
-      # VDr : 2000.0 # radius of VD116. Only change when another VD is used
       doROOTDump : true
       doValidationPlots : true # requires a resamplerSourceRootFiles entry for every source
+      # REQUIRED: supplies VirtualDetectorID, VDz0 and VDr from its common_training_config,
+      # plus the peak-tag lines. Must be the same plan the models were trained with.
       trainingPlanFile : "Offline/STMMC/fcl/VDResamplerTrainingPlan.fcl"
     }
   }
