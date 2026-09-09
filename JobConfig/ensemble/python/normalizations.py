@@ -27,7 +27,18 @@ from constants import (
     TWOBB_POT_PER_CYCLE,
     TWOBB_PROTONS_PER_SPILL,
     TWOBB_CYCLE,
-    SPILL
+    SPILL,
+    RMC_BR_MUON_CAPTURE,
+    RMC_RATE_GT_57,
+    RMC_BR_0N_FRAC_GT_57,
+    RMC_BR_1N_FRAC_GT_57,
+    RMC_KMAX_0N,
+    RMC_KMAX_1N,
+    RMC_SPECTRUM_FRAC_0N_57,
+    RMC_SPECTRUM_FRAC_1N_57,
+    RMC_SPECTRUM_FRAC_0N_80,
+    RMC_SPECTRUM_FRAC_1N_80,
+    RMC_INTERNAL_EXTERNAL_RATIO
 )
 
 # --- Configuration Placeholders (Mutable Variables) ---
@@ -118,6 +129,120 @@ for line in lines:
         ipa_stopping_rate = ipa_stopping_rate * float(words[3])
         ipa_stopped_mu_per_POT = ipa_stopping_rate
 #print("IPAStopMuonRate=", ipa_stopped_mu_per_POT)
+
+#-------------------------------------------------------------------------------------#
+# Plestid spectrum functions for RMC 0N and 1N
+
+def plestid_integral(K_1, K_2, KMax, knockout):
+    """
+    Calculates the integral of the Plestid phase-space approximation spectrum
+    between two energy points K_1 and K_2.
+    
+    This implements the Plestid spectrum shape for RMC with different knockout modes.
+    
+    Args:
+        K_1 (float): Lower energy bound for integration (MeV).
+        K_2 (float): Upper energy bound for integration (MeV).
+        KMax (float): Maximum possible RMC energy (MeV).
+        knockout (int): Knockout mode (0 for 0N knockout, 1 for 1N knockout).
+    
+    Returns:
+        float: The integral of the spectrum between K_1 and K_2.
+    """
+    if KMax <= 0.0:
+        return 0.0
+    if knockout < 0:
+        return 0.0
+    
+    K_1 = max(0.0, min(KMax, K_1))
+    K_2 = max(0.0, min(KMax, K_2))
+    
+    if K_1 >= K_2:
+        return 0.0
+    
+    power = 2.0 + 1.5 * knockout
+    x_1 = K_1 / KMax
+    x_2 = K_2 / KMax
+    
+    val_1 = (x_1 - 1.0) * pow(1.0 - x_1, power) * (power * x_1 + x_1 + 1.0)
+    val_2 = (x_2 - 1.0) * pow(1.0 - x_2, power) * (power * x_2 + x_2 + 1.0)
+    
+    integral = val_2 - val_1
+    return integral
+
+
+def plestid_spectrum(energy, kmax, knockout):
+    """
+    Calculates the Plestid phase-space approximation spectrum value at a given energy.
+    
+    Args:
+        energy (float): Energy point to evaluate the spectrum (MeV).
+        kmax (float): Maximum possible RMC energy (MeV).
+        knockout (int): Knockout mode (0 for 0N knockout, 1 for 1N knockout).
+    
+    Returns:
+        float: The spectrum value at the given energy.
+    """
+    if energy <= 0.0 or energy >= kmax:
+        return 0.0
+    
+    power = 2.0 + 1.5 * knockout
+    norm = (power + 1.0) * (power + 2.0) / kmax
+    x = energy / kmax
+    p = norm * x * pow(1.0 - x, power)
+    
+    return p
+
+
+def compute_rmc_spectrum_fractions():
+    """
+    Compute RMC spectrum fractions dynamically using plestid_integral.
+    
+    Uses the correct K_max values for each knockout mode:
+    - kmax_0n = 101.8667 MeV (0-nucleon knockout endpoint on Al-27)
+    - kmax_1n = 95.4489 MeV (1-nucleon knockout endpoint on Al-27)
+    
+    These fractions represent: R(* knockout | E > threshold) / R(* knockout)
+    """
+    global RMC_SPECTRUM_FRAC_0N_57, RMC_SPECTRUM_FRAC_1N_57
+    global RMC_SPECTRUM_FRAC_0N_80, RMC_SPECTRUM_FRAC_1N_80
+    
+    # Compute integrals for each knockout mode using its own K_max
+    frac_0_0n  = plestid_integral(0.0, RMC_KMAX_0N, RMC_KMAX_0N, 0)
+    frac_0_1n  = plestid_integral(0.0, RMC_KMAX_1N, RMC_KMAX_1N, 1)
+    frac_57_0n = plestid_integral(57.0, RMC_KMAX_0N, RMC_KMAX_0N, 0)
+    frac_57_1n = plestid_integral(57.0, RMC_KMAX_1N, RMC_KMAX_1N, 1)
+    frac_80_0n = plestid_integral(80.0, RMC_KMAX_0N, RMC_KMAX_0N, 0)
+    frac_80_1n = plestid_integral(80.0, RMC_KMAX_1N, RMC_KMAX_1N, 1)
+    
+    # Compute ratios: integral above threshold / integral from 0 to K_max
+    RMC_SPECTRUM_FRAC_0N_57 = frac_57_0n / frac_0_0n if frac_0_0n != 0 else 0.0
+    RMC_SPECTRUM_FRAC_1N_57 = frac_57_1n / frac_0_1n if frac_0_1n != 0 else 0.0
+    RMC_SPECTRUM_FRAC_0N_80 = frac_80_0n / frac_0_0n if frac_0_0n != 0 else 0.0
+    RMC_SPECTRUM_FRAC_1N_80 = frac_80_1n / frac_0_1n if frac_0_1n != 0 else 0.0
+    
+    if VERBOSE:
+        print(f"RMC Spectrum Fractions (computed via Plestid integral):")
+        print(f"  RMC_SPECTRUM_FRAC_0N_57 = {RMC_SPECTRUM_FRAC_0N_57:.6f}")
+        print(f"  RMC_SPECTRUM_FRAC_1N_57 = {RMC_SPECTRUM_FRAC_1N_57:.6f}")
+        print(f"  RMC_SPECTRUM_FRAC_0N_80 = {RMC_SPECTRUM_FRAC_0N_80:.6f}")
+        print(f"  RMC_SPECTRUM_FRAC_1N_80 = {RMC_SPECTRUM_FRAC_1N_80:.6f}")
+    
+    return (RMC_SPECTRUM_FRAC_0N_57, RMC_SPECTRUM_FRAC_1N_57, 
+            RMC_SPECTRUM_FRAC_0N_80, RMC_SPECTRUM_FRAC_1N_80)
+
+
+def rmc_spectrum_fraction(e_min, k_max, knockout):
+    """Return the RMC spectrum fraction above ``e_min`` relative to E > 57 MeV."""
+    reference_fraction = plestid_integral(57.0, k_max, k_max, knockout)
+    requested_fraction = plestid_integral(float(e_min), k_max, k_max, knockout)
+
+    if reference_fraction == 0.0:
+        return 0.0
+    return requested_fraction / reference_fraction
+
+# Compute RMC spectrum fractions from Plestid integral using correct K_max values
+compute_rmc_spectrum_fractions()
     
 #-------------------------------------------------------------------------------------#    
 def get_duty_factor(run_mode='1BB'):
@@ -398,7 +523,6 @@ def rpc_normalization(on_spill_time, t_min, internal, e_min, run_mode='1BB'):
     base_physics_events = (
         total_pot *
         target_stopped_pions_per_pot *
-        filter_efficiency *
         survival_probability_weight *
         RPC_PER_STOPPED_PION *
         rpc_e_sample_frac
@@ -500,7 +624,112 @@ def rmc_normalization(on_spill_time, internal, e_min, k_max=90.1, run_mode='1BB'
         
     return base_physics_events
 
-# get IPA Michel normalization:
+
+def rmc_0n_normalization(on_spill_time, e_min=80.0, internal=1, run_mode='1BB'):
+    """
+    Calculates the expected number of RMC 0-nucleon knockout (0N) events
+    above a given energy threshold.
+    
+    Uses the Plestid phase-space approximation spectrum shape.
+    
+    Args:
+        on_spill_time (float): Time the beam was on spill (seconds).
+        e_min (float): Minimum energy threshold for the spectrum cut (MeV).
+        internal (int/bool): Flag (1 or 0) to include internal conversion scaling.
+                            Defaults to 1.
+        run_mode (str): The operational mode ('1BB' or '2BB'). Defaults to '1BB'.
+    
+    Returns:
+        float: The expected number of RMC 0N physics events passing the cuts.
+    """
+    # 1. Calculate total Protons on Target (POT)
+    total_pot = get_pot(on_spill_time, run_mode)
+    
+    # 2. Determine the spectrum fraction above the requested threshold.
+    R_spectrum = rmc_spectrum_fraction(e_min, RMC_KMAX_0N, knockout=0)
+    
+    # 3. Calculate the branching ratio for 0N events above the energy threshold
+    br_0n_above_emin = (
+        RMC_BR_MUON_CAPTURE *
+        RMC_RATE_GT_57 *
+        RMC_BR_0N_FRAC_GT_57 *
+        R_spectrum
+    )
+    
+    # 4. Calculate base physics events
+    # Note: br_0n_above_emin already includes RMC_BR_MUON_CAPTURE, so we do NOT multiply by CAPTURES_PER_STOPPED_MUON
+    base_physics_events = (
+        total_pot *
+        target_stopped_muons_per_pot *
+        br_0n_above_emin
+    )
+    
+    # 5. Apply internal conversion scaling if requested
+    is_internal_conversion = bool(int(internal))
+    
+    if is_internal_conversion:
+        if VERBOSE:
+            print("RMC_0N_emin=", e_min)
+            print("RMC_0N_spectrum_frac=", R_spectrum)
+            print("RMC_0N_BR=", br_0n_above_emin)
+        
+        base_physics_events *= RMC_INTERNAL_EXTERNAL_RATIO
+    
+    return base_physics_events
+
+
+def rmc_1n_normalization(on_spill_time, e_min=80.0, internal=1, run_mode='1BB'):
+    """
+    Calculates the expected number of RMC 1-nucleon knockout (1N) events
+    above a given energy threshold.
+    
+    Uses the Plestid phase-space approximation spectrum shape.
+    
+    Args:
+        on_spill_time (float): Time the beam was on spill (seconds).
+        e_min (float): Minimum energy threshold for the spectrum cut (MeV).
+        internal (int/bool): Flag (1 or 0) to include internal conversion scaling.
+                            Defaults to 1.
+        run_mode (str): The operational mode ('1BB' or '2BB'). Defaults to '1BB'.
+    
+    Returns:
+        float: The expected number of RMC 1N physics events passing the cuts.
+    """
+    # 1. Calculate total Protons on Target (POT)
+    total_pot = get_pot(on_spill_time, run_mode)
+    
+    # 2. Determine the spectrum fraction above the requested threshold.
+    R_spectrum = rmc_spectrum_fraction(e_min, RMC_KMAX_1N, knockout=1)
+    
+    # 3. Calculate the branching ratio for 1N events above the energy threshold
+    br_1n_above_emin = (
+        RMC_BR_MUON_CAPTURE *
+        RMC_RATE_GT_57 *
+        RMC_BR_1N_FRAC_GT_57 *
+        R_spectrum
+    )
+    
+    # 4. Calculate base physics events
+    # Note: br_1n_above_emin already includes RMC_BR_MUON_CAPTURE, so we do NOT multiply by CAPTURES_PER_STOPPED_MUON
+    base_physics_events = (
+        total_pot *
+        target_stopped_muons_per_pot *
+        br_1n_above_emin
+    )
+    
+    # 5. Apply internal conversion scaling if requested
+    is_internal_conversion = bool(int(internal))
+    
+    if is_internal_conversion:
+        if VERBOSE:
+            print("RMC_1N_emin=", e_min)
+            print("RMC_1N_spectrum_frac=", R_spectrum)
+            print("RMC_1N_BR=", br_1n_above_emin)
+        
+        base_physics_events *= RMC_INTERNAL_EXTERNAL_RATIO
+    
+    return base_physics_events
+
 def ipaMichel_normalization(on_spill_time, ipa_de_min, run_mode='1BB'):
     """
     Calculates the expected number of IPA (Incoming Particle Decay After Stopping)
