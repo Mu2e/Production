@@ -6,12 +6,57 @@
 #include "Offline/CRVResponse/fcl/prolog.fcl"
 #include "Offline/Filters/fcl/prolog.fcl"
 #include "Offline/Compression/fcl/prolog.fcl"
+#include "Offline/fcl/standardServices.fcl"
+# Defines ResamplingProducer / ResamplingFilter, used by the VD chain templates below. Needed
+# here so this prolog stands on its own rather than relying on the including file to have pulled
+# the STMMC prolog in first.
+#include "Offline/STMMC/fcl/prolog.fcl"
 #
 BEGIN_PROLOG
 
 STMPileup: {
   producers : {
     protonTimeOffset : @local::CommonMC.protonTimeOffset
+
+    # Shared VDResamplerGenerateMix configuration, used by VDResamplerGenerateMix.fcl (standalone
+    # generation and sample dump) and VDResamplerToCrystals.fcl (generation followed by
+    # propagation to the STM crystals). Override individual members in the including file where
+    # they need to differ.
+    VDResamplerGenerator : {
+      module_type : VDResamplerGenerateMix
+      hitSummaryFiles : [
+        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025ai.001430_00000000.txt", # EleBeam
+        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025ai.001430_00000001.txt", # MuBeam
+        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025au.001430_00000002.txt", # TargetStops1809
+        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025av.001430_00000003.txt"  # Neutrals
+      ] # requiring a list
+      potsPerFile : [ # <number of simulated events> / <number of output from last stage> * <POT of the last stage>
+        98360017778.32725, # dts.mu2e.STMBeamToVDEle116.MDC2025ai.art    : 5441845688 / 5532579  * 1e8
+        467691847195.7197, # dts.mu2e.STMBeamToVDMu116.MDC2025ai.art     : 1e9        / 213816   * 1e8
+        5186958594225.648, # dts.mu2e.STM1809ToVD116.MDC2025au.art       : 4e9     / 1442670/1e3 * 4e9 / 213816  * 1e8
+        3743491962.619810  # dts.mu2e.STMNeutralsToVD116Cat.MDC2025av.art: 2000000000 / 53426053 * 1e8
+      ] # list of corresponding POTs
+      # ModelFileDir is now overridden by ModelFileList
+      ModelFileList : "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerModels_VD116_catalog.MDC2025ai.001430_00000000.txt" # path to a .txt catalog listing one model-file path per line
+      resamplerSourceRootFiles : [
+        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/nts.yongyiwu.STMVDResamplerConfigure_VD116_hitDump.MDC2025ai.001430_00000000.root", # EleBeam
+        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/nts.yongyiwu.STMVDResamplerConfigure_VD116_hitDump.MDC2025ai.001430_00000001.root", # MuBeam
+        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/nts.yongyiwu.STMVDResamplerConfigure_VD116_hitDump.MDC2025au.001430_00000002.root", # TargetStops1809
+        "/cvmfs/mu2e.opensciencegrid.org/DataFiles/OfflineData/STMVDResampler/MDC2025ai/nts.yongyiwu.STMVDResamplerConfigure_VD116_hitDump.MDC2025av.001430_00000003.root"  # Neutrals
+      ] # list of root files containing raw data, same order as hitSummaryFiles. needed for SBDMstage1Method != DIFFUSION, specified in hitSummaryFiles
+      # resamplerSourceTreeNames : "VDResamplerTrainingSetup/ttree" # default
+      # useSummaryFile : [true, true, true, true] # optional, default to all true, if false, the corresponding hitSummaryFiles entry will be skipped
+      useHeun : true
+      useSDE : true
+      sdeToOdeSigmaThreshold : 0.1
+      useEMANetworkIfAvailable : true
+      diffusionSteps : 500
+      doROOTDump : true
+      doValidationPlots : true # requires a resamplerSourceRootFiles entry for every source
+      # REQUIRED: supplies VirtualDetectorID, VDz0 and VDr from its common_training_config,
+      # plus the peak-tag lines. Must be the same plan the models were trained with.
+      trainingPlanFile : "Offline/STMMC/fcl/VDResamplerTrainingPlan.fcl"
+    }
   }
 
   filters : {
@@ -38,6 +83,42 @@ STMPileup: {
     }
   }
 
+  # Templates for a single virtual detector extraction + compression chain, used by
+  # VDResamplerToCrystals.fcl to build one chain per VD (101, 89, 90). Defined here rather than
+  # in the job fcl because FHiCL does not formally support @local:: references into a table that
+  # is still being defined - a producer cannot be cloned from a sibling inside the same
+  # physics.producers block. Set VirtualDetectorID and stepPointMCTags in the including file.
+  extractVirtualDetectorStepsTemplate : {
+    # Creates StepPointMCs products holding only the StepPointMCs in the selected virtual
+    # detector. Empty collections are produced when there are no hits, so the filtering has to be
+    # done downstream by an STMResamplingFilter.
+    module_type : STMResamplingProducer
+    StepPointMCsTag : @local::ResamplingProducer.StepPointMCsTag
+    VirtualDetectorID : @local::ResamplingProducer.VirtualDetectorID # 101, override per VD
+  }
+  compressDetStepMCsSTMTemplate : {
+    # Keeps SimParticles and StepPointMCs going through the selected virtual detector only
+    module_type : CompressDetStepMCs
+    strawGasStepTag : ""
+    caloShowerStepTag : ""
+    surfaceStepTag : ""
+    crvStepTag : ""
+    simParticleTags : [ "g4run" ]
+    debugLevel : 0
+    stepPointMCTags : [ "extractVirtualDetectorSteps101" ] # override per VD
+    compressionOptions : {
+      strawGasStepCompressionLevel : "noCompression"
+      caloShowerStepCompressionLevel : "noCompression"
+      crvStepCompressionLevel : "noCompression"
+      surfaceStepCompressionLevel : "noCompression"
+      stepPointMCCompressionLevel : "noCompression"
+      simParticleCompressionLevel : "noCompression"
+      keepNGenerations : -1
+      mcTrajectoryCompressionLevel : "noCompression"
+    }
+    mcTrajectoryTag : ""
+  }
+
   BeamToVDKeptProducts : [
     "keep art::EventIDs_*_*_*",
     "keep mu2e::GenParticles_*_*_*",
@@ -55,6 +136,26 @@ STMPileup: {
     module_type : RootInput
     fileNames: @nil
   }
+
+  VDResamplerServices : {
+    message : @local::default_message
+    GlobalConstantsService : {
+      inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt"
+    }
+  }
+
+  VDResamplerGenSource : {
+    module_type : EmptyEvent
+    maxEvents : @nil
+  }
+
+  VDResamplerGenServices : {
+    @table::Services.Sim
+    TimeTracker: {
+      printSummary: true  # default
+    }
+  }
+
 }
 
 END_PROLOG
