@@ -12,6 +12,16 @@ BEGIN_PROLOG
 
 Primary: {
   producers : {
+
+    # End of PrimaryPath: counts what the primary output keeps, against the
+    # normalization TargetStopResampler carried through from the pileup stage.
+    # upstreamTag, not genCountTag -- this is a resampling stage, so the job's
+    # own GenEventCount counts draws.
+    primaryCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "TargetStopResampler:resampled"
+    }
+
     @table::TrackerMC.StepProducers
     @table::CaloMC.producers
     CrvSteps :{
@@ -87,6 +97,18 @@ Primary: {
           volumeInfoMixer: {
             srInput: "compressPVTargetStops"
             evtOutInstanceName: "eventlevel"
+          }
+          # The product form, not the bootstrap: a TargetStops file produced by
+          # the pileup stage carries the normalization its targetStopCounter
+          # wrote, already accumulated back to the POT stage. This is where the
+          # chain pays off -- nothing per-dataset has to be supplied here.
+          #
+          # A TargetStops file made BEFORE this workflow has no such product and
+          # art aborts on the first event; resample such a pool with the
+          # bootstrap instead (genCounterLabel + poolEventCount).
+          stageNormMixer: {
+            moduleLabel   : "targetStopCounter"
+            srOutInstance : "resampled"
           }
         }
       }

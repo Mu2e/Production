@@ -12,6 +12,36 @@ BEGIN_PROLOG
 
 Pileup: {
   producers : {
+
+    # One per output stream, at the END of that stream's path. upstreamTag
+    # points at what beamResampler's stageNormMixer wrote: for a RESAMPLING
+    # stage genCountTag would count draws, not generated events.
+    #
+    # The labels are load-bearing. SubRun products ignore SelectEvents, so all
+    # five of this job's streams carry all five of these products -- exactly as
+    # they already all carry every RandomPrescaleFilter's PrescaleFilterFraction
+    # -- and only the label says which stream a count belongs to.
+    targetStopCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "beamResampler:resampled"
+    }
+    polyStopCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "beamResampler:resampled"
+    }
+    IPAStopCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "beamResampler:resampled"
+    }
+    flashCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "beamResampler:resampled"
+    }
+    earlyFlashCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "beamResampler:resampled"
+    }
+
     @table::TrackerMC.StepProducers
     @table::CaloMC.producers
     CrvSteps :{
@@ -245,6 +275,26 @@ Pileup: {
           volumeInfoMixer: {
             srInput: "compressPVBeam"
             evtOutInstanceName: "eventlevel"
+          }
+          # Carry the resampled pool's normalization through to the output.
+          # Without this the chain breaks here: this job's source is EmptyEvent,
+          # so its own GenEventCount counts DRAWS, and the pool arrives as a
+          # mixing secondary whose SubRun products do not reach the output.
+          #
+          # The bootstrap form is used because no MuBeamCat dataset carries a
+          # StageNormalization yet. poolEventCount is the total events in ALL of
+          # fileNames and must be supplied per job, exactly as MaxEventsToSkip
+          # is; draws are uniform over the pool, so the pool-level ratio is the
+          # correct per-draw expectation. Once a pool is produced by a job
+          # running these counters, drop these two keys and set
+          #   moduleLabel : "targetStopCounter"
+          # instead -- the two are alternatives, not a preference and a
+          # fallback, because art aborts on a declared mix op whose product the
+          # secondary lacks.
+          stageNormMixer: {
+            genCounterLabel : "genCounter"
+            poolEventCount  : @nil
+            srOutInstance   : "resampled"
           }
         }
       }

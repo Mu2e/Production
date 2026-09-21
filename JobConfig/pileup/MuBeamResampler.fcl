@@ -32,12 +32,12 @@ physics: {
     @table::Common.analyzers
   }
   # setup paths
-  targetStopPath : [ @sequence::Pileup.beamResamplerSequence, @sequence::Common.g4Sequence, TargetStopPrescaleFilter, TargetMuonFinder, TargetStopFilter, compressPVTargetStops]
-  polyStopPath : [ @sequence::Pileup.beamResamplerSequence, @sequence::Common.g4Sequence, PolyStopPrescaleFilter, PolyMuonFinder, PolyStopFilter, compressPVPolyStops]
-  IPAStopPath : [ @sequence::Pileup.beamResamplerSequence, @sequence::Common.g4Sequence, IPAMuonFinder, IPAStopFilter, compressPVIPAStops]
+  targetStopPath : [ @sequence::Pileup.beamResamplerSequence, @sequence::Common.g4Sequence, TargetStopPrescaleFilter, TargetMuonFinder, TargetStopFilter, compressPVTargetStops, targetStopCounter]
+  polyStopPath : [ @sequence::Pileup.beamResamplerSequence, @sequence::Common.g4Sequence, PolyStopPrescaleFilter, PolyMuonFinder, PolyStopFilter, compressPVPolyStops, polyStopCounter]
+  IPAStopPath : [ @sequence::Pileup.beamResamplerSequence, @sequence::Common.g4Sequence, IPAMuonFinder, IPAStopFilter, compressPVIPAStops, IPAStopCounter]
   IPAEndRingStopPath : [ @sequence::Pileup.beamResamplerSequence, @sequence::Common.g4Sequence, IPAEndRingMuonFinder, IPAEndRingStopFilter, compressPVIPAEndRingStops]
-  flashPath : [ @sequence::Pileup.beamResamplerSequence, @sequence::Common.g4Sequence, @sequence::Pileup.flashSequence, @sequence::Pileup.DetStepSequence ]
-  earlyFlashPath : [ @sequence::Pileup.beamResamplerSequence, @sequence::Common.g4Sequence, @sequence::Pileup.flashSequence, @sequence::Pileup.EarlyDetStepSequence ]
+  flashPath : [ @sequence::Pileup.beamResamplerSequence, @sequence::Common.g4Sequence, @sequence::Pileup.flashSequence, @sequence::Pileup.DetStepSequence, flashCounter ]
+  earlyFlashPath : [ @sequence::Pileup.beamResamplerSequence, @sequence::Common.g4Sequence, @sequence::Pileup.flashSequence, @sequence::Pileup.EarlyDetStepSequence, earlyFlashCounter ]
   trigger_paths: [ flashPath, earlyFlashPath, targetStopPath, polyStopPath, IPAStopPath ]
   outPath : [ FlashOutput, EarlyFlashOutput, TargetStopOutput, PolyStopOutput, IPAStopOutput ]
   end_paths: [outPath]
