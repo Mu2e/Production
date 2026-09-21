@@ -10,6 +10,21 @@
 #include "Offline/EventGenerator/fcl/prolog.fcl"
 BEGIN_PROLOG
 
+# One line to enable stage normalization on a resampling primary, naming the
+# pool's own counter, e.g.
+#
+#   physics.filters.TargetStopResampler.mu2e.products.stageNormMixer : @local::PrimaryStageNorm.fromTargetStops
+#
+# Not on by default -- see the note in pileup/prolog.fcl.
+PrimaryStageNorm : {
+  fromTargetStops   : { moduleLabel : "targetStopCounter"   srOutInstance : "resampled" }
+  fromTargetPiStops : { moduleLabel : "targetPiStopCounter" srOutInstance : "resampled" }
+  fromIPAStops      : { moduleLabel : "IPAStopCounter"      srOutInstance : "resampled" }
+  fromTargetGammas  : { moduleLabel : "targetGammaCounter"  srOutInstance : "resampled" }
+  fromWireGammas    : { moduleLabel : "wireGammaCounter"    srOutInstance : "resampled" }
+  fromIPAGammas     : { moduleLabel : "ipaGammaCounter"     srOutInstance : "resampled" }
+}
+
 Primary: {
   producers : {
 

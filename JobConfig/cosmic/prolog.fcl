@@ -155,6 +155,13 @@ Cosmic: {
   # itself (countAsGenerated), placed right after generate, and the stream
   # counters inherit from it. The existing genCounter/genCounterLow are left
   # exactly where they are and the livetime bookkeeping is untouched.
+  # One line to enable stage normalization on S2, naming the S1 stream it
+  # resamples. Not on by default -- see the note in pileup/prolog.fcl.
+  StageNorm : {
+    fromS1    : { moduleLabel : "s1Counter"    srOutInstance : "resampled" }
+    fromS1Low : { moduleLabel : "s1LowCounter" srOutInstance : "resampled" }
+  }
+
   cosmicGenCounter : {
     module_type : StageNormalizationCounter
     countAsGenerated : true

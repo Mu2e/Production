@@ -10,6 +10,23 @@
 #
 BEGIN_PROLOG
 
+# Enabling stage normalization on a resampling stage is one line, naming the
+# pool's own counter, e.g. in MuBeamResampler.fcl or a campaign override:
+#
+#   physics.filters.beamResampler.mu2e.products.stageNormMixer : @local::PileupStageNorm.fromMuBeam
+#
+# It is NOT on by default: art aborts on a mix op whose product the secondary
+# lacks, and no dataset made before this workflow carries one. Use it once the
+# pool is produced by a job running the counters. For a legacy pool, state its
+# totals instead (poolGenCount + poolEventCount over all of fileNames).
+PileupStageNorm : {
+  fromMuBeam      : { moduleLabel : "muonCounter"        srOutInstance : "resampled" }
+  fromEleBeam     : { moduleLabel : "electronCounter"    srOutInstance : "resampled" }
+  fromNeutrals    : { moduleLabel : "neutralsCounter"    srOutInstance : "resampled" }
+  fromPiBeam      : { moduleLabel : "pionCounter"        srOutInstance : "resampled" }
+  fromTargetStops : { moduleLabel : "targetStopCounter"  srOutInstance : "resampled" }
+}
+
 Pileup: {
   producers : {
 

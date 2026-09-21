@@ -4,4 +4,3 @@
 physics.filters.CosmicResampler.mu2e.products.cosmicLivetimeMixer.genCounterLabel: "genCounterLow::Primary"
 physics.filters.PrimaryFilter.MaximumPartMom: 500
 
-physics.filters.CosmicResampler.mu2e.products.stageNormMixer.moduleLabel : "s1LowCounter"

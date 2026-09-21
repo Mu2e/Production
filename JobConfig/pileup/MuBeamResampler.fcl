@@ -137,10 +137,6 @@ physics.producers.compressDetStepMCs.simParticleTags : ["FlashFilter"]
 #   physics.filters.beamResampler.mu2e.products.stageNormMixer: {
 #     poolGenCount : <GenEventCount total over fileNames>
 #     poolEventCount : <events over fileNames>   srOutInstance : "resampled" }
-physics.filters.beamResampler.mu2e.products.stageNormMixer : {
-  moduleLabel   : "muonCounter"
-  srOutInstance : "resampled"
-}
 physics.producers.targetStopCounter : @local::Pileup.producers.targetStopCounter
 physics.producers.polyStopCounter   : @local::Pileup.producers.polyStopCounter
 physics.producers.IPAStopCounter    : @local::Pileup.producers.IPAStopCounter

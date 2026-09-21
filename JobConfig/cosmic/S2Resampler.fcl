@@ -63,9 +63,5 @@ physics.producers.g4run.TrajectoryControl.saveTrajectoryMomentumCut : 40 # MeV/c
 # overrides the label to s1LowCounter, as it already does for the livetime.
 # Independent of cosmicLivetimeMixer: livetime is the exposure, this is how
 # many generated cosmics the survivors represent.
-physics.filters.CosmicResampler.mu2e.products.stageNormMixer : {
-  moduleLabel   : "s1Counter"
-  srOutInstance : "resampled"
-}
 physics.producers.s2Counter : @local::Cosmic.s2Counter
 physics.PrimaryPath : [ @sequence::physics.PrimaryPath, s2Counter ]

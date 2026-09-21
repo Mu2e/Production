@@ -27,9 +27,5 @@ physics.producers.g4run.inputs.updateEventLevelVolumeInfos: {
 #   physics.filters.TargetStopResampler.mu2e.products.stageNormMixer: {
 #     poolGenCount : <GenEventCount total over fileNames>
 #     poolEventCount : <events over fileNames>   srOutInstance : "resampled" }
-physics.filters.TargetStopResampler.mu2e.products.stageNormMixer : {
-  moduleLabel   : "targetStopCounter"
-  srOutInstance : "resampled"
-}
 physics.producers.primaryCounter : @local::Primary.producers.primaryCounter
 physics.PrimaryPath : [ @sequence::physics.PrimaryPath, primaryCounter ]

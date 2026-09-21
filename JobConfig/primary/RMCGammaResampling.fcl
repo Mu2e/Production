@@ -38,9 +38,5 @@ outputs.PrimaryOutput.fileName : "dts.owner.RMCGammaConversions.version.sequence
 #   physics.filters.GammaConversionResampler.mu2e.products.stageNormMixer: {
 #     poolGenCount : <GenEventCount total over fileNames>
 #     poolEventCount : <events over fileNames>   srOutInstance : "resampled" }
-physics.filters.GammaConversionResampler.mu2e.products.stageNormMixer : {
-  moduleLabel   : "targetGammaCounter"
-  srOutInstance : "resampled"
-}
 physics.producers.primaryCounter : @local::Primary.producers.primaryGammaCounter
 physics.PrimaryPath : [ @sequence::physics.PrimaryPath, primaryCounter ]

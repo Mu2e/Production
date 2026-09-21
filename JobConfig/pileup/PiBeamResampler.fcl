@@ -72,9 +72,5 @@ physics.producers.g4run.SDConfig.preSimulatedHits:  ["beamResampler:virtualdetec
 #   physics.filters.beamResampler.mu2e.products.stageNormMixer: {
 #     poolGenCount : <GenEventCount total over fileNames>
 #     poolEventCount : <events over fileNames>   srOutInstance : "resampled" }
-physics.filters.beamResampler.mu2e.products.stageNormMixer : {
-  moduleLabel   : "pionCounter"
-  srOutInstance : "resampled"
-}
 physics.producers.targetPiStopCounter : @local::Pileup.producers.targetPiStopCounter
 physics.targetStopPath : [ @sequence::physics.targetStopPath, targetPiStopCounter ]

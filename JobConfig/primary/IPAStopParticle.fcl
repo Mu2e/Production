@@ -31,9 +31,5 @@ physics.producers.g4run.inputs.updateEventLevelVolumeInfos: {
 #   physics.filters.IPAMuminusStopResampler.mu2e.products.stageNormMixer: {
 #     poolGenCount : <GenEventCount total over fileNames>
 #     poolEventCount : <events over fileNames>   srOutInstance : "resampled" }
-physics.filters.IPAMuminusStopResampler.mu2e.products.stageNormMixer : {
-  moduleLabel   : "IPAStopCounter"
-  srOutInstance : "resampled"
-}
 physics.producers.primaryCounter : @local::Primary.producers.primaryIPAStopCounter
 physics.PrimaryPath : [ @sequence::physics.PrimaryPath, primaryCounter ]
