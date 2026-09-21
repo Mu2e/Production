@@ -281,20 +281,30 @@ Pileup: {
           # so its own GenEventCount counts DRAWS, and the pool arrives as a
           # mixing secondary whose SubRun products do not reach the output.
           #
-          # The bootstrap form is used because no MuBeamCat dataset carries a
-          # StageNormalization yet. poolEventCount is the total events in ALL of
-          # fileNames and must be supplied per job, exactly as MaxEventsToSkip
-          # is; draws are uniform over the pool, so the pool-level ratio is the
-          # correct per-draw expectation. Once a pool is produced by a job
-          # running these counters, drop these two keys and set
-          #   moduleLabel : "targetStopCounter"
-          # instead -- the two are alternatives, not a preference and a
-          # fallback, because art aborts on a declared mix op whose product the
-          # secondary lacks.
+          # muonCounter is what BeamSplitter writes onto MuBeamCat, so a pool
+          # built with this workflow needs NOTHING supplied per job -- the
+          # normalization comes back to the POT stage on its own.
+          #
+          # A MuBeamCat made BEFORE this workflow has no such product, and art
+          # aborts on the first event rather than calling the mix op with an
+          # empty input. Resample a legacy pool with the bootstrap instead,
+          # which needs the pool's total event count stated because that is not
+          # knowable from a mixing secondary:
+          #
+          #   physics.filters.beamResampler.mu2e.products.stageNormMixer: {
+          #     poolGenCount    : <GenEventCount total over ALL of fileNames>
+          #     poolEventCount  : <events in ALL of fileNames>
+          #     srOutInstance   : "resampled"
+          #   }
+          #
+          # Both totals are stated rather than read: a mix op would see the
+          # DRAWN SUBRUN's GenEventCount against the whole pool's event count,
+          # which is wrong by the number of subruns.
+          #
+          # The two are alternatives, not a preference and a fallback.
           stageNormMixer: {
-            genCounterLabel : "genCounter"
-            poolEventCount  : @nil
-            srOutInstance   : "resampled"
+            moduleLabel   : "muonCounter"
+            srOutInstance : "resampled"
           }
         }
       }
@@ -416,7 +426,11 @@ Pileup: {
     "keep mu2e::CrvSteps_compressDetStepMCs_*_*",
     "keep mu2e::SimParticlemv_compressDetStepMCs_*_*",
     "keep mu2e::GenParticles_compressDetStepMCs_*_*",
-    "keep mu2e::*FilterFraction_*_*_*" ]
+    "keep mu2e::*FilterFraction_*_*_*",
+    # StageNormalization rides alongside the FilterFraction products -- it is
+    # not matched by the *FilterFraction pattern above, and an output that
+    # drops it loses the only in-file record of what the events represent.
+    "keep mu2e::StageNormalization_*_*_*" ]
   # define some common sequences
   beamResamplerSequence : [genCounter, protonTimeOffset, beamResampler]
   neutralsResamplerSequence : [genCounter, protonTimeOffset, neutralsResampler]

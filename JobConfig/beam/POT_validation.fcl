@@ -30,6 +30,8 @@ physics : {
     compressPVextmonBeam : @local::Beam.producers.compressPVextmonBeam
     compressPVextmonRegion : @local::Beam.producers.compressPVextmonRegion
     compressPVFull : @local::Beam.producers.compressPVFull
+    beamCounter : @local::Beam.producers.beamCounter
+    neutralsCounter : @local::Beam.producers.neutralsCounter
   }
   filters: {
     @table::Common.filters
@@ -40,8 +42,8 @@ physics : {
   }
   analyzers : @local::Common.analyzers
   # setup the paths
-  BeamPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence, BeamFilter, compressPVBeam]
-  NeutralsPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence, NeutralsFilter, compressPVNeutrals]
+  BeamPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence, BeamFilter, compressPVBeam, beamCounter]
+  NeutralsPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence, NeutralsFilter, compressPVNeutrals, neutralsCounter]
   extmonBeamPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence, extmonBeamFilter, compressPVextmonBeam]
   extmonRegionPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence, extmonRegionFilter, compressPVextmonRegion]
   truncatedPath : [ @sequence::Common.generateSequence, g4run, "!g4consistentFilter", compressPVFull]

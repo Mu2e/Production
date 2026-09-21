@@ -192,7 +192,11 @@ Beam: {
     "keep mu2e::StatusG4_*_*_*",
     "keep *_compressPV*_*_*",
     "keep *_*Filter_*_*",
-    "keep mu2e::*FilterFraction_*_*_*"
+    "keep mu2e::*FilterFraction_*_*_*",
+    # StageNormalization rides alongside the FilterFraction products -- it is
+    # not matched by the *FilterFraction pattern above, and an output that
+    # drops it loses the only in-file record of what the events represent.
+    "keep mu2e::StageNormalization_*_*_*"
   ]
 
 }

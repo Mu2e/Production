@@ -207,6 +207,10 @@ Primary: {
     "keep mu2e::GenEventCount_*_*_*" ,
     "keep art::EventIDs_*_*_*", # these are the original eventids prior to resampling
     "keep mu2e::CosmicLivetime_*_*_*",
+    # The same job as CosmicLivetime above, for the rest of the chain: what
+    # this stream's events represent at the origin. Dropping it here loses the
+    # only in-file record, and everything downstream inherits the loss.
+    "keep mu2e::StageNormalization_*_*_*",
     "keep mu2e::EventWeight_*_*_*",
     "keep art::TriggerResults_*_*_*",
     "keep mu2e::StepPointMCs_CosmicResampler_crvStage1_*", # this is needed to keep track of low/all CRV split
