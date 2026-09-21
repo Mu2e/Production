@@ -1,0 +1,23 @@
+#
+# Opt-in: record stage normalization on an RMC gamma-conversion resampling
+# stage. Include AFTER primary/RMCGammaResampling.fcl (or the IPA/Wire
+# variants).
+#
+# The pool is a gamma-stop sample written by RMCGammaStops.fcl, which is itself
+# a primary stage resampling target stops -- so if that job ran with
+# primary/stageNormGammaStops.fcl its pools carry their own counters, and the
+# chain reaches back through them to the POT stage.
+#
+# For a gamma-stop pool predating the workflow, state poolGenCount and
+# poolEventCount instead.
+#
+# The default is the TARGET gamma pool. For the wire or IPA pools, which the
+# same job writes with their own efficiencies, override the label:
+#   ... .stageNormMixer.moduleLabel : "wireGammaCounter"   (RMCWireGammaResampling)
+#   ... .stageNormMixer.moduleLabel : "ipaGammaCounter"    (RMCIPAGammaResampling)
+physics.filters.GammaConversionResampler.mu2e.products.stageNormMixer : {
+  moduleLabel   : "targetGammaCounter"
+  srOutInstance : "resampled"
+}
+physics.producers.primaryCounter : @local::Primary.producers.primaryGammaCounter
+physics.PrimaryPath : [ @sequence::physics.PrimaryPath, primaryCounter ]

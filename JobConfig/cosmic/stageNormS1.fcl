@@ -1,0 +1,29 @@
+#
+# Opt-in: record stage normalization on the cosmic S1 stage.
+# Include AFTER Production/JobConfig/cosmic/S1DSStops.fcl (or a variant).
+#
+# S1 is the ORIGIN of the cosmic chain, but its genCounter is NOT the generated
+# count: the paths deliberately place it at the END so that CosmicLivetime
+# scales correctly after resampling (see the comment in S1DSStops.fcl). Reading
+# it here would make nGenEquivalent equal nPassed and report an efficiency of 1.
+#
+# A second GenEventCounter is not an option either: GenEventCounter refuses to
+# write when another GenEventCount is already in the SubRun. So cosmicGenCounter
+# counts the generated events itself, placed right after generate, and the two
+# stream counters inherit from it. genCounter and genCounterLow keep their
+# positions and the livetime bookkeeping is untouched.
+#
+# Note the two streams have DIFFERENT normalizations -- S1LowPath applies
+# S1LowFilter on top -- so they get separate counters, and a downstream S2
+# must name the one belonging to the stream it resamples.
+#
+physics.producers.cosmicGenCounter : @local::Cosmic.cosmicGenCounter
+physics.producers.s1Counter        : @local::Cosmic.s1Counter
+physics.producers.s1LowCounter     : @local::Cosmic.s1LowCounter
+
+physics.S1Path    : [ generate, cosmicGenCounter, @sequence::Common.g4Sequence, stepPointMomentumFilter, cosmicFilter, compressPV, genCounter, s1Counter ]
+physics.S1LowPath : [ generate, cosmicGenCounter, @sequence::Common.g4Sequence, stepPointMomentumFilter, cosmicFilter, S1LowFilter, compressPV, genCounterLow, s1LowCounter ]
+
+# Both outputs state their keeps explicitly.
+outputs.S1Output.outputCommands    : [ @sequence::outputs.S1Output.outputCommands,    "keep mu2e::StageNormalization_*_*_*", "keep mu2e::GenEventCount_*_*_*" ]
+outputs.S1LowOutput.outputCommands : [ @sequence::outputs.S1LowOutput.outputCommands, "keep mu2e::StageNormalization_*_*_*", "keep mu2e::GenEventCount_*_*_*" ]

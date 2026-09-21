@@ -32,6 +32,25 @@ Primary: {
       module_type : StageNormalizationCounter
       upstreamTag : "IPAMuminusStopResampler:resampled"
     }
+    primaryGammaCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "GammaConversionResampler:resampled"
+    }
+    # RMCGammaStops writes three gamma pools from one resampling job, so each
+    # gets its own counter -- the streams have different efficiencies and a
+    # conversion stage must name the pool it actually resamples.
+    targetGammaCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "TargetStopResampler:resampled"
+    }
+    wireGammaCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "TargetStopResampler:resampled"
+    }
+    ipaGammaCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "TargetStopResampler:resampled"
+    }
 
     @table::TrackerMC.StepProducers
     @table::CaloMC.producers

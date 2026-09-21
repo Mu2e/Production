@@ -113,6 +113,7 @@ outputs.TargetOutput : {
 		      "keep art::EventIDs_*_*_*",
 		      "keep mu2e::GenParticles_*_*_*",
 		      "keep mu2e::GenEventCount_*_*_*",
+		      "keep mu2e::StageNormalization_*_*_*",
 		      "drop mu2e::StatusG4_*_*_*",
 		      "keep *_GammasFilter_*_*",
 		      "keep *_compressGammas_*_*"]
@@ -126,6 +127,7 @@ outputs.WireOutput : {
 		      "keep art::EventIDs_*_*_*",
 		      "keep mu2e::GenParticles_*_*_*",
 		      "keep mu2e::GenEventCount_*_*_*",
+		      "keep mu2e::StageNormalization_*_*_*",
 		      "drop mu2e::StatusG4_*_*_*",
 		      "keep *_WireGammasFilter_*_*",
 		      "keep *_compressWireGammas_*_*"]
@@ -139,6 +141,7 @@ outputs.IPAOutput : {
 		      "keep art::EventIDs_*_*_*",
 		      "keep mu2e::GenParticles_*_*_*",
 		      "keep mu2e::GenEventCount_*_*_*",
+		      "keep mu2e::StageNormalization_*_*_*",
 		      "drop mu2e::StatusG4_*_*_*",
 		      "keep *_IPAGammasFilter_*_*",
 		      "keep *_compressIPAGammas_*_*"]

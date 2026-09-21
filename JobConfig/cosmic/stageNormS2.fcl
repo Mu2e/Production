@@ -1,0 +1,21 @@
+#
+# Opt-in: record stage normalization on the cosmic S2 resampling stage.
+# Include AFTER Production/JobConfig/cosmic/S2Resampler.fcl.
+#
+# The pool is the S1 INCLUSIVE stream, so the label is s1Counter. For the 'Low'
+# variant (S2ResamplerLow.fcl, which resamples the S1LowPath output) override
+# it the same way that file already overrides the livetime counter label:
+#
+#   physics.filters.CosmicResampler.mu2e.products.stageNormMixer.moduleLabel : "s1LowCounter"
+#
+# This is independent of cosmicLivetimeMixer, which is already configured on
+# CosmicResampler and carries the livetime. The two answer different questions:
+# livetime is the cosmic exposure, this is how many generated cosmic events the
+# surviving events represent.
+#
+physics.filters.CosmicResampler.mu2e.products.stageNormMixer : {
+  moduleLabel   : "s1Counter"
+  srOutInstance : "resampled"
+}
+physics.producers.s2Counter : @local::Cosmic.s2Counter
+physics.PrimaryPath : [ @sequence::physics.PrimaryPath, s2Counter ]
