@@ -17,6 +17,20 @@ BEGIN_PROLOG
 #
 # Not on by default -- see the note in pileup/prolog.fcl.
 PrimaryStageNorm : {
+  # A primary resamples MuminusStopsCat / MuplusStopsCat, which the stop
+  # selectors make from the target-stop stream 1:1 -- so the label is the
+  # SELECTOR's counter. Naming targetStopCounter instead would use the count of
+  # every target stop rather than the selected ones: 79203/79278 for mu- in
+  # Run1B, and 75/79278 for mu+, a factor of about 1000.
+  fromMuminusStops  : { moduleLabel : "muminusStopCounter" srOutInstance : "resampled" }
+  fromMuplusStops   : { moduleLabel : "muplusStopCounter"  srOutInstance : "resampled" }
+  fromPolyMuminusStops : { moduleLabel : "polyMuminusStopCounter" srOutInstance : "resampled" }
+  fromPolyMuplusStops  : { moduleLabel : "polyMuplusStopCounter"  srOutInstance : "resampled" }
+  fromIPAMuminusStops  : { moduleLabel : "ipaMuminusStopCounter"  srOutInstance : "resampled" }
+  fromIPAMuplusStops   : { moduleLabel : "ipaMuplusStopCounter"   srOutInstance : "resampled" }
+  fromPiminusStops     : { moduleLabel : "piminusStopCounter"     srOutInstance : "resampled" }
+  fromPiplusStops      : { moduleLabel : "piplusStopCounter"      srOutInstance : "resampled" }
+  # Only for a pool taken straight from the pileup stage with no selector.
   fromTargetStops   : { moduleLabel : "targetStopCounter"   srOutInstance : "resampled" }
   fromTargetPiStops : { moduleLabel : "targetPiStopCounter" srOutInstance : "resampled" }
   fromIPAStops      : { moduleLabel : "IPAStopCounter"      srOutInstance : "resampled" }
@@ -35,6 +49,7 @@ Primary: {
     primaryCounter : {
       module_type : StageNormalizationCounter
       upstreamTag : "TargetStopResampler:resampled"
+        required    : false
     }
     # Same job for primaries starting from other beam inputs: the counter must
     # name the resampler that stage actually runs, since that is what carried
@@ -42,14 +57,17 @@ Primary: {
     primaryPiStopCounter : {
       module_type : StageNormalizationCounter
       upstreamTag : "TargetPiStopResampler:resampled"
+        required    : false
     }
     primaryIPAStopCounter : {
       module_type : StageNormalizationCounter
       upstreamTag : "IPAMuminusStopResampler:resampled"
+        required    : false
     }
     primaryGammaCounter : {
       module_type : StageNormalizationCounter
       upstreamTag : "GammaConversionResampler:resampled"
+        required    : false
     }
     # RMCGammaStops writes three gamma pools from one resampling job, so each
     # gets its own counter -- the streams have different efficiencies and a
@@ -57,14 +75,17 @@ Primary: {
     targetGammaCounter : {
       module_type : StageNormalizationCounter
       upstreamTag : "TargetStopResampler:resampled"
+        required    : false
     }
     wireGammaCounter : {
       module_type : StageNormalizationCounter
       upstreamTag : "TargetStopResampler:resampled"
+        required    : false
     }
     ipaGammaCounter : {
       module_type : StageNormalizationCounter
       upstreamTag : "TargetStopResampler:resampled"
+        required    : false
     }
 
     @table::TrackerMC.StepProducers

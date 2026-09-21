@@ -41,37 +41,75 @@ Pileup: {
     targetStopCounter : {
       module_type : StageNormalizationCounter
       upstreamTag : "beamResampler:resampled"
+        required    : false
     }
     polyStopCounter : {
       module_type : StageNormalizationCounter
       upstreamTag : "beamResampler:resampled"
+        required    : false
     }
     IPAStopCounter : {
       module_type : StageNormalizationCounter
       upstreamTag : "beamResampler:resampled"
+        required    : false
     }
     flashCounter : {
       module_type : StageNormalizationCounter
       upstreamTag : "beamResampler:resampled"
+        required    : false
     }
     earlyFlashCounter : {
       module_type : StageNormalizationCounter
       upstreamTag : "beamResampler:resampled"
+        required    : false
     }
     # PiBeamResampler also runs off beamResampler, against a PiBeamCat pool.
     targetPiStopCounter : {
       module_type : StageNormalizationCounter
       upstreamTag : "beamResampler:resampled"
+        required    : false
     }
+    # Stop selectors. These are 1:1 stages between a counted stream and the
+    # pool a primary actually resamples, so without one the primary reads the
+    # stream counter's nPassed -- all target stops rather than the selected
+    # ones. For Run1B mu- that is 79203/79278 and invisible; for mu+ it is
+    # 75/79278, a factor of about 1000. upstreamTag copies the generated count,
+    # the depth and the origin flag, and the counter sets its own nPassed.
+    muminusStopCounter : { module_type : StageNormalizationCounter
+                           upstreamTag : "targetStopCounter"
+                             required    : false }
+    muplusStopCounter  : { module_type : StageNormalizationCounter
+                           upstreamTag : "targetStopCounter"
+                             required    : false }
+    polyMuminusStopCounter : { module_type : StageNormalizationCounter
+                               upstreamTag : "polyStopCounter"
+                                 required    : false }
+    polyMuplusStopCounter  : { module_type : StageNormalizationCounter
+                               upstreamTag : "polyStopCounter"
+                                 required    : false }
+    ipaMuminusStopCounter : { module_type : StageNormalizationCounter
+                              upstreamTag : "IPAStopCounter"
+                                required    : false }
+    ipaMuplusStopCounter  : { module_type : StageNormalizationCounter
+                              upstreamTag : "IPAStopCounter"
+                                required    : false }
+    piminusStopCounter : { module_type : StageNormalizationCounter
+                           upstreamTag : "targetPiStopCounter"
+                             required    : false }
+    piplusStopCounter  : { module_type : StageNormalizationCounter
+                           upstreamTag : "targetPiStopCounter"
+                             required    : false }
     # NeutralsResampler has its own resampler filter, so its counters must name
     # that one -- the flash counters above would read nothing there.
     neutralsFlashCounter : {
       module_type : StageNormalizationCounter
       upstreamTag : "neutralsResampler:resampled"
+        required    : false
     }
     neutralsEarlyFlashCounter : {
       module_type : StageNormalizationCounter
       upstreamTag : "neutralsResampler:resampled"
+        required    : false
     }
 
     @table::TrackerMC.StepProducers

@@ -179,6 +179,7 @@ Cosmic: {
   s2Counter : {
     module_type : StageNormalizationCounter
     upstreamTag : "CosmicResampler:resampled"
+      required    : false
   }
 
   CosmicResampler: {

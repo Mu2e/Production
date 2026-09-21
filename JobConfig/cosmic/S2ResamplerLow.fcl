@@ -4,3 +4,6 @@
 physics.filters.CosmicResampler.mu2e.products.cosmicLivetimeMixer.genCounterLabel: "genCounterLow::Primary"
 physics.filters.PrimaryFilter.MaximumPartMom: 500
 
+# This resamples the S1 'Low' stream, so its normalization is s1LowCounter's,
+# exactly as the livetime counter label above is genCounterLow's.
+physics.producers.s2Counter.upstreamTag : "CosmicResampler:resampled"
