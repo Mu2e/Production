@@ -74,3 +74,20 @@ physics.producers.g4run.inputs: {
 }
 #include "Production/JobConfig/common/epilog.fcl"
 #include "Production/JobConfig/pileup/epilog.fcl"
+
+# Stage normalization; this stage uses neutralsResampler, so its counters name
+# that filter and the pool is the POT job's Neutrals stream.
+#
+# A pool predating this workflow carries no StageNormalization and art aborts on
+# a mix op whose product is missing. Resample one by stating its totals:
+#   physics.filters.neutralsResampler.mu2e.products.stageNormMixer: {
+#     poolGenCount : <GenEventCount total over fileNames>
+#     poolEventCount : <events over fileNames>   srOutInstance : "resampled" }
+physics.filters.neutralsResampler.mu2e.products.stageNormMixer : {
+  moduleLabel   : "neutralsCounter"
+  srOutInstance : "resampled"
+}
+physics.producers.flashCounter      : @local::Pileup.producers.neutralsFlashCounter
+physics.producers.earlyFlashCounter : @local::Pileup.producers.neutralsEarlyFlashCounter
+physics.flashPath      : [ @sequence::physics.flashPath,      flashCounter ]
+physics.earlyFlashPath : [ @sequence::physics.earlyFlashPath, earlyFlashCounter ]

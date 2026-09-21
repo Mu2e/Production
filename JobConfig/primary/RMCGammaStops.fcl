@@ -155,3 +155,13 @@ physics.end_paths : [ EndPath ]
 
 physics.producers.generate.decayProducts.mode : "external"
 physics.producers.FindMCPrimary.PrimaryProcess : "mu2eExternalRMC"
+
+# Stage normalization. This job writes three pools with different efficiencies,
+# so each gets its own counter, and they go on its own three paths -- it
+# replaces trigger_paths, so PrimaryPath never runs here.
+physics.producers.targetGammaCounter : @local::Primary.producers.targetGammaCounter
+physics.producers.wireGammaCounter   : @local::Primary.producers.wireGammaCounter
+physics.producers.ipaGammaCounter    : @local::Primary.producers.ipaGammaCounter
+physics.TargetPath : [ @sequence::physics.TargetPath, targetGammaCounter ]
+physics.WirePath   : [ @sequence::physics.WirePath,   wireGammaCounter ]
+physics.IPAPath    : [ @sequence::physics.IPAPath,    ipaGammaCounter ]

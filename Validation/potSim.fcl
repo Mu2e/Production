@@ -2,7 +2,6 @@
 # generate protons on target and simulate through the detector
 #
 #include "Production/JobConfig/beam/POT_validation.fcl"
-#include "Production/JobConfig/beam/stageNorm.fcl"
 
 outputs: {
   fullOutput: {

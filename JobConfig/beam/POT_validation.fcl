@@ -115,3 +115,11 @@ physics.producers.g4run.physics.minRangeCut : 1. # mm  coarse range for this sta
 #include "Production/JobConfig/common/epilog.fcl"
 ## the following is for testing only
 services.SeedService.baseSeed          : @local::Common.BaseSeed
+
+# Stage normalization, as in POT.fcl (this is a separate config with its own
+# paths). The extmon and truncated streams are validation-only and not part of
+# any chain, so they are left alone.
+physics.producers.beamCounter     : @local::Beam.producers.beamCounter
+physics.producers.neutralsCounter : @local::Beam.producers.neutralsCounter
+physics.BeamPath     : [ @sequence::physics.BeamPath,     beamCounter ]
+physics.NeutralsPath : [ @sequence::physics.NeutralsPath, neutralsCounter ]

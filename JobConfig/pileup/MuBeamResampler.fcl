@@ -125,3 +125,29 @@ physics.producers.StrawGasStepMaker.KeepDeltasModule : ""
 physics.producers.CaloShowerStepMaker.caloStepPointCollection : ["FlashFilter:calorimeter"]
 physics.producers.CrvSteps.stepPointsModuleLabels : [ "FlashFilter" ]
 physics.producers.compressDetStepMCs.simParticleTags : ["FlashFilter"]
+
+# Stage normalization. A resampling stage: this job's GenEventCount counts
+# DRAWS and the pool's own never reaches the output, so the mixer carries the
+# pool's normalization through, scaled by the draw count, and each stream's
+# counter reports against it. The label is the pool's, so it belongs here and
+# not on the shared beamResampler, which EleBeam and PiBeam also use.
+#
+# A pool predating this workflow carries no StageNormalization and art aborts on
+# a mix op whose product is missing. Resample one by stating its totals:
+#   physics.filters.beamResampler.mu2e.products.stageNormMixer: {
+#     poolGenCount : <GenEventCount total over fileNames>
+#     poolEventCount : <events over fileNames>   srOutInstance : "resampled" }
+physics.filters.beamResampler.mu2e.products.stageNormMixer : {
+  moduleLabel   : "muonCounter"
+  srOutInstance : "resampled"
+}
+physics.producers.targetStopCounter : @local::Pileup.producers.targetStopCounter
+physics.producers.polyStopCounter   : @local::Pileup.producers.polyStopCounter
+physics.producers.IPAStopCounter    : @local::Pileup.producers.IPAStopCounter
+physics.producers.flashCounter      : @local::Pileup.producers.flashCounter
+physics.producers.earlyFlashCounter : @local::Pileup.producers.earlyFlashCounter
+physics.targetStopPath : [ @sequence::physics.targetStopPath, targetStopCounter ]
+physics.polyStopPath   : [ @sequence::physics.polyStopPath,   polyStopCounter ]
+physics.IPAStopPath    : [ @sequence::physics.IPAStopPath,    IPAStopCounter ]
+physics.flashPath      : [ @sequence::physics.flashPath,      flashCounter ]
+physics.earlyFlashPath : [ @sequence::physics.earlyFlashPath, earlyFlashCounter ]
