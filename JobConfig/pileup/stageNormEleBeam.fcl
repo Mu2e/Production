@@ -1,0 +1,21 @@
+#
+# Opt-in: record stage normalization on the EleBeam pileup stage.
+# Include AFTER pileup/EleBeamResampler.fcl.
+#
+# Applied per stage rather than on the shared resampler definition: the same
+# filter serves several stages against different pools, so the pool's counter
+# label is a property of the STAGE, not of the resampler.
+#
+# The pool must carry "electronCounter". For a pool predating this workflow, replace the
+# stageNormMixer block with the pool's stated totals:
+#   poolGenCount : <GenEventCount total over fileNames>
+#   poolEventCount : <events over fileNames>
+#
+physics.filters.beamResampler.mu2e.products.stageNormMixer : {
+  moduleLabel   : "electronCounter"      # written by beam/stageNormSplitter.fcl
+  srOutInstance : "resampled"
+}
+physics.producers.flashCounter      : @local::Pileup.producers.flashCounter
+physics.producers.earlyFlashCounter : @local::Pileup.producers.earlyFlashCounter
+physics.flashPath      : [ @sequence::physics.flashPath,      flashCounter ]
+physics.earlyFlashPath : [ @sequence::physics.earlyFlashPath, earlyFlashCounter ]

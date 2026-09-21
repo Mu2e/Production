@@ -5,12 +5,7 @@
 #
 #include "Production/JobConfig/primary/StopParticle.fcl"
 
-# primaryCounter closes the POT -> pileup -> primary chain: it reports what this
-# output keeps against the normalization TargetStopResampler carried through.
-# It is added HERE rather than to Primary.PrimarySequence because that sequence
-# also serves primary stages resampling other pools (TargetPiStop,
-# IPAMuminusStop, GammaConversion), none of which configure a stageNormMixer.
-physics.PrimaryPath : [ TargetStopResampler, @sequence::Common.generateSequence, GenFilter, @sequence::Common.g4Sequence, @sequence::Primary.PrimarySequence, primaryCounter ]
+physics.PrimaryPath : [ TargetStopResampler, @sequence::Common.generateSequence, GenFilter, @sequence::Common.g4Sequence, @sequence::Primary.PrimarySequence ]
 physics.trigger_paths : [ PrimaryPath ]
 outputs : { PrimaryOutput : @local::Primary.PrimaryOutput }
 physics.EndPath : [ @sequence::Primary.EndSequence, PrimaryOutput ]

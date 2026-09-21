@@ -1,0 +1,19 @@
+#
+# Opt-in: record stage normalization on the PiBeam pileup stage (-> PiTargetStops).
+# Include AFTER pileup/PiBeamResampler.fcl.
+#
+# Applied per stage rather than on the shared resampler definition: the same
+# filter serves several stages against different pools, so the pool's counter
+# label is a property of the STAGE, not of the resampler.
+#
+# The pool must carry "pionCounter". For a pool predating this workflow, replace the
+# stageNormMixer block with the pool's stated totals:
+#   poolGenCount : <GenEventCount total over fileNames>
+#   poolEventCount : <events over fileNames>
+#
+physics.filters.beamResampler.mu2e.products.stageNormMixer : {
+  moduleLabel   : "pionCounter"          # written by beam/stageNormPionSelector.fcl
+  srOutInstance : "resampled"
+}
+physics.producers.targetPiStopCounter : @local::Pileup.producers.targetPiStopCounter
+physics.targetStopPath : [ @sequence::physics.targetStopPath, targetPiStopCounter ]

@@ -16,15 +16,3 @@ physics.filters.TargetStopResampler.mu2e.MaxEventsToSkip: 0
 
 #include "Production/Validation/database.fcl"
 #include "Offline/CRVResponse/fcl/epilog_run1a_v01.fcl"
-
-# The validation pool predates StageNormalization, so the resampler cannot read
-# the product form the prolog defaults to -- art aborts on a declared mix op
-# whose product the secondary lacks. Bootstrap from the pool's own
-# GenEventCount instead; poolEventCount is the total events in ALL of
-# fileNames, which is not knowable from a mixing secondary and so must be
-# stated. Drop this block once the pool is regenerated with the counters.
-physics.filters.TargetStopResampler.mu2e.products.stageNormMixer: {
-  poolGenCount    : 28400000   # GenEventCount total over fileNames
-  poolEventCount  : 10073       # events in sim.mu2e.TargetStopsVal.MDC2025ac
-  srOutInstance   : "resampled"
-}

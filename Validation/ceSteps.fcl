@@ -17,14 +17,12 @@ outputs.PrimaryOutput.fileName : "dts.owner.ceSteps.dsconf.seq.art"
 #include "Production/Validation/database.fcl"
 #include "Offline/CRVResponse/fcl/epilog_run1a_v01.fcl"
 
-# The validation pool predates StageNormalization, so the resampler cannot read
-# the product form the prolog defaults to -- art aborts on a declared mix op
-# whose product the secondary lacks. Bootstrap from the pool's own
-# GenEventCount instead; poolEventCount is the total events in ALL of
-# fileNames, which is not knowable from a mixing secondary and so must be
-# stated. Drop this block once the pool is regenerated with the counters.
-physics.filters.TargetStopResampler.mu2e.products.stageNormMixer: {
+# Exercise the stage-normalization workflow in validation. The include sets the
+# product form; this pool (a cvmfs sample predating the workflow) has no
+# StageNormalization, so state its totals instead -- measured from the file.
+#include "Production/JobConfig/primary/stageNormTargetStop.fcl"
+physics.filters.TargetStopResampler.mu2e.products.stageNormMixer : {
   poolGenCount    : 28400000   # GenEventCount total over fileNames
-  poolEventCount  : 10073       # events in sim.mu2e.TargetStopsVal.MDC2025ac
+  poolEventCount  : 10073      # events in sim.mu2e.TargetStopsVal.MDC2025ac
   srOutInstance   : "resampled"
 }

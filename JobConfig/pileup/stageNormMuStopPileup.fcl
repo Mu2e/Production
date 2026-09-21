@@ -1,0 +1,19 @@
+#
+# Opt-in: record stage normalization on the MuStopPileup stage.
+# Include AFTER pileup/MuStopPileup.fcl.
+#
+# Applied per stage rather than on the shared resampler definition: the same
+# filter serves several stages against different pools, so the pool's counter
+# label is a property of the STAGE, not of the resampler.
+#
+# The pool must carry "targetStopCounter". For a pool predating this workflow, replace the
+# stageNormMixer block with the pool's stated totals:
+#   poolGenCount : <GenEventCount total over fileNames>
+#   poolEventCount : <events over fileNames>
+#
+physics.filters.TargetStopResampler.mu2e.products.stageNormMixer : {
+  moduleLabel   : "targetStopCounter"    # written by pileup/stageNormMuBeam.fcl
+  srOutInstance : "resampled"
+}
+physics.producers.pileupCounter : @local::Primary.producers.primaryCounter
+physics.PileupPath : [ @sequence::physics.PileupPath, pileupCounter ]

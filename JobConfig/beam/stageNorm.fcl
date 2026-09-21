@@ -1,0 +1,20 @@
+#
+# Opt-in: record stage normalization on the POT stage.
+#
+# Include AFTER Production/JobConfig/beam/POT.fcl (or POT_validation.fcl).
+# This is the ORIGIN of a simulation chain, so each counter seeds from the
+# job's own GenEventCount and nothing needs supplying.
+#
+#   #include "Production/JobConfig/beam/POT.fcl"
+#   #include "Production/JobConfig/beam/stageNorm.fcl"
+#
+# One counter per output stream, at the END of that stream's path, so it sees
+# exactly the events that stream keeps. SubRun products ignore an output's
+# SelectEvents, so every stream carries every counter's product and the module
+# LABEL is the only thing saying which stream a count belongs to.
+#
+physics.producers.beamCounter     : @local::Beam.producers.beamCounter
+physics.producers.neutralsCounter : @local::Beam.producers.neutralsCounter
+
+physics.BeamPath     : [ @sequence::physics.BeamPath,     beamCounter ]
+physics.NeutralsPath : [ @sequence::physics.NeutralsPath, neutralsCounter ]

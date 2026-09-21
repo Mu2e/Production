@@ -21,6 +21,17 @@ Primary: {
       module_type : StageNormalizationCounter
       upstreamTag : "TargetStopResampler:resampled"
     }
+    # Same job for primaries starting from other beam inputs: the counter must
+    # name the resampler that stage actually runs, since that is what carried
+    # the normalization through.
+    primaryPiStopCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "TargetPiStopResampler:resampled"
+    }
+    primaryIPAStopCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "IPAMuminusStopResampler:resampled"
+    }
 
     @table::TrackerMC.StepProducers
     @table::CaloMC.producers
@@ -97,18 +108,6 @@ Primary: {
           volumeInfoMixer: {
             srInput: "compressPVTargetStops"
             evtOutInstanceName: "eventlevel"
-          }
-          # The product form, not the bootstrap: a TargetStops file produced by
-          # the pileup stage carries the normalization its targetStopCounter
-          # wrote, already accumulated back to the POT stage. This is where the
-          # chain pays off -- nothing per-dataset has to be supplied here.
-          #
-          # A TargetStops file made BEFORE this workflow has no such product and
-          # art aborts on the first event; resample such a pool with the
-          # bootstrap instead (genCounterLabel + poolEventCount).
-          stageNormMixer: {
-            moduleLabel   : "targetStopCounter"
-            srOutInstance : "resampled"
           }
         }
       }

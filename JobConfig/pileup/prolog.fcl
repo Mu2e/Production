@@ -41,6 +41,21 @@ Pileup: {
       module_type : StageNormalizationCounter
       upstreamTag : "beamResampler:resampled"
     }
+    # PiBeamResampler also runs off beamResampler, against a PiBeamCat pool.
+    targetPiStopCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "beamResampler:resampled"
+    }
+    # NeutralsResampler has its own resampler filter, so its counters must name
+    # that one -- the flash counters above would read nothing there.
+    neutralsFlashCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "neutralsResampler:resampled"
+    }
+    neutralsEarlyFlashCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "neutralsResampler:resampled"
+    }
 
     @table::TrackerMC.StepProducers
     @table::CaloMC.producers
@@ -275,36 +290,6 @@ Pileup: {
           volumeInfoMixer: {
             srInput: "compressPVBeam"
             evtOutInstanceName: "eventlevel"
-          }
-          # Carry the resampled pool's normalization through to the output.
-          # Without this the chain breaks here: this job's source is EmptyEvent,
-          # so its own GenEventCount counts DRAWS, and the pool arrives as a
-          # mixing secondary whose SubRun products do not reach the output.
-          #
-          # muonCounter is what BeamSplitter writes onto MuBeamCat, so a pool
-          # built with this workflow needs NOTHING supplied per job -- the
-          # normalization comes back to the POT stage on its own.
-          #
-          # A MuBeamCat made BEFORE this workflow has no such product, and art
-          # aborts on the first event rather than calling the mix op with an
-          # empty input. Resample a legacy pool with the bootstrap instead,
-          # which needs the pool's total event count stated because that is not
-          # knowable from a mixing secondary:
-          #
-          #   physics.filters.beamResampler.mu2e.products.stageNormMixer: {
-          #     poolGenCount    : <GenEventCount total over ALL of fileNames>
-          #     poolEventCount  : <events in ALL of fileNames>
-          #     srOutInstance   : "resampled"
-          #   }
-          #
-          # Both totals are stated rather than read: a mix op would see the
-          # DRAWN SUBRUN's GenEventCount against the whole pool's event count,
-          # which is wrong by the number of subruns.
-          #
-          # The two are alternatives, not a preference and a fallback.
-          stageNormMixer: {
-            moduleLabel   : "muonCounter"
-            srOutInstance : "resampled"
           }
         }
       }

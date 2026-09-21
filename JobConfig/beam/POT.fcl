@@ -24,8 +24,6 @@ physics : {
     generate: @local::PrimaryProtonGun
     compressPVBeam : @local::Beam.producers.compressPVBeam
     compressPVNeutrals : @local::Beam.producers.compressPVNeutrals
-    beamCounter : @local::Beam.producers.beamCounter
-    neutralsCounter : @local::Beam.producers.neutralsCounter
   }
   filters: {
     @table::Common.filters
@@ -34,8 +32,8 @@ physics : {
   }
   analyzers : @local::Common.analyzers
   # setup the paths
-  BeamPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence, BeamFilter, compressPVBeam, beamCounter]
-  NeutralsPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence, NeutralsFilter, compressPVNeutrals, neutralsCounter]
+  BeamPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence, BeamFilter, compressPVBeam]
+  NeutralsPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence, NeutralsFilter, compressPVNeutrals]
   trigger_paths  : [BeamPath, NeutralsPath ]
   LogPath : [ genCountLogger ]
   OutputPath : [BeamOutput, NeutralsOutput ]

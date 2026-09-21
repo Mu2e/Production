@@ -7,20 +7,6 @@ process_name: beamsplitter
 source: { module_type: RootInput }
 services: { message: @local::default_message }
 physics: {
-  producers : {
-    # A 1:1 filter stage: GenEventCount propagates from the POT file through
-    # RootInput, so genCountTag gives the generated count this stream's events
-    # came from, and nPassed becomes the muon count rather than the beam count.
-    #
-    # The POT stage's own product rides along here too ("keep *_*_*_*"). It is
-    # provenance of THAT stage, not of this file -- its nPassed is the beam
-    # count. Select by label, and read nStages to see how deep a chain a given
-    # product describes.
-    muonCounter : {
-      module_type : StageNormalizationCounter
-      genCountTag : "genCounter"
-    }
-  }
   filters : {
     muonSelector: {
       module_type: ParticleCodeFilter
@@ -30,7 +16,7 @@ physics: {
         [-13, "uninitialized" , "mu2eKillerVolume" ] ] # mu+, *,  Manually stopped
     }
   }
-  selectMuons : [muonSelector, muonCounter ]
+  selectMuons : [muonSelector ]
   trigger_paths : [ selectMuons ]
   outpath: [muonout, electronout ]
   end_paths: [outpath]
