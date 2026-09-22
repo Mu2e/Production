@@ -4,6 +4,9 @@
 physics.filters.CosmicResampler.mu2e.products.cosmicLivetimeMixer.genCounterLabel: "genCounterLow::Primary"
 physics.filters.PrimaryFilter.MaximumPartMom: 500
 
-# This resamples the S1 'Low' stream, so its normalization is s1LowCounter's,
-# exactly as the livetime counter label above is genCounterLow's.
-physics.producers.s2Counter.upstreamTag : "CosmicResampler:resampled"
+# Stage normalization: this resamples the S1 'Low' stream, so when the mixer is
+# switched on it must name that stream's counter --
+#   physics.filters.CosmicResampler.mu2e.products.stageNormMixer
+#     : @local::Cosmic.StageNorm.fromS1Low
+# as the livetime counter label above is genCounterLow's. Not set here for the
+# same reason as the RMC variants: it would switch the mixer on by itself.

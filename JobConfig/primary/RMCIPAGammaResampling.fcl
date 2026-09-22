@@ -18,8 +18,12 @@ physics.filters.PrimaryFilter.MinimumPartMom : 30. #less than half the minimum p
 
 outputs.PrimaryOutput.fileName : "dts.owner.RMCIPAGammaConversions.version.sequencer.art"
 
-# This variant resamples its own gamma pool, so if the base config's
-# stageNormMixer is switched on the label must follow the pool. Every stream
-# carries every counter's product, so a wrong label would run and quietly use
-# another stream's efficiency.
-physics.filters.GammaConversionResampler.mu2e.products.stageNormMixer.moduleLabel : "ipaGammaCounter"
+# Stage normalization: this variant resamples its own gamma pool, so when the
+# mixer is switched on it must name that pool's counter --
+#   physics.filters.GammaConversionResampler.mu2e.products.stageNormMixer
+#     : @local::PrimaryStageNorm.fromIPAGammas
+# Setting only moduleLabel here would CREATE the stageNormMixer block and so
+# turn the mixer on in this variant alone, which declares a mix op for a
+# product no existing gamma pool carries: art then stops at the first event
+# with ProductNotFound. fhicl cannot make the override conditional on the base
+# config having the block, so it stays a comment.
