@@ -23,3 +23,13 @@ physics.producers.g4run.inputs.updateEventLevelVolumeInfos: {
   input: "IPAMuminusStopResampler:eventlevel"
   outInstance: "eventlevel"
 }
+
+# Stage normalization; the pool is the IPA stop stream of the MuBeam pileup job.
+#
+# A pool predating this workflow carries no StageNormalization and art aborts on
+# a mix op whose product is missing. Resample one by stating its totals:
+#   physics.filters.IPAMuminusStopResampler.mu2e.products.stageNormMixer: {
+#     poolGenCount : <GenEventCount total over fileNames>
+#     poolEventCount : <events over fileNames>   srOutInstance : "resampled" }
+physics.producers.primaryCounter : @local::Primary.producers.primaryIPAStopCounter
+physics.PrimaryPath : [ @sequence::physics.PrimaryPath, primaryCounter ]

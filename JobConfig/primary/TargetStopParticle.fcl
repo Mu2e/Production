@@ -16,3 +16,16 @@ physics.producers.g4run.inputs.updateEventLevelVolumeInfos: {
   input: "TargetStopResampler:eventlevel"
   outInstance: "eventlevel"
 }
+
+# Stage normalization. A resampling stage, so the counter takes what the mixer
+# carried through rather than this job's GenEventCount, which counts draws.
+# Here rather than on the shared TargetStopResampler, which other stages use
+# against other pools.
+#
+# A pool predating this workflow carries no StageNormalization and art aborts on
+# a mix op whose product is missing. Resample one by stating its totals:
+#   physics.filters.TargetStopResampler.mu2e.products.stageNormMixer: {
+#     poolGenCount : <GenEventCount total over fileNames>
+#     poolEventCount : <events over fileNames>   srOutInstance : "resampled" }
+physics.producers.primaryCounter : @local::Primary.producers.primaryCounter
+physics.PrimaryPath : [ @sequence::physics.PrimaryPath, primaryCounter ]

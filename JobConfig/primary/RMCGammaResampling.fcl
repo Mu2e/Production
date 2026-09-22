@@ -29,3 +29,14 @@ physics.producers.g4run.inputs.simStageOverride: 3
 
 physics.producers.FindMCPrimary.PrimaryProcess : "mu2eExternalRMC"
 outputs.PrimaryOutput.fileName : "dts.owner.RMCGammaConversions.version.sequencer.art"
+
+# Stage normalization; the pool is the TARGET gamma sample. The wire and IPA
+# variants override moduleLabel to wireGammaCounter / ipaGammaCounter.
+#
+# A pool predating this workflow carries no StageNormalization and art aborts on
+# a mix op whose product is missing. Resample one by stating its totals:
+#   physics.filters.GammaConversionResampler.mu2e.products.stageNormMixer: {
+#     poolGenCount : <GenEventCount total over fileNames>
+#     poolEventCount : <events over fileNames>   srOutInstance : "resampled" }
+physics.producers.primaryCounter : @local::Primary.producers.primaryGammaCounter
+physics.PrimaryPath : [ @sequence::physics.PrimaryPath, primaryCounter ]

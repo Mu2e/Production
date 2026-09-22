@@ -78,3 +78,20 @@ physics.producers.g4run.physics.minRangeCut : 1.0 # 1 mm
 
 # Need this to increase the world volume.
 services.GeometryService.inputFile : "Production/JobConfig/cosmic/geom_cosmic.txt"
+
+# Stage normalization. genCounter sits at the END of these paths so
+# CosmicLivetime scales correctly, which makes it a post-filter count, and a
+# second GenEventCounter is refused by GenEventCounter itself. So
+# cosmicGenCounter counts the generated events directly, and the two stream
+# counters (which have different efficiencies) inherit from it.
+physics.producers.cosmicGenCounter : @local::Cosmic.cosmicGenCounter
+physics.producers.s1Counter        : @local::Cosmic.s1Counter
+physics.producers.s1LowCounter     : @local::Cosmic.s1LowCounter
+physics.S1Path    : [ generate, cosmicGenCounter, @sequence::Common.g4Sequence, stepPointMomentumFilter, cosmicFilter, compressPV, genCounter, s1Counter ]
+physics.S1LowPath : [ generate, cosmicGenCounter, @sequence::Common.g4Sequence, stepPointMomentumFilter, cosmicFilter, S1LowFilter, compressPV, genCounterLow, s1LowCounter ]
+# StageNormalization only. NOT a GenEventCount wildcard: these two outputs
+# deliberately keep their own count by label, and keeping both makes
+# GenEventCountReader refuse the file ("multiple GenEventCount objects"), so
+# artMetadata.sh cannot fill dh.gencount and the file cannot be declared.
+outputs.S1Output.outputCommands    : [ @sequence::outputs.S1Output.outputCommands,    "keep mu2e::StageNormalization_*_*_*" ]
+outputs.S1LowOutput.outputCommands : [ @sequence::outputs.S1LowOutput.outputCommands, "keep mu2e::StageNormalization_*_*_*" ]

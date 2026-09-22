@@ -199,7 +199,13 @@ Digitize: {
 
   GeneralProducts : [
     "keep mu2e::EventWindowMarker_*_*_*",
-    "keep mu2e::ProtonBunchTime_*_*_*"
+    "keep mu2e::ProtonBunchTime_*_*_*",
+    # StageNormalization rides alongside the FilterFraction products -- it is
+    # not matched by the *FilterFraction pattern above, and an output that
+    # drops it loses the only in-file record of what the events represent.
+    # GeneralProducts is shared by the digitize and reco outputs, so keeping it
+    # here carries the primary's normalization all the way to rec/recoMC.
+    "keep mu2e::StageNormalization_*_*_*"
   ]
   DigiProducts : [
     "keep mu2e::StrawDigis_makeSD_*_*",

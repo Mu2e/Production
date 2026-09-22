@@ -146,6 +146,42 @@ Cosmic: {
     intervalStart: 0
     intervalEnd: 100005
   }
+  # Stage-normalization counters. NOTE the cosmic S1 paths deliberately place
+  # genCounter at the END, so that CosmicLivetime scales correctly after
+  # resampling -- that GenEventCount is a post-filter count and would make
+  # nGenEquivalent equal nPassed. A second GenEventCounter is not an option
+  # either -- GenEventCounter refuses to write when another GenEventCount
+  # exists in the SubRun. So cosmicGenCounter counts the generated events
+  # itself (countAsGenerated), placed right after generate, and the stream
+  # counters inherit from it. The existing genCounter/genCounterLow are left
+  # exactly where they are and the livetime bookkeeping is untouched.
+  # One line to enable stage normalization on S2, naming the S1 stream it
+  # resamples. Not on by default -- see the note in pileup/prolog.fcl.
+  StageNorm : {
+    fromS1    : { moduleLabel : "s1Counter"    srOutInstance : "resampled" }
+    fromS1Low : { moduleLabel : "s1LowCounter" srOutInstance : "resampled" }
+  }
+
+  cosmicGenCounter : {
+    module_type : StageNormalizationCounter
+    countAsGenerated : true
+  }
+  s1Counter : {
+    module_type : StageNormalizationCounter
+    upstreamTag : "cosmicGenCounter"
+  }
+  s1LowCounter : {
+    module_type : StageNormalizationCounter
+    upstreamTag : "cosmicGenCounter"
+  }
+  # S2 resamples an S1 stream, so its counter takes what the mixer carried
+  # through rather than this job's own generated count.
+  s2Counter : {
+    module_type : StageNormalizationCounter
+    upstreamTag : "CosmicResampler:resampled"
+      required    : false
+  }
+
   CosmicResampler: {
     module_type: ResamplingMixer
     fileNames: @nil

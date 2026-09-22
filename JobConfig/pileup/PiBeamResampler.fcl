@@ -64,3 +64,13 @@ physics.producers.g4run.physics.noDecay     : [ 211, -211 ] # Added for Pion Inf
 physics.producers.g4run.SDConfig.preSimulatedHits:  ["beamResampler:virtualdetector"]
 #include "Production/JobConfig/common/epilog.fcl"
 #include "Production/JobConfig/pileup/epilog.fcl"
+
+# Stage normalization; the pool is PiBeamCat, so the label is pionCounter.
+#
+# A pool predating this workflow carries no StageNormalization and art aborts on
+# a mix op whose product is missing. Resample one by stating its totals:
+#   physics.filters.beamResampler.mu2e.products.stageNormMixer: {
+#     poolGenCount : <GenEventCount total over fileNames>
+#     poolEventCount : <events over fileNames>   srOutInstance : "resampled" }
+physics.producers.targetPiStopCounter : @local::Pileup.producers.targetPiStopCounter
+physics.targetStopPath : [ @sequence::physics.targetStopPath, targetPiStopCounter ]

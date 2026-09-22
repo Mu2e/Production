@@ -15,3 +15,13 @@ physics.producers.g4run.inputs.updateEventLevelVolumeInfos: {
   input: "TargetPiStopResampler:eventlevel"
   outInstance: "eventlevel"
 }
+
+# Stage normalization; the pool is a PiTargetStops sample.
+#
+# A pool predating this workflow carries no StageNormalization and art aborts on
+# a mix op whose product is missing. Resample one by stating its totals:
+#   physics.filters.TargetPiStopResampler.mu2e.products.stageNormMixer: {
+#     poolGenCount : <GenEventCount total over fileNames>
+#     poolEventCount : <events over fileNames>   srOutInstance : "resampled" }
+physics.producers.primaryCounter : @local::Primary.producers.primaryPiStopCounter
+physics.PrimaryPath : [ @sequence::physics.PrimaryPath, primaryCounter ]

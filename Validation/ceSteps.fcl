@@ -16,3 +16,13 @@ outputs.PrimaryOutput.fileName : "dts.owner.ceSteps.dsconf.seq.art"
 
 #include "Production/Validation/database.fcl"
 #include "Offline/CRVResponse/fcl/epilog_run1a_v01.fcl"
+
+# This cvmfs pool predates the workflow and carries no StageNormalization, so
+# state its totals (measured from the file) in place of the product form.
+physics.filters.TargetStopResampler.mu2e.products.stageNormMixer : {
+  poolGenCount    : 28400000   # GenEventCount_genCounter__MuBeamResampler
+                               # total: MuBeam draws, NOT POT -- hence the
+                               # poolFromOrigin default of false
+  poolEventCount  : 10073      # events in sim.mu2e.TargetStopsVal.MDC2025ac
+  srOutInstance   : "resampled"
+}

@@ -75,3 +75,11 @@ services.GeometryService.bFieldFile : "Offline/Mu2eG4/geom/bfgeom_no_ds_v01.txt"
 # the following is overwritten by generate_fcl
 services.SeedService.baseSeed          : @local::Common.BaseSeed
 
+# Stage normalization: this is the origin of the chain, so each stream's
+# counter seeds from the job's own GenEventCount. One per stream, at the end of
+# its path. SubRun products ignore SelectEvents, so every stream carries every
+# counter's product -- select by module label.
+physics.producers.beamCounter     : @local::Beam.producers.beamCounter
+physics.producers.neutralsCounter : @local::Beam.producers.neutralsCounter
+physics.BeamPath     : [ @sequence::physics.BeamPath,     beamCounter ]
+physics.NeutralsPath : [ @sequence::physics.NeutralsPath, neutralsCounter ]
