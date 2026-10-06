@@ -1,8 +1,9 @@
 #
 # Off-spill cosmic reconstruction for nightly validation: the only nightly job that runs the CentralHelix fit (KKCHmu)
-# and its extrapolation to the CRV.
+# and its extrapolation to the CRV, and that validates the LoopHelix fits (KKDe, KKUe, KKDmu, KKUmu) on cosmics.
 #
 #include "Production/JobConfig/recoMC/OffSpill.fcl"
+# the inputs are Sim_best v1_1 digis; v1_1 and this v1_5 resolve to identical conditions for their run (1430)
 #include "Production/Validation/database.fcl"
 #
 # CHFilter gates only the CentralHelix output (every event is still fitted) and passes ~0.5% of off-spill cosmics,
@@ -13,7 +14,8 @@ physics.filters.CHFilter : {
   ReturnValue : true
 }
 #
-# validate the CentralHelix output only; the LoopHelix fits are covered by the on-spill jobs
+# the nightly validates one file per job: write the CentralHelix and LoopHelix products (both paths run the same
+# reconstruction, and with CHFilter bypassed CHPath selects every event) to the CentralHelix output
 #
 outputs.LoopHelixOutput.fileName : "/dev/null"
 outputs.CentralHelixOutput.fileName : "mcs.owner.val-offSpill.dsconf.seq.art"
@@ -21,7 +23,9 @@ outputs.CentralHelixOutput.outputCommands : [
   "drop *_*_*_*",
   "keep mu2e::TriggerInfo_*_*_*",
   "keep art::TriggerResults_*_*_*",
-  "keep mu2e::KalSeeds_KKCHmu_*_*",
+  "keep mu2e::KalSeeds_KK*_*_*",
+  "keep mu2e::HelixSeeds_MH*_*_*",
+  "keep mu2e::TimeClusters_MH*_*_*",
   "keep mu2e::CosmicTrackSeeds_LineFinder_*_*",
   "keep mu2e::TimeClusters_SimpleTimeCluster_*_*",
   "keep mu2e::CaloClusters_CaloClusterMaker_*_*",
@@ -38,7 +42,7 @@ outputs.CentralHelixOutput.outputCommands : [
   "keep mu2e::EventWeight_*_*_*",
   "keep *_compressRecoMCs_*_*"
 ]
-# ~0.2 s/event: 10000 events is a ~35 minute job
+# 10000 events takes 40-90 minutes on current grid nodes
 source.maxEvents : 10000
 # print summaries
 services.scheduler.wantSummary: true
