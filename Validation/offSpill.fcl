@@ -1,0 +1,46 @@
+#
+# Off-spill cosmic reconstruction for nightly validation: the only nightly job that runs the CentralHelix fit (KKCHmu)
+# and its extrapolation to the CRV.
+#
+#include "Production/JobConfig/recoMC/OffSpill.fcl"
+#include "Production/Validation/database.fcl"
+#
+# CHFilter gates only the CentralHelix output (every event is still fitted) and passes ~0.5% of off-spill cosmics,
+# too few tracks for the nightly comparison, so pass every event
+#
+physics.filters.CHFilter : {
+  module_type : FixedFilter
+  ReturnValue : true
+}
+#
+# validate the CentralHelix output only; the LoopHelix fits are covered by the on-spill jobs
+#
+outputs.LoopHelixOutput.fileName : "/dev/null"
+outputs.CentralHelixOutput.fileName : "mcs.owner.val-offSpill.dsconf.seq.art"
+outputs.CentralHelixOutput.outputCommands : [
+  "drop *_*_*_*",
+  "keep mu2e::TriggerInfo_*_*_*",
+  "keep art::TriggerResults_*_*_*",
+  "keep mu2e::KalSeeds_KKCHmu_*_*",
+  "keep mu2e::CosmicTrackSeeds_LineFinder_*_*",
+  "keep mu2e::TimeClusters_SimpleTimeCluster_*_*",
+  "keep mu2e::CaloClusters_CaloClusterMaker_*_*",
+  "keep mu2e::CrvCoincidenceClusters_*_*_*",
+  "keep mu2e::EventWindowMarker_*_*_*",
+  "keep mu2e::ProtonBunchTime_*_*_*",
+  "keep *_SelectReco*_*_*",
+  "keep *_genCounter_*_*",
+  "keep mu2e::StageNormalization_*_*_*",
+  "keep mu2e::PrimaryParticle_*_*_*",
+  "keep mu2e::StatusG4_*_*_*",
+  "keep mu2e::ProtonBunchIntensity_*_*_*",
+  "keep mu2e::ProtonBunchTimeMC_*_*_*",
+  "keep mu2e::EventWeight_*_*_*",
+  "keep *_compressRecoMCs_*_*"
+]
+# ~0.2 s/event: 10000 events is a ~35 minute job
+source.maxEvents : 10000
+# print summaries
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+services.TFileService.fileName : "/dev/null"

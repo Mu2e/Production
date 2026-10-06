@@ -1,0 +1,5 @@
+#include "Production/Validation/offSpill.fcl"
+source.fileNames : [
+"root://fndcadoor.fnal.gov:1094/mu2e/tape/phy-sim/dig/mu2e/CosmicSignalOffSpill/MDC2025an_best_v1_1/art/11/12/dig.mu2e.CosmicSignalOffSpill.MDC2025an_best_v1_1.001430_00002687.art"
+]
+outputs.CentralHelixOutput.fileName: "offSpill_03.art"
