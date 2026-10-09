@@ -1,12 +1,12 @@
 #
-# Script to select reflecting cosmic ray particles starting with standard recoMC output
+# Script to select reflecting cosmic ray particles starting with standard recoMC output, using the t0 segment and very loose timing cuts
 # original author: D. Brown, 6/25/26
 #
 #include "Production/JobConfig/recoMC/prolog.fcl"
 outputs.CentralHelixOutput.fileName : @nil
 outputs.LoopHelixOutput.fileName : @nil
 services : @local::Services.Reco
-process_name: RefSelect
+process_name: RefT0Select
 source : { module_type : RootInput }
 
 physics.filters : {
@@ -31,7 +31,7 @@ physics.trigger_paths : [ RePath, RmuPath ]
 outputs.RefOutput : {
   @table::Reconstruction.Output
   SelectEvents : [RePath, RmuPath]
-  fileName : "mcs.user.RefSelect.config.seq.art"
+  fileName : "mcs.user.RefT0Select.config.seq.art"
   outputCommands: [
     @sequence::Reconstruction.Output.outputCommands,
     "keep *_Reflect*_*_*"
