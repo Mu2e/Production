@@ -13,6 +13,7 @@ outputs: {
       "drop *_*_*_*",
       "keep art::EventIDs_*_*_*",
       "keep mu2e::GenEventCount_*_*_*",
+      "keep mu2e::StageNormalization_*_*_*",
       "keep mu2e::StatusG4_*_*_*",
       "keep mu2e::SimParticleart::Ptrdoublestd::map_*_*_*",
       "keep mu2e::StrawGasSteps_compressDetStepMCs_*_*",

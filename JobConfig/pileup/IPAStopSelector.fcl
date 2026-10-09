@@ -21,8 +21,8 @@ physics: {
       PrintLevel : 0
     }
   }
-  selectMuminus : [muminusSelector]
-  selectMuplus : [muplusSelector]
+  selectMuminus : [muminusSelector, ipaMuminusStopCounter]
+  selectMuplus : [muplusSelector, ipaMuplusStopCounter]
   trigger_paths : [ selectMuminus, selectMuplus ]
   outpath: [muminusout, muplusout ]
   end_paths: [outpath]
@@ -42,3 +42,12 @@ outputs: {
   }
 }
 
+# Stage normalization: a 1:1 selection between the counted stream and the pool
+# a primary resamples. Without a counter here the primary would read the stream
+# counter's nPassed, which counts every stop rather than the selected ones.
+physics.producers.ipaMuminusStopCounter : { module_type : StageNormalizationCounter
+                        upstreamTag : "IPAStopCounter"
+                        required    : false }
+physics.producers.ipaMuplusStopCounter : { module_type : StageNormalizationCounter
+                        upstreamTag : "IPAStopCounter"
+                        required    : false }

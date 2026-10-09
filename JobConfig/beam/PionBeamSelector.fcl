@@ -30,3 +30,7 @@ outputs: {
   }
 }
 
+# Stage normalization; a 1:1 filter like BeamSplitter.
+physics.producers.pionCounter : { module_type : StageNormalizationCounter
+                                  genCountTag : "genCounter" }
+physics.selectPions : [ @sequence::physics.selectPions, pionCounter ]

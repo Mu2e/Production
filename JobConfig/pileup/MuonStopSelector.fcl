@@ -21,8 +21,8 @@ physics: {
       PrintLevel : 0
     }
   }
-  selectMuminus : [muminusSelector]
-  selectMuplus : [muplusSelector]
+  selectMuminus : [muminusSelector, muminusStopCounter]
+  selectMuplus : [muplusSelector, muplusStopCounter]
   trigger_paths : [ selectMuminus, selectMuplus ]
   outpath: [muminusout, muplusout ]
   end_paths: [outpath]
@@ -42,3 +42,15 @@ outputs: {
   }
 }
 
+# Stage normalization: a 1:1 selection sitting between the counted target-stop
+# stream and the pool a primary actually resamples. Without a counter here the
+# primary reads targetStopCounter's nPassed, which counts every target stop
+# rather than the selected ones -- 79203/79278 for mu- in Run1B, and 75/79278
+# for mu+, a factor of about 1000. Defined inline because this job includes
+# only minimalMessageService.
+physics.producers.muminusStopCounter : { module_type : StageNormalizationCounter
+                        upstreamTag : "targetStopCounter"
+                        required    : false }
+physics.producers.muplusStopCounter : { module_type : StageNormalizationCounter
+                        upstreamTag : "targetStopCounter"
+                        required    : false }

@@ -20,6 +20,10 @@ outputs.LoopHelixOutput.outputCommands: [
       "keep mu2e::ProtonBunchTime_*_*_*",
       "keep *_SelectReco*_*_*",
       "keep *_genCounter_*_*",
+      # This output states its keeps explicitly rather than via
+      # Reconstruction.GeneralProducts, so it does not inherit the one added
+      # there -- without this line the normalization dies at reco.
+      "keep mu2e::StageNormalization_*_*_*",
       "keep mu2e::PrimaryParticle_*_*_*",
       "keep mu2e::StatusG4_*_*_*",
       "keep mu2e::ProtonBunchIntensity_*_*_*",

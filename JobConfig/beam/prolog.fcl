@@ -41,6 +41,26 @@ Beam: {
       hitInputs : []
       particleInputs : [ "g4run" ]
     }
+
+    # Record, with each output stream, how many generated events its events
+    # represent, so a rate per POT is recoverable from the file alone. This is
+    # the origin of the chain: the normalization is this job's own
+    # GenEventCount, and downstream stages carry it forward.
+    #
+    # One counter per stream, placed at the END of that stream's path so it
+    # sees exactly the events the path passed. SubRun products ignore an
+    # output's SelectEvents, so every stream carries every counter's product
+    # and the module LABEL is the only thing that says which stream a count
+    # belongs to -- select by label, never by "the only one in the file".
+    beamCounter : {
+      module_type : StageNormalizationCounter
+      genCountTag : "genCounter"
+    }
+
+    neutralsCounter : {
+      module_type : StageNormalizationCounter
+      genCountTag : "genCounter"
+    }
   }
 
   filters: {
@@ -172,7 +192,11 @@ Beam: {
     "keep mu2e::StatusG4_*_*_*",
     "keep *_compressPV*_*_*",
     "keep *_*Filter_*_*",
-    "keep mu2e::*FilterFraction_*_*_*"
+    "keep mu2e::*FilterFraction_*_*_*",
+    # StageNormalization rides alongside the FilterFraction products -- it is
+    # not matched by the *FilterFraction pattern above, and an output that
+    # drops it loses the only in-file record of what the events represent.
+    "keep mu2e::StageNormalization_*_*_*"
   ]
 
 }

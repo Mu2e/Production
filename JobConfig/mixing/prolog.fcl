@@ -90,7 +90,7 @@ Mixing : {
       MinimumClusterEnergy   : 50.  # MeV
       TimeWindow             : 100. # ns
       SpaceWindow            : 80.  # mm
-      NullFilter             : true # Default to off
+      Enabled                : false # Default to off
       DiagLevel              : 0
     }
 

@@ -73,3 +73,12 @@ physics.producers.g4run.inputs: {
   }
 }
 
+# Stage normalization; the pool is a TargetStops sample.
+#
+# A pool predating this workflow carries no StageNormalization and art aborts on
+# a mix op whose product is missing. Resample one by stating its totals:
+#   physics.filters.TargetStopResampler.mu2e.products.stageNormMixer: {
+#     poolGenCount : <GenEventCount total over fileNames>
+#     poolEventCount : <events over fileNames>   srOutInstance : "resampled" }
+physics.producers.pileupCounter : @local::Primary.producers.primaryCounter
+physics.PileupPath : [ @sequence::physics.PileupPath, pileupCounter ]

@@ -10,8 +10,84 @@
 #include "Offline/EventGenerator/fcl/prolog.fcl"
 BEGIN_PROLOG
 
+# One line to enable stage normalization on a resampling primary, naming the
+# pool's own counter, e.g.
+#
+#   physics.filters.TargetStopResampler.mu2e.products.stageNormMixer : @local::PrimaryStageNorm.fromTargetStops
+#
+# Not on by default -- see the note in pileup/prolog.fcl.
+PrimaryStageNorm : {
+  # A primary resamples MuminusStopsCat / MuplusStopsCat, which the stop
+  # selectors make from the target-stop stream 1:1 -- so the label is the
+  # SELECTOR's counter. Naming targetStopCounter instead would use the count of
+  # every target stop rather than the selected ones: 79203/79278 for mu- in
+  # Run1B, and 75/79278 for mu+, a factor of about 1000.
+  fromMuminusStops  : { moduleLabel : "muminusStopCounter" srOutInstance : "resampled" }
+  fromMuplusStops   : { moduleLabel : "muplusStopCounter"  srOutInstance : "resampled" }
+  fromPolyMuminusStops : { moduleLabel : "polyMuminusStopCounter" srOutInstance : "resampled" }
+  fromPolyMuplusStops  : { moduleLabel : "polyMuplusStopCounter"  srOutInstance : "resampled" }
+  fromIPAMuminusStops  : { moduleLabel : "ipaMuminusStopCounter"  srOutInstance : "resampled" }
+  fromIPAMuplusStops   : { moduleLabel : "ipaMuplusStopCounter"   srOutInstance : "resampled" }
+  fromPiminusStops     : { moduleLabel : "piminusStopCounter"     srOutInstance : "resampled" }
+  fromPiplusStops      : { moduleLabel : "piplusStopCounter"      srOutInstance : "resampled" }
+  # Only for a pool taken straight from the pileup stage with no selector.
+  fromTargetStops   : { moduleLabel : "targetStopCounter"   srOutInstance : "resampled" }
+  fromTargetPiStops : { moduleLabel : "targetPiStopCounter" srOutInstance : "resampled" }
+  fromIPAStops      : { moduleLabel : "IPAStopCounter"      srOutInstance : "resampled" }
+  fromTargetGammas  : { moduleLabel : "targetGammaCounter"  srOutInstance : "resampled" }
+  fromWireGammas    : { moduleLabel : "wireGammaCounter"    srOutInstance : "resampled" }
+  fromIPAGammas     : { moduleLabel : "ipaGammaCounter"     srOutInstance : "resampled" }
+}
+
 Primary: {
   producers : {
+
+    # End of PrimaryPath: counts what the primary output keeps, against the
+    # normalization TargetStopResampler carried through from the pileup stage.
+    # upstreamTag, not genCountTag -- this is a resampling stage, so the job's
+    # own GenEventCount counts draws.
+    primaryCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "TargetStopResampler:resampled"
+        required    : false
+    }
+    # Same job for primaries starting from other beam inputs: the counter must
+    # name the resampler that stage actually runs, since that is what carried
+    # the normalization through.
+    primaryPiStopCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "TargetPiStopResampler:resampled"
+        required    : false
+    }
+    primaryIPAStopCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "IPAMuminusStopResampler:resampled"
+        required    : false
+    }
+    primaryGammaCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "GammaConversionResampler:resampled"
+        required    : false
+    }
+    # RMCGammaStops writes three gamma pools from one resampling job, so each
+    # gets its own counter -- the streams have different efficiencies and a
+    # conversion stage must name the pool it actually resamples.
+    targetGammaCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "TargetStopResampler:resampled"
+        required    : false
+    }
+    wireGammaCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "TargetStopResampler:resampled"
+        required    : false
+    }
+    ipaGammaCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "TargetStopResampler:resampled"
+        required    : false
+    }
+
     @table::TrackerMC.StepProducers
     @table::CaloMC.producers
     CrvSteps :{
@@ -185,6 +261,10 @@ Primary: {
     "keep mu2e::GenEventCount_*_*_*" ,
     "keep art::EventIDs_*_*_*", # these are the original eventids prior to resampling
     "keep mu2e::CosmicLivetime_*_*_*",
+    # The same job as CosmicLivetime above, for the rest of the chain: what
+    # this stream's events represent at the origin. Dropping it here loses the
+    # only in-file record, and everything downstream inherits the loss.
+    "keep mu2e::StageNormalization_*_*_*",
     "keep mu2e::EventWeight_*_*_*",
     "keep art::TriggerResults_*_*_*",
     "keep mu2e::StepPointMCs_CosmicResampler_crvStage1_*", # this is needed to keep track of low/all CRV split

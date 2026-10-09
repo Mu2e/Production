@@ -21,8 +21,8 @@ physics: {
       PrintLevel : 2
     }
   }
-  selectPiminus : [piminusSelector]
-  selectPiplus : [piplusSelector]
+  selectPiminus : [piminusSelector, piminusStopCounter]
+  selectPiplus : [piplusSelector, piplusStopCounter]
   trigger_paths : [ selectPiminus, selectPiplus ]
   outpath: [piminusout, piplusout ]
   end_paths: [outpath]
@@ -42,3 +42,12 @@ outputs: {
   }
 }
 
+# Stage normalization: a 1:1 selection between the counted stream and the pool
+# a primary resamples. Without a counter here the primary would read the stream
+# counter's nPassed, which counts every stop rather than the selected ones.
+physics.producers.piminusStopCounter : { module_type : StageNormalizationCounter
+                        upstreamTag : "targetPiStopCounter"
+                        required    : false }
+physics.producers.piplusStopCounter : { module_type : StageNormalizationCounter
+                        upstreamTag : "targetPiStopCounter"
+                        required    : false }

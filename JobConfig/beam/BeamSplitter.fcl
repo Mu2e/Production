@@ -36,3 +36,16 @@ outputs: {
   }
 }
 
+# Stage normalization. A 1:1 filter, so genCountTag is right: GenEventCount
+# propagates from the POT file and nPassed becomes this stream's own count
+# rather than the beam count. The electron stream needs a path to be counted
+# on; the negated filter selects the same events RejectEvents did.
+physics.producers.muonCounter     : { module_type : StageNormalizationCounter
+                                      genCountTag : "genCounter" }
+physics.producers.electronCounter : { module_type : StageNormalizationCounter
+                                      genCountTag : "genCounter" }
+physics.selectMuons     : [ @sequence::physics.selectMuons, muonCounter ]
+physics.selectElectrons : [ "!muonSelector", electronCounter ]
+physics.trigger_paths   : [ selectMuons, selectElectrons ]
+outputs.electronout.RejectEvents : @erase
+outputs.electronout.SelectEvents : [ selectElectrons ]

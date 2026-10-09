@@ -1,7 +1,13 @@
 #!/usr/bin/bash
-usage() { echo "Usage: $0
-  e.g.  Stage1_initate_ensemble.sh --cosmics MDC2025ac --dem_emin 95 --BB 1BB --tag MDS3c --tmin 350
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
+usage() { echo "Usage: $0
+  e.g.  Stage1_initate_ensemble.sh --type physics --BB 1BB --tag MDS3c --tmin 350
+
+  --type physics|trigger sets DEM_emin (95 for physics, 75 for trigger).
+
+  If --cosmics is omitted, the latest dts.mu2e.CosmicSignal.<RELEASE><version>.art
+  dataset is auto-detected via Stage0_find_latest_sample.sh.
 "
 }
 
@@ -10,17 +16,17 @@ exit_abnormal() {
   usage
   exit 1
 }
-COSMICS="MDC2025ac"
-NJOBS=50
+COSMICS=""
+NJOBS=""
 LIVETIME="" #seconds
-DEM_EMIN=95
+TYPE="physics" # physics -> DEM_emin=95, trigger -> DEM_emin=75
 BB=1BB
 TMIN=350
-TAG="MDS3c"
+TAG=""
 STOPS="MDC2025ac"
 RELEASE="MDC2025"
-VERSION="ac"
-GEN="Signal" #cosmic generator name CRY or CORSIKA only Cat = "Signal"
+INCLUDE_RMCN0=1 # Include RMC 0N processes (default: no)
+INCLUDE_RMCN1=1 # Include RMC 1N processes (default: no)
 # Loop: Get the next option;
 while getopts ":-:" options; do
   case "${options}" in
@@ -35,8 +41,8 @@ while getopts ":-:" options; do
         livetime)
           LIVETIME=${!OPTIND} OPTIND=$(( $OPTIND + 1 ))
           ;;
-        dem_emin)
-          DEM_EMIN=${!OPTIND} OPTIND=$(( $OPTIND + 1 ))
+        type)
+          TYPE=${!OPTIND} OPTIND=$(( $OPTIND + 1 ))
           ;;
         BB)
           BB=${!OPTIND} OPTIND=$(( $OPTIND + 1 ))
@@ -56,8 +62,11 @@ while getopts ":-:" options; do
         version)
           VERSION=${!OPTIND} OPTIND=$(( $OPTIND + 1 ))
           ;;
-        gen)
-          GEN=${!OPTIND} OPTIND=$(( $OPTIND + 1 ))
+        rmcn0)
+          INCLUDE_RMCN0=${!OPTIND} OPTIND=$(( $OPTIND + 1 ))
+          ;;
+        rmcn1)
+          INCLUDE_RMCN1=${!OPTIND} OPTIND=$(( $OPTIND + 1 ))
           ;;
         *)
           echo "Unknown option " ${OPTARG}
@@ -74,20 +83,50 @@ while getopts ":-:" options; do
     esac
 done
 
+case "${TYPE}" in
+  physics)
+    DEM_EMIN=95
+    ;;
+  trigger)
+    DEM_EMIN=75
+    ;;
+  *)
+    echo "❌ Error: --type must be 'physics' or 'trigger', got '${TYPE}'"
+    exit_abnormal
+    ;;
+esac
+
+if [[ -z ${COSMICS} ]]; then
+  echo "🔍 [0/4] No --cosmics given, auto-detecting latest dts.mu2e.CosmicSignal.${RELEASE}<version>.art..."
+  DETECTED_VERSION=$("${SCRIPT_DIR}/Stage0_find_latest_sample.sh" --defname "dts.mu2e.CosmicSignal%.${RELEASE}%.art" --release "${RELEASE}")
+  if [[ -z ${DETECTED_VERSION} ]]; then
+    echo "❌ Error: could not auto-detect latest cosmics version"
+    exit_abnormal
+  fi
+  COSMICS="${RELEASE}${DETECTED_VERSION}"
+  echo "   ✓ Using ${COSMICS}"
+  echo ""
+fi
+
 rm -f ${TAG}.txt
 rm -f ${COSMICS}
 
 echo ""
 echo "═══════════════════════════════════════════════════════════════"
 echo "🚀 Stage 1: Generate Input Configuration for Ensemble"
-echo "   Tag: ${TAG} | Cosmics: Cosmic${GEN} | Dataset: ${COSMICS}"
+echo "   Tag: ${TAG} | Cosmics: CosmicSignal | Dataset: ${COSMICS}"
 echo "═══════════════════════════════════════════════════════════════"
 echo ""
 
 echo "📁 [1/4] Accessing cosmic ray file lists..."
-echo "   Dataset: dts.mu2e.Cosmic${GEN}.${COSMICS}.art"
-echo "   Number of jobs: ${NJOBS}"
-mu2eDatasetFileList "dts.mu2e.Cosmic${GEN}.${COSMICS}.art" | head -${NJOBS} > ${COSMICS}
+echo "   Dataset: dts.mu2e.CosmicSignal.${COSMICS}.art"
+if [[ -z ${NJOBS} ]]; then
+  echo "   Number of jobs: all available files"
+  mu2eDatasetFileList "dts.mu2e.CosmicSignal.${COSMICS}.art" > ${COSMICS}
+else
+  echo "   Number of jobs: ${NJOBS}"
+  mu2eDatasetFileList "dts.mu2e.CosmicSignal.${COSMICS}.art" | head -${NJOBS} > ${COSMICS}
+fi
 
 # Get number of jobs
 NUM_JOBS=$(wc -l ${COSMICS} | awk '{print $1}')
@@ -96,7 +135,8 @@ echo ""
 
 echo "⏱️  [2/4] Calculating livetime from cosmic ray events...this may take some time depending on the number of files and their size..."
 mu2e -c Offline/Print/fcl/printCosmicLivetime.fcl -S ${COSMICS} | grep 'Livetime:' | awk -F: '{print $NF}' > ${COSMICS}.livetime
-LIVETIME=$(awk '{sum += $1} END {print sum}' ${COSMICS}.livetime)
+LIVETIME=$(awk '{sum += $1} END {print sum}' ${COSMICS}.livetime) # 5.72e6 # FIXME this is hardcoded due to now reprocessing
+echo "FIXME: please hard code the livetime to the value shown here: https://mu2ewiki.fnal.gov/wiki/MDC2025#Cosmics "
 echo "   ✓ Total livetime: ${LIVETIME} seconds"
 echo ""
 
@@ -114,7 +154,8 @@ BEAM_NMOT=$(echo "${BEAM_INFO}" | grep "^NMOT=" | awk '{print $NF}')
 echo "      • POT: ${BEAM_POT}"
 # Energy cut parameters (hardcoded for now)
 RPC_EMIN=50
-RMC_EMIN=85
+RMC_N0_EMIN=80
+RMC_N1_EMIN=80
 RMC_kmax=90.1
 IPA_EMIN=70
 # Extract just the numeric values from event yields (remove labels and spaces)
@@ -126,10 +167,18 @@ echo "      • Calculating RPC Internal events (emin=${RPC_EMIN})..."
 RPC_INTERNAL_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "RPC" --tmin ${TMIN} --internal 1 --rpcemin ${RPC_EMIN} --BB ${BB} --printpot "no" --verbose false 2>/dev/null | tail -1 | awk '{print $NF}')
 echo "      • Calculating RPC External events (emin=${RPC_EMIN})..."
 RPC_EXTERNAL_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "RPC" --tmin ${TMIN} --internal 0 --rpcemin ${RPC_EMIN} --BB ${BB} --printpot "no" --verbose false 2>/dev/null | tail -1 | awk '{print $NF}')
-echo "      • Calculating RMC Internal events (emin=${RMC_EMIN})..."
-RMC_INTERNAL_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "RMC" --tmin ${TMIN} --internal 1 --rmcemin ${RMC_EMIN} --BB ${BB} --printpot "no" --verbose false 2>/dev/null | tail -1 | awk '{print $NF}')
-echo "      • Calculating RMC External events (emin=${RMC_EMIN})..."
-RMC_EXTERNAL_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "RMC" --tmin ${TMIN} --internal 0 --rmcemin ${RMC_EMIN} --BB ${BB} --printpot "no" --verbose false 2>/dev/null | tail -1 | awk '{print $NF}')
+if [[ ${INCLUDE_RMCN0} -eq 1 ]]; then
+  echo "      • Calculating RMC 0N External events (emin=${RMC_N0_EMIN})..."
+  RMC_N0_EXTERNAL_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "RMCPhaseSpace0NExternal" --internal 0 --rmcn0emin ${RMC_N0_EMIN} --BB ${BB} --printpot "no" --verbose false 2>/dev/null | tail -1 | awk '{print $NF}')
+  echo "      • Calculating RMC 0N Internal events (emin=${RMC_N0_EMIN})..."
+  RMC_N0_INTERNAL_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "RMCPhaseSpace0NInternal" --internal 1 --rmcn0emin ${RMC_N0_EMIN} --BB ${BB} --printpot "no" --verbose false 2>/dev/null | tail -1 | awk '{print $NF}')
+fi
+if [[ ${INCLUDE_RMCN1} -eq 1 ]]; then
+  echo "      • Calculating RMC 1N External events (emin=${RMC_N1_EMIN})..."
+  RMC_N1_EXTERNAL_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "RMCPhaseSpace1NExternal" --internal 0 --rmcn1emin ${RMC_N1_EMIN} --BB ${BB} --printpot "no" --verbose false 2>/dev/null | tail -1 | awk '{print $NF}')
+  echo "      • Calculating RMC 1N Internal events (emin=${RMC_N1_EMIN})..."
+  RMC_N1_INTERNAL_EVENTS=$(calculateEvents.py --livetime ${LIVETIME} --prc "RMCPhaseSpace1NInternal" --internal 1 --rmcn1emin ${RMC_N1_EMIN} --BB ${BB} --printpot "no" --verbose false 2>/dev/null | tail -1 | awk '{print $NF}')
+fi
 echo "   ✓ All event yields calculated"
 echo ""
 echo "💾 [4/4] Writing configuration file..."
@@ -141,15 +190,19 @@ echo "   Output: ${TAG}.txt"
   echo "# Generated by Stage1_initate_ensemble.sh"
   echo "njobs=\"${NUM_JOBS}\""
   echo "CosmicJob=\"${COSMICS}\""
-  echo "CosmicGen=\"${GEN}\""
-  echo "primaries=\"${RELEASE}${VERSION}\""
+  echo "CosmicGen=\"Signal\""
   echo "muon_stops=\"${STOPS}\""
   echo "onspilltime=\"${LIVETIME}\""
   echo "BB=\"${BB}\""
   echo "DEM_emin=\"${DEM_EMIN}\""
   echo "RPC_TMIN=\"${TMIN}\""
   echo "RPC_emin=\"${RPC_EMIN}\""
-  echo "RMC_emin=\"${RMC_EMIN}\""
+  if [[ ${INCLUDE_RMCN0} -eq 1 ]]; then
+    echo "RMC_N0_emin=\"${RMC_N0_EMIN}\""
+  fi
+  if [[ ${INCLUDE_RMCN1} -eq 1 ]]; then
+    echo "RMC_N1_emin=\"${RMC_N1_EMIN}\""
+  fi
   echo "RMC_kmax=\"${RMC_kmax}\""
   echo "IPA_emin=\"${IPA_EMIN}\"" 
   echo ""
@@ -165,8 +218,14 @@ echo "   Output: ${TAG}.txt"
   echo "ipa_events=\"${IPA_EVENTS}\""
   echo "rpc_internal_events=\"${RPC_INTERNAL_EVENTS}\""
   echo "rpc_external_events=\"${RPC_EXTERNAL_EVENTS}\""
-  echo "rmc_internal_events=\"${RMC_INTERNAL_EVENTS}\""
-  echo "rmc_external_events=\"${RMC_EXTERNAL_EVENTS}\""
+  if [[ ${INCLUDE_RMCN0} -eq 1 ]]; then
+    echo "rmc_n0_internal_events=\"${RMC_N0_INTERNAL_EVENTS}\""
+    echo "rmc_n0_external_events=\"${RMC_N0_EXTERNAL_EVENTS}\""
+  fi
+  if [[ ${INCLUDE_RMCN1} -eq 1 ]]; then
+    echo "rmc_n1_internal_events=\"${RMC_N1_INTERNAL_EVENTS}\""
+    echo "rmc_n1_external_events=\"${RMC_N1_EXTERNAL_EVENTS}\""
+  fi
 } > ${TAG}.txt
 
 echo "   ✓ Configuration file written successfully"

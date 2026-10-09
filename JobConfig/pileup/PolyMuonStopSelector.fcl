@@ -6,3 +6,9 @@ physics.filters.muminusSelector.SimParticles : "PolyStopFilter"
 physics.filters.muplusSelector.SimParticles  : "PolyStopFilter"
 outputs.muminusout.fileName : "sim.owner.MuminusPolyStopsCat.version.sequencer.art"
 outputs.muplusout.fileName  : "sim.owner.MuplusPolyStopsCat.version.sequencer.art"
+
+# This selects from the POLY stop stream, not the target one, so the counters
+# inherited from MuonStopSelector.fcl must be re-pointed: otherwise they would
+# copy targetStopCounter's generated count onto a poly-stop pool.
+physics.producers.muminusStopCounter.upstreamTag : "polyStopCounter"
+physics.producers.muplusStopCounter.upstreamTag  : "polyStopCounter"

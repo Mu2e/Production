@@ -11,6 +11,7 @@ outputs: {
       "keep art::EventIDs_*_*_*",
       "keep mu2e::GenParticles_*_*_*",
       "keep mu2e::GenEventCount_*_*_*",
+      "keep mu2e::StageNormalization_*_*_*",
       "keep mu2e::StatusG4_*_*_*",
       "keep *_*Filter_*_*",
       "keep *_compressPV*_*_*"
