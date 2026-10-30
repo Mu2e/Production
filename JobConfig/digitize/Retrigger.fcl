@@ -26,8 +26,6 @@ physics : {
   @table::TrigSequences
   OutputPath : [ Output ]
 }
-# don't remake digis
-physics.producers.TrigMakeSD : { module_type : NullProducer }
 # simulation has no CFO data: keep the default EventHeader (EWT = 0) and don't warn about the missing CFO fragments
 physics.producers.ProcessCFOData.isSim : true
 # save all triggerable events
