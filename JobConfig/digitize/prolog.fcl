@@ -30,10 +30,10 @@ BEGIN_PROLOG
 Digitize: {
   producers : {
     @table::CommonMC.DigiProducers
-    @table::TrackerMC.DigiProducers
     @table::CaloMC.producers
     @table::CrvDAQPackage.producers
     @table::TrigProducers.producers
+    @table::TrackerMC.DigiProducers # this overrides the trigger dfn. of makeSD
     compressDigiMCs : {
       module_type : CompressDigiMCs
       strawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag

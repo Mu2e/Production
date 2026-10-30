@@ -281,10 +281,10 @@ Reconstruction : {
  #
   # NoField straight line
   LineReco : [
-    SimpleTimeCluster, LineFinder, KKLine
+    SimpleTimeCluster, CosmicShowerFilter, LineFinder, KKLine
   ]
   # Central helix
-  CentralHelixReco : [ SimpleTimeCluster, LineFinder, KKCHmu ]
+  CentralHelixReco : [ SimpleTimeCluster, CosmicShowerFilter, LineFinder, KKCHmu ]
 
   # add protons for calibration TODO!
 
