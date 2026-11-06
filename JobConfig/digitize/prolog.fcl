@@ -34,6 +34,9 @@ Digitize: {
     @table::CaloMC.producers
     @table::CrvDAQPackage.producers
     @table::TrigProducers.producers
+    # The trigger's EWMProducer decodes the CFO data, which simulation doesn't have. Keep the simulated
+    # event window marker, which also makes the EventHeader, under the label the trigger reads
+    EWMProducer : @local::CommonMC.DigiProducers.EWMProducer
     compressDigiMCs : {
       module_type : CompressDigiMCs
       strawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag
@@ -252,8 +255,8 @@ Digitize.Outputs : {
   Output : @local::Digitize.Output
 }
 Digitize.EndPath : [ @sequence::Digitize.EndSequence, Output ]
-# override the trigger digitization sequence
-TrigRecoSequences.cfoDataGen : [ @sequence::Digitize.DigitizeSequence, ProcessCFOData ]
+# override the trigger digitization sequence; the simulated EWMProducer in it replaces the CFO decoding
+TrigRecoSequences.cfoDataGen : [ @sequence::Digitize.DigitizeSequence ]
 END_PROLOG
 # Trigger Sequences have to come after
 #include "mu2e-trig-config/core/trigSequences.fcl"
