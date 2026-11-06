@@ -30,6 +30,15 @@ Reconstruction : {
     @table::CrvRecoPackage.producers
     @table::CosmicReco.producers
 
+    # track-CRV association, one instance per KalSeedCollection: after SelectReco, on its clusters (the layer probe
+    # reads all CrvRecoPulses, which are still in the event); LoopHelix fits do not reach the CRV, so time only
+    TrkCrvMatchLine : { @table::TrkCrvMatcher KalSeedCollection : "KKLine" }
+    TrkCrvMatchCHmu : { @table::TrkCrvMatcher KalSeedCollection : "KKCHmu" }
+    TrkCrvMatchDe : { @table::TrkCrvMatcher KalSeedCollection : "KKDe" DoGeometric : false LayerProbe : false }
+    TrkCrvMatchUe : { @table::TrkCrvMatcher KalSeedCollection : "KKUe" DoGeometric : false LayerProbe : false }
+    TrkCrvMatchDmu : { @table::TrkCrvMatcher KalSeedCollection : "KKDmu" DoGeometric : false LayerProbe : false }
+    TrkCrvMatchUmu : { @table::TrkCrvMatcher KalSeedCollection : "KKUmu" DoGeometric : false LayerProbe : false }
+
     # choose the hit flagger
     flagPH : @local::CalPatRec.producers.DeltaFinder
     # flagPH : @local::TrkHitReco.producers.FlagBkgHits
@@ -294,6 +303,10 @@ Reconstruction : {
   CaloReco : [ @sequence::CaloReco.Reco, @sequence::CaloCluster.Reco ]
   # CRV reco
   CrvReco : [ @sequence::CrvRecoPackage.CrvRecoSequence ]
+  # track-CRV association, after SelectReco
+  TrkCrvMatchLH : [ TrkCrvMatchDe, TrkCrvMatchUe, TrkCrvMatchDmu, TrkCrvMatchUmu ]
+  TrkCrvMatchNoField : [ TrkCrvMatchLine ]
+  TrkCrvMatchOffSpill : [ TrkCrvMatchCHmu, TrkCrvMatchDe, TrkCrvMatchUe, TrkCrvMatchDmu, TrkCrvMatchUmu ]
 
   # define products to keep
   # First, high-level reco products, and associated sub-products
@@ -309,7 +322,8 @@ Reconstruction : {
     "keep mu2e::CaloDigis_SelectReco_*_*",
     "keep mu2e::CrvDigis_SelectReco_*_*",
     "keep mu2e::CrvCoincidenceClusters_SelectReco_*_*",
-    "keep mu2e::CrvRecoPulses_SelectReco_*_*"
+    "keep mu2e::CrvRecoPulses_SelectReco_*_*",
+    "keep mu2e::TrkCrvMatchs_*_*_*"
   ]
   # Middle reco products, pat rec intermediate results
   MidRecoProducts : [
@@ -353,7 +367,8 @@ Reconstruction.NoFieldPath : [
   @sequence::Reconstruction.PreTrk,
   @sequence::Reconstruction.LineReco,
   KLFilter,
-  SelectReco
+  SelectReco,
+  @sequence::Reconstruction.TrkCrvMatchNoField
 ]
 
 # OnSpill paths; only LoopHelix
@@ -361,21 +376,24 @@ Reconstruction.OnSpillPath : [
   @sequence::Reconstruction.PreTrk,
   @sequence::Reconstruction.OnSpillTrk,
   LHFilter,
-  SelectReco
+  SelectReco,
+  @sequence::Reconstruction.TrkCrvMatchLH
 ]
 
 Reconstruction.CentralHelixPath : [
   @sequence::Reconstruction.PreTrk,
   @sequence::Reconstruction.OffSpillTrk,
   CHFilter,
-  SelectReco
+  SelectReco,
+  @sequence::Reconstruction.TrkCrvMatchOffSpill
 ]
 
 Reconstruction.LoopHelixPath : [
   @sequence::Reconstruction.PreTrk,
   @sequence::Reconstruction.OffSpillTrk,
   LHFilter,
-  SelectReco
+  SelectReco,
+  @sequence::Reconstruction.TrkCrvMatchOffSpill
 ]
 
 # default output
