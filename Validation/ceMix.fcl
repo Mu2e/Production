@@ -27,8 +27,7 @@ physics.producers.PBISim.extendedMean: 1.0e5
 physics.producers.PBISim.cutMax: 2.0e5
 
 #physics.producers.PBISim.debugLevel : 2
-outputs.TriggeredOutput.fileName: "dig.owner.ceMix.dsconf.seq.art"
-outputs.TriggerableOutput.fileName: "/dev/null"
+outputs.Output.fileName: "dig.owner.ceMix.dsconf.seq.art"
 #include "Production/Validation/database.fcl"
 #include "Offline/CRVResponse/fcl/epilog_run1a_v01.fcl"
 
