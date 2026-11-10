@@ -33,7 +33,8 @@ Reconstruction : {
     # track-CRV association, one instance per KalSeedCollection: after SelectReco, on its clusters (the layer probe
     # reads all CrvRecoPulses, which are still in the event); LoopHelix fits do not reach the CRV, so time only.
     # DtRefCenter: median dtRef of the track's own cluster per fit, from MC truth (KKLine: the Offline default, from
-    # extracted MDC2025bb; the others from MDC2025au CosmicSignalOffSpill CH and LH reco)
+    # extracted MDC2025bb; the others from MDC2025au CosmicSignalOffSpill CH and LH reco); the nightly off-spill input
+    # (MDC2025an, 20000 events) gives KKCHmu 24.6 ns (433 clusters), KKDe 33.2, KKUe 29.9, KKDmu 30.1, KKUmu 26.6 (~4500 each)
     # SigmaV for the Run1 geometries, whose T1 and T2 are both CRV sector type 1: provisional, the extracted T1 value
     TrkCrvMatchLine : { @table::TrkCrvMatcher KalSeedCollection : "KKLine" SigmaV : [ 13 ] }
     TrkCrvMatchCHmu : { @table::TrkCrvMatcher KalSeedCollection : "KKCHmu" DtRefCenter : 27 SigmaV : [ 13 ] }
