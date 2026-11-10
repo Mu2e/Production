@@ -34,8 +34,9 @@ Reconstruction : {
     # reads all CrvRecoPulses, which are still in the event); LoopHelix fits do not reach the CRV, so time only.
     # DtRefCenter: median dtRef of the track's own cluster per fit, from MC truth (KKLine: the Offline default, from
     # extracted MDC2025bb; the others from MDC2025au CosmicSignalOffSpill CH and LH reco)
-    TrkCrvMatchLine : { @table::TrkCrvMatcher KalSeedCollection : "KKLine" }
-    TrkCrvMatchCHmu : { @table::TrkCrvMatcher KalSeedCollection : "KKCHmu" DtRefCenter : 27 }
+    # SigmaV for the Run1 geometries, whose T1 and T2 are both CRV sector type 1: provisional, the extracted T1 value
+    TrkCrvMatchLine : { @table::TrkCrvMatcher KalSeedCollection : "KKLine" SigmaV : [ 13 ] }
+    TrkCrvMatchCHmu : { @table::TrkCrvMatcher KalSeedCollection : "KKCHmu" DtRefCenter : 27 SigmaV : [ 13 ] }
     TrkCrvMatchDe : { @table::TrkCrvMatcher KalSeedCollection : "KKDe" DtRefCenter : 32 DoGeometric : false LayerProbe : false }
     TrkCrvMatchUe : { @table::TrkCrvMatcher KalSeedCollection : "KKUe" DtRefCenter : 28 DoGeometric : false LayerProbe : false }
     TrkCrvMatchDmu : { @table::TrkCrvMatcher KalSeedCollection : "KKDmu" DtRefCenter : 30 DoGeometric : false LayerProbe : false }
