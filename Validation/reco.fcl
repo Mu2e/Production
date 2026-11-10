@@ -1,11 +1,8 @@
 #
 #include "Production/JobConfig/recoMC/OnSpill.fcl"
 #
-# restrict path and output
+# restrict output
 #
-physics.producers.SelectRecoMC.KalSeedCollections : [ "KKDe"]
-physics.producers.SelectRecoMC.HelixSeedCollections  : ["MHDe" ]
-physics.filters.RecoFilter.TrkTags : [ "KKDe"]
 
 outputs.LoopHelixOutput.fileName: "mcs.owner.val-reco.dsconf.seq.art"
 outputs.LoopHelixOutput.outputCommands: [
