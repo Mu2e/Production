@@ -18,8 +18,9 @@ TriggerableTrigger: {
       ProcessName : Digitize
       TriggerNames : [ "TriggerableLHPath", "TriggerableCHPath" ]
 }
-# run ProcessCFOData to create EventHeader as a patch until that is put into the normal digi output
-TrigRecoSequences.cfoDataGen : [ TriggerableTrigger, ProcessCFOData ]
+# Don't run the trigger's CFO decoding (EWMProducer): it would replace the simulated event window marker
+# from the digi file with a default one. The EventHeader also comes from the digi file (EWMProducer)
+TrigRecoSequences.cfoDataGen : [ TriggerableTrigger ]
 END_PROLOG
 
 #include "mu2e-trig-config/core/trigSequences.fcl"

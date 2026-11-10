@@ -13,7 +13,6 @@ services : @local::Services.SimAndReco
 physics : {
   producers : {
     @table::Digitize.producers
-    @table::TrigProducers.producers
   }
   filters: {
     @table::Digitize.filters
