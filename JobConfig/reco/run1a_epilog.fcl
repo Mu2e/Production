@@ -1,0 +1,22 @@
+# Settings for the reconstruction specific to the Run 1A (reduced tracker) detector configuration
+
+# AgnosticPatRec
+physics.producers.TZClusterFinder.clusterThresh            : 10
+physics.producers.AgnosticHelixFinder.maxSeedLineGap       : 600
+physics.producers.AgnosticHelixFinder.minNHelixStrawHits   : 8
+physics.producers.AgnosticHelixFinder.minNHelixComboHits   : 6
+physics.producers.AgnosticHelixFinder.minSeedCircleHits    : 5
+physics.producers.AgnosticHelixFinder.minFinalSeedHits     : 5
+
+# CalPatRec
+physics.producers.CalTimePeakFinderDe.MinNHits             : 7
+physics.producers.CalHelixFinderDe.HelixFinderAlg.minNHit  : 7
+physics.producers.CalHelixFinderDe.minNHitsTimeCluster     : 7
+
+# TrkPatRec
+physics.producers.TimeClusterFinderDe.MinNHits             : 7
+physics.producers.HelixFinderDe.MinNStrawHits              : 7
+physics.producers.HelixFinderDe.HelixFitter.minNStrawHits  : 7
+
+# helix merging
+physics.producers.MHDe.MinNHitOverlap                      : 7

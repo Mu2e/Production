@@ -1,0 +1,22 @@
+# Settings for the reconstruction specific to the nominal (Run 2) detector configuration
+
+# AgnosticPatRec
+physics.producers.TZClusterFinder.clusterThresh            : 15
+physics.producers.AgnosticHelixFinder.maxSeedLineGap       : 250
+physics.producers.AgnosticHelixFinder.minNHelixStrawHits   : 12
+physics.producers.AgnosticHelixFinder.minNHelixComboHits   : 10
+physics.producers.AgnosticHelixFinder.minSeedCircleHits    : 7
+physics.producers.AgnosticHelixFinder.minFinalSeedHits     : 7
+
+# CalPatRec
+physics.producers.CalTimePeakFinderDe.MinNHits             : 10
+physics.producers.CalHelixFinderDe.HelixFinderAlg.minNHit  : 10
+physics.producers.CalHelixFinderDe.minNHitsTimeCluster     : 10
+
+# TrkPatRec
+physics.producers.TimeClusterFinderDe.MinNHits             : 10
+physics.producers.HelixFinderDe.MinNStrawHits              : 10
+physics.producers.HelixFinderDe.HelixFitter.minNStrawHits  : 10
+
+# helix merging
+physics.producers.MHDe.MinNHitOverlap                      : 10
