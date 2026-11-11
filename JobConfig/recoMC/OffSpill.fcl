@@ -31,4 +31,5 @@ physics.producers.KKCHmu.KKFitSettings.SaveMaterialXings : true
 #include "Production/JobConfig/reco/NoPileup_epilog.fcl"
 #include "Production/JobConfig/reco/OffSpillTiming_epilog.fcl"
 #include "Production/JobConfig/recoMC/epilog.fcl"
+#include "Production/JobConfig/reco/run1a_epilog.fcl"
 #include "Production/JobConfig/common/epilog.fcl"
