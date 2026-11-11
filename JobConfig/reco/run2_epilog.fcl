@@ -1,4 +1,8 @@
 # Settings for the reconstruction specific to the nominal (Run 2) detector configuration
+#
+# Include this in place of run1a_epilog.fcl to reconstruct with the nominal tracker settings.
+# The values mirror the Offline prolog defaults at the time this file was added; if an Offline
+# default changes, update it here too.
 
 # AgnosticPatRec
 physics.producers.TZClusterFinder.clusterThresh            : 15
