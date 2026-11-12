@@ -1,6 +1,14 @@
 # Settings for the reconstruction specific to the nominal (Run 2) detector configuration
 #
-# Include this in place of run1a_epilog.fcl to reconstruct with the nominal tracker settings.
+# The reco fcls in JobConfig/reco and JobConfig/recoMC use the Run 1A (reduced tracker) settings
+# (run1a_epilog.fcl), and Offline uses the Run 1A tracker conditions by default. To reconstruct a
+# sample digitized with the nominal tracker, which includes the productions made before these
+# defaults changed, include this file after the reco fcl:
+#
+#   #include "Production/JobConfig/recoMC/OnSpill.fcl"
+#   #include "Production/JobConfig/reco/run2_epilog.fcl"
+#
+# It restores both the nominal reco settings below and the nominal tracker conditions.
 # The values mirror the Offline prolog defaults at the time this file was added; if an Offline
 # default changes, update it here too.
 
@@ -24,3 +32,6 @@ physics.producers.HelixFinderDe.HelixFitter.minNStrawHits  : 10
 
 # helix merging
 physics.producers.MHDe.MinNHitOverlap                      : 10
+
+# tracker conditions: gas gain, threshold noise and straw response calibration
+#include "Offline/TrackerConditions/fcl/run2conditions_epilog.fcl"
