@@ -131,10 +131,12 @@ physics.RecoPath: [
       "CosmicLineFinder",
       "CosmicKKLine",
       "SelectReco",
+      "TrkCrvMatchLine",
       "CaloHitTruthMatch",
       "CaloClusterTruthMatch",
       "CrvCoincidenceClusterMatchMC",
       "compressRecoMCs",
-      "CrvCoincidenceClusterMCAssns"
+      "CrvCoincidenceClusterMCAssns",
+      "TrkCrvMatchLineMC"
    ]
 

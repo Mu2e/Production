@@ -13,6 +13,8 @@ outputs.LoopHelixOutput.outputCommands: [
       "keep mu2e::HelixSeeds_MH*_*_*",
       "keep mu2e::TimeClusters_MH*_*_*",
       "keep mu2e::CaloClusters_CaloClusterMaker_*_*",
+      "keep mu2e::TrkCrvMatchs_TrkCrvMatchDe_*_*", # the association of KKDe, the one fit this output keeps
+      "keep mu2e::TrkCrvMatchMCs_TrkCrvMatchDeMC_*_*",
       "keep mu2e::EventWindowMarker_*_*_*",
       "keep mu2e::ProtonBunchTime_*_*_*",
       "keep *_SelectReco*_*_*",

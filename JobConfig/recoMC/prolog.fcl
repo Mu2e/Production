@@ -12,6 +12,13 @@ Reconstruction.producers : {
   @table::Reconstruction.producers
   @table::CaloMC.producers
   @table::CrvRecoMCPackage.producers
+  # truth of the track-CRV association, one per TrkCrvMatcher instance, after compression
+  TrkCrvMatchLineMC : { @table::TrkCrvMatchMC TrkCrvMatchCollection : "TrkCrvMatchLine" }
+  TrkCrvMatchCHmuMC : { @table::TrkCrvMatchMC TrkCrvMatchCollection : "TrkCrvMatchCHmu" }
+  TrkCrvMatchDeMC : { @table::TrkCrvMatchMC TrkCrvMatchCollection : "TrkCrvMatchDe" }
+  TrkCrvMatchUeMC : { @table::TrkCrvMatchMC TrkCrvMatchCollection : "TrkCrvMatchUe" }
+  TrkCrvMatchDmuMC : { @table::TrkCrvMatchMC TrkCrvMatchCollection : "TrkCrvMatchDmu" }
+  TrkCrvMatchUmuMC : { @table::TrkCrvMatchMC TrkCrvMatchCollection : "TrkCrvMatchUmu" }
 
   # MC specific output pruning
   SelectReco : {
@@ -56,6 +63,13 @@ Reconstruction.producers : {
     crvStepsToKeep : [ ]
   }
 }
+# SelectRecoMC writes the CRV clusters under the CrvCoincidenceClusterFinder instance
+Reconstruction.producers.TrkCrvMatchLine.CrvCoincidenceClusterCollection : "SelectReco:CrvCoincidenceClusterFinder"
+Reconstruction.producers.TrkCrvMatchCHmu.CrvCoincidenceClusterCollection : "SelectReco:CrvCoincidenceClusterFinder"
+Reconstruction.producers.TrkCrvMatchDe.CrvCoincidenceClusterCollection : "SelectReco:CrvCoincidenceClusterFinder"
+Reconstruction.producers.TrkCrvMatchUe.CrvCoincidenceClusterCollection : "SelectReco:CrvCoincidenceClusterFinder"
+Reconstruction.producers.TrkCrvMatchDmu.CrvCoincidenceClusterCollection : "SelectReco:CrvCoincidenceClusterFinder"
+Reconstruction.producers.TrkCrvMatchUmu.CrvCoincidenceClusterCollection : "SelectReco:CrvCoincidenceClusterFinder"
 # analyzers specific to MC
 Reconstruction.analyzers : {
   @table::Reconstruction.analyzers
@@ -69,11 +83,16 @@ RecoMC : {
   # full MC sequence; form the Calo and CRV matching, and compress based on reco content
   # temporary build surface steps from StepPointMCs; this is a patch
   MCReco :  [@sequence::CaloMC.TruthMatch, CrvCoincidenceClusterMatchMC, compressRecoMCs, CrvCoincidenceClusterMCAssns ]
+  # track-CRV association truth, after MCReco (needs compressRecoMCs and CrvCoincidenceClusterMCAssns)
+  TrkCrvMatchMCLH : [ TrkCrvMatchDeMC, TrkCrvMatchUeMC, TrkCrvMatchDmuMC, TrkCrvMatchUmuMC ]
+  TrkCrvMatchMCNoField : [ TrkCrvMatchLineMC ]
+  TrkCrvMatchMCOffSpill : [ TrkCrvMatchCHmuMC, TrkCrvMatchDeMC, TrkCrvMatchUeMC, TrkCrvMatchDmuMC, TrkCrvMatchUmuMC ]
 
   # MC truth matched to reco
   HighRecoMCProducts : [
     "keep *_compressRecoMCs_*_*",
     "keep *_CrvCoincidenceClusterMCAssns_*_*",
+    "keep mu2e::TrkCrvMatchMCs_*_*_*",
     "keep *_SelectReco_*_*"
   ]
   GeneralMCProducts : [
@@ -91,22 +110,26 @@ Reconstruction : {
 # Override paths to inclulde MC sequences
 Reconstruction.NoFieldPath : [
   @sequence::Reconstruction.NoFieldPath,
-  @sequence::RecoMC.MCReco
+  @sequence::RecoMC.MCReco,
+  @sequence::RecoMC.TrkCrvMatchMCNoField
 ]
 
 Reconstruction.OnSpillPath : [
   @sequence::Reconstruction.OnSpillPath,
-  @sequence::RecoMC.MCReco
+  @sequence::RecoMC.MCReco,
+  @sequence::RecoMC.TrkCrvMatchMCLH
 ]
 
 Reconstruction.CentralHelixPath : [
   @sequence::Reconstruction.CentralHelixPath,
-  @sequence::RecoMC.MCReco
+  @sequence::RecoMC.MCReco,
+  @sequence::RecoMC.TrkCrvMatchMCOffSpill
 ]
 
 Reconstruction.LoopHelixPath : [
   @sequence::Reconstruction.LoopHelixPath,
-  @sequence::RecoMC.MCReco
+  @sequence::RecoMC.MCReco,
+  @sequence::RecoMC.TrkCrvMatchMCOffSpill
 ]
 
 # add MC-specific payload
