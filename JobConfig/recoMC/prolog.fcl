@@ -63,6 +63,13 @@ Reconstruction.producers : {
     crvStepsToKeep : [ ]
   }
 }
+# SelectRecoMC writes the CRV clusters under the CrvCoincidenceClusterFinder instance
+Reconstruction.producers.TrkCrvMatchLine.CrvCoincidenceClusterCollection : "SelectReco:CrvCoincidenceClusterFinder"
+Reconstruction.producers.TrkCrvMatchCHmu.CrvCoincidenceClusterCollection : "SelectReco:CrvCoincidenceClusterFinder"
+Reconstruction.producers.TrkCrvMatchDe.CrvCoincidenceClusterCollection : "SelectReco:CrvCoincidenceClusterFinder"
+Reconstruction.producers.TrkCrvMatchUe.CrvCoincidenceClusterCollection : "SelectReco:CrvCoincidenceClusterFinder"
+Reconstruction.producers.TrkCrvMatchDmu.CrvCoincidenceClusterCollection : "SelectReco:CrvCoincidenceClusterFinder"
+Reconstruction.producers.TrkCrvMatchUmu.CrvCoincidenceClusterCollection : "SelectReco:CrvCoincidenceClusterFinder"
 # analyzers specific to MC
 Reconstruction.analyzers : {
   @table::Reconstruction.analyzers

@@ -14,6 +14,8 @@
 #include "Offline/Filters/fcl/prolog.fcl"
 #
 BEGIN_PROLOG
+# reco's SelectReco writes the CRV clusters with no instance name; recoMC/prolog.fcl sets the SelectRecoMC one
+TrkCrvMatcherReco : { @table::TrkCrvMatcher CrvCoincidenceClusterCollection : "SelectReco" }
 Reconstruction : {
 # define the helix finders
   HelixFinders : [ "AgnosticHelixFinder", "CalHelixFinderDe" ]
@@ -36,12 +38,12 @@ Reconstruction : {
     # extracted MDC2025bb; the others from MDC2025au CosmicSignalOffSpill CH and LH reco); the nightly off-spill input
     # (MDC2025an, 20000 events) gives KKCHmu 24.6 ns (433 clusters), KKDe 33.2, KKUe 29.9, KKDmu 30.1, KKUmu 26.6 (~4500 each)
     # SigmaV for the Run1 geometries, whose T1 and T2 are both CRV sector type 1: provisional, the extracted T1 value
-    TrkCrvMatchLine : { @table::TrkCrvMatcher KalSeedCollection : "KKLine" SigmaV : [ 13 ] }
-    TrkCrvMatchCHmu : { @table::TrkCrvMatcher KalSeedCollection : "KKCHmu" DtRefCenter : 27 SigmaV : [ 13 ] }
-    TrkCrvMatchDe : { @table::TrkCrvMatcher KalSeedCollection : "KKDe" DtRefCenter : 32 DoGeometric : false LayerProbe : false }
-    TrkCrvMatchUe : { @table::TrkCrvMatcher KalSeedCollection : "KKUe" DtRefCenter : 28 DoGeometric : false LayerProbe : false }
-    TrkCrvMatchDmu : { @table::TrkCrvMatcher KalSeedCollection : "KKDmu" DtRefCenter : 30 DoGeometric : false LayerProbe : false }
-    TrkCrvMatchUmu : { @table::TrkCrvMatcher KalSeedCollection : "KKUmu" DtRefCenter : 26 DoGeometric : false LayerProbe : false }
+    TrkCrvMatchLine : { @table::TrkCrvMatcherReco KalSeedCollection : "KKLine" SigmaV : [ 13 ] }
+    TrkCrvMatchCHmu : { @table::TrkCrvMatcherReco KalSeedCollection : "KKCHmu" DtRefCenter : 27 SigmaV : [ 13 ] }
+    TrkCrvMatchDe : { @table::TrkCrvMatcherReco KalSeedCollection : "KKDe" DtRefCenter : 32 DoGeometric : false LayerProbe : false }
+    TrkCrvMatchUe : { @table::TrkCrvMatcherReco KalSeedCollection : "KKUe" DtRefCenter : 28 DoGeometric : false LayerProbe : false }
+    TrkCrvMatchDmu : { @table::TrkCrvMatcherReco KalSeedCollection : "KKDmu" DtRefCenter : 30 DoGeometric : false LayerProbe : false }
+    TrkCrvMatchUmu : { @table::TrkCrvMatcherReco KalSeedCollection : "KKUmu" DtRefCenter : 26 DoGeometric : false LayerProbe : false }
 
     # choose the hit flagger
     flagPH : @local::CalPatRec.producers.DeltaFinder
