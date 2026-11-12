@@ -1,4 +1,5 @@
 # Settings for the reconstruction specific to the Run 1A (reduced tracker) detector configuration
+# To reconstruct a sample made with the nominal tracker, include run2_epilog.fcl after the reco fcl.
 
 # AgnosticPatRec
 physics.producers.TZClusterFinder.clusterThresh            : 10
