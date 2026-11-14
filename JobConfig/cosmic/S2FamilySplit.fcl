@@ -1,0 +1,25 @@
+# Second step of split cosmic stage 2 (S2ResamplerSplit.fcl): read each stage-2 event once and write
+# the event with all split families removed (event number * 1000, weight about 1) and one event per
+# split family (event number * 1000 + j, weight 1/CosmicSplitFactor). Livetime is copied unchanged;
+# downstream jobs apply the EventWeight "FamilySplit" (EventNtuple stores it in evtwt).
+# Yuri Oksuzian, 2026
+#include "Offline/fcl/standardServices.fcl"
+#include "Production/JobConfig/cosmic/prolog.fcl"
+# The stage-2 process name: the source re-creates every product under its stage-2 name, and art derives
+# a ProductID from that name, so the art::Ptr inside the copied products stay valid without remapping.
+process_name : CosmicS2
+source : @local::CosmicSplit.splitter
+services : {
+  message : @local::default_message
+  scheduler : { wantSummary : true }
+}
+physics : {
+  EndPath : [ PrimaryOutput ]
+  end_paths : [ EndPath ]
+}
+outputs : {
+  PrimaryOutput : {
+    module_type : RootOutput
+    fileName : @nil
+  }
+}

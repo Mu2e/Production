@@ -1,0 +1,12 @@
+# Cosmic stage 2 with Geant4 secondary splitting: every knock-on, bremsstrahlung and pair-production
+# secondary of a muon in the DS2 vacuum is made CosmicSplitFactor times, each with weight 1/factor.
+# The alternatives share one event, so run S2FamilySplit.fcl on the output before digitization: it
+# puts each split family in its own event and attaches the weights (EventWeight "FamilySplit").
+# Gammas, e+- and neutrons below 80 MeV are killed at birth (Cosmic CosmicSplit.softKillCut), so only
+# the copies that can matter for a conversion-like track are tracked.
+# Needs Offline with physics.secondaryBiasing (Mu2eG4) and FamilySplitSource (Sources).
+# Yuri Oksuzian, 2026
+#include "Production/JobConfig/cosmic/S2Resampler.fcl"
+physics.producers.g4run.Mu2eG4CommonCut : @local::CosmicSplit.softKillCut
+physics.producers.g4run.physics.minRangeRegionCuts : @local::CosmicSplit.regionCuts
+physics.producers.g4run.physics.secondaryBiasing : @local::CosmicSplit.G4

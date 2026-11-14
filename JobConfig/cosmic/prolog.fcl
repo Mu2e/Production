@@ -266,4 +266,39 @@ Cosmic: {
   ]
 
 }
+
+# Geant4 secondary splitting in stage 2 (S2ResamplerSplit.fcl), and the splitter job that puts each
+# split family in its own event (S2FamilySplit.fcl). The two must agree: Geant4 splits in G4 regions,
+# the splitter finds the split particles by birth position. DS2Vacuum is the tube r < 950 mm around
+# the DS axis (x = -3904 mm), Mu2e z 4179-8339 mm; it holds the TS downstream absorber and the
+# outer proton absorber, where most cosmic muon knock-on electrons that reach the tracker are made.
+CosmicSplitFactor : 100
+CosmicSplit : {
+  G4 : [
+    { process : muIoni     regions : [ DS2Vacuum ] factor : @local::CosmicSplitFactor },
+    { process : muBrems    regions : [ DS2Vacuum ] factor : @local::CosmicSplitFactor },
+    { process : muPairProd regions : [ DS2Vacuum ] factor : @local::CosmicSplitFactor }
+  ]
+  # a G4 region for the split volume, at the global production cut so only the splitting changes
+  regionCuts : { CalorimeterMother : 0.1 TrackerMother : 0.001 DS2Vacuum : 1.0 }
+  # Kill gammas, e+-, neutrons below 80 MeV everywhere at their first step (and everything in the dirt
+  # below the hall). Needed with splitting: otherwise every soft split copy is tracked and kept, and one
+  # event can carry 1000+ split families. Also removes soft particles that are not split (e.g. low-energy
+  # delta rays in the tracker), so hit-level studies of those need the stock S2Resampler.fcl.
+  softKillCut : {
+    type : union
+    pars : [
+      { type : intersection pars : [ { type : kineticEnergy cut : 80.0 }, { type : pdgId pars : [ 22, 11, -11, 2112 ] } ] },
+      { type : inVolume pars : [ worldDirtBottom ] }
+    ]
+  }
+  splitter : {
+    module_type : FamilySplitSource
+    processes : [ "muIoni", "muBrems", "muPairProd" ]
+    regions : [ { xc : -3904. rmax : 950. zmin : 4179. zmax : 8339. factor : @local::CosmicSplitFactor } ]
+    stride : 1000
+    weightLabel : "FamilySplit"
+    inputProcessName : "CosmicS2"
+  }
+}
 END_PROLOG
