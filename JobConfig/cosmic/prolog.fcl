@@ -288,8 +288,11 @@ Cosmic: {
 #     Coll53               r 248-294,      z 4160.02-4178.98
 #     Coll52               r 235-243,      z 2929-4178.98
 #     TS5InnerCryoShell    r 248-267,      z 2929-4160
+#     TS5DownstreamEndwall2 r 270.01-375,  z 4110-4160      second end-wall piece, inside the TS5 cryostat
 #   Each cylinder matches its volume exactly (100,000 sampled points per region in the GDML geometry, no
-#   point in one but not the other).
+#   point in one but not the other), except TS5DownstreamEndwall2: it is a cone (outer radius 321.7 to 375 mm
+#   over its first 25 mm), and its cylinder also holds a wedge of the TS5 insulating vacuum, where nothing is
+#   made.
 # Muon knock-on electrons (muIoni) and bremsstrahlung (muBrems) are split. Pair production (muPairProd) is
 # not: Geant4 splits only interactions with one secondary, so its pairs stay unsplit at weight 1.
 # Muon decays in flight come from a second stage-2 stream (S2ResamplerSplitDecay.fcl, then
@@ -305,8 +308,8 @@ CosmicSplit : {
     { process : muBrems regions : [ DS2Vacuum ]     factor : @local::CosmicSplitFactor },
     { process : muIoni  regions : [ TrackerMother ] factor : @local::CosmicSplitTrackerFactor },
     { process : muBrems regions : [ TrackerMother ] factor : @local::CosmicSplitTrackerFactor },
-    { process : muIoni  regions : [ DSInnerCryoShell, DSCryoVacuumRegion, DSOuterCryoShell, TS5DownstreamEndwall, Coll53, Coll52, TS5InnerCryoShell ] factor : @local::CosmicSplitWallFactor },
-    { process : muBrems regions : [ DSInnerCryoShell, DSCryoVacuumRegion, DSOuterCryoShell, TS5DownstreamEndwall, Coll53, Coll52, TS5InnerCryoShell ] factor : @local::CosmicSplitWallFactor }
+    { process : muIoni  regions : [ DSInnerCryoShell, DSCryoVacuumRegion, DSOuterCryoShell, TS5DownstreamEndwall, Coll53, Coll52, TS5InnerCryoShell, TS5DownstreamEndwall2 ] factor : @local::CosmicSplitWallFactor },
+    { process : muBrems regions : [ DSInnerCryoShell, DSCryoVacuumRegion, DSOuterCryoShell, TS5DownstreamEndwall, Coll53, Coll52, TS5InnerCryoShell, TS5DownstreamEndwall2 ] factor : @local::CosmicSplitWallFactor }
   ]
   # 10 mm everywhere except the DS vacuum regions (1 mm) and the calorimeter (0.1 mm). The tracker gets
   # 10 mm too (S2Resampler.fcl: 0.001 mm). Below the cut a delta ray is not made and its energy stays on
@@ -319,7 +322,8 @@ CosmicSplit : {
   minRangeCut : 10.0
   regionCuts : { CalorimeterMother : 0.1 TrackerMother : 10.0 DS1Vacuum : 1.0 DS2Vacuum : 1.0 DS3Vacuum : 1.0
                  DSInnerCryoShell : 10.0 DSCryoVacuumRegion : 10.0 DSOuterCryoShell : 10.0
-                 TS5DownstreamEndwall : 10.0 Coll53 : 10.0 Coll52 : 10.0 TS5InnerCryoShell : 10.0 }
+                 TS5DownstreamEndwall : 10.0 Coll53 : 10.0 Coll52 : 10.0 TS5InnerCryoShell : 10.0
+                 TS5DownstreamEndwall2 : 10.0 }
   # Kill gammas, e+-, neutrons below 80 MeV (and everything in the dirt below the hall), except around the
   # calorimeter. Needed with splitting: otherwise every soft split copy is tracked and kept, and one event
   # can carry 1000+ split families. Mu2eG4CommonCut is applied at birth (stacking action) and at every step
@@ -367,7 +371,8 @@ CosmicSplit : {
       { xc : -3904. rmin : 296.35 rmax : 793.45 zmin : 4160. zmax : 4179. factor : @local::CosmicSplitWallFactor },
       { xc : -3904. rmin : 248. rmax : 294. zmin : 4160.02 zmax : 4178.98 factor : @local::CosmicSplitWallFactor },
       { xc : -3904. rmin : 235. rmax : 243. zmin : 2929. zmax : 4178.98 factor : @local::CosmicSplitWallFactor },
-      { xc : -3904. rmin : 248. rmax : 267. zmin : 2929. zmax : 4160. factor : @local::CosmicSplitWallFactor }
+      { xc : -3904. rmin : 248. rmax : 267. zmin : 2929. zmax : 4160. factor : @local::CosmicSplitWallFactor },
+      { xc : -3904. rmin : 270.01 rmax : 375. zmin : 4110. zmax : 4160. factor : @local::CosmicSplitWallFactor }
     ]
     stride : 1000
     weightLabel : "FamilySplit"
