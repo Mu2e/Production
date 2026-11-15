@@ -269,18 +269,42 @@ Cosmic: {
 
 # Geant4 secondary splitting in stage 2 (S2ResamplerSplit.fcl), and the splitter job that puts each
 # split family in its own event (S2FamilySplit.fcl). The two must agree: Geant4 splits in G4 regions,
-# the splitter finds the split particles by birth position. DS2Vacuum is the tube r < 950 mm around
-# the DS axis (x = -3904 mm), Mu2e z 4179-8339 mm; it holds the TS downstream absorber and the
-# outer proton absorber, where most cosmic muon knock-on electrons that reach the tracker are made.
+# the splitter finds the split particles by birth position.
+#   DS2Vacuum: the tube r < 950 mm around the DS axis (x = -3904 mm), Mu2e z 4179-8339 mm; it holds the
+#     TS downstream absorber and the outer proton absorber, where most cosmic muon knock-on electrons
+#     that reach the tracker are made.
+#   TrackerMother: r 376.9-850.1 mm, Mu2e z 8539.5-11810.5 mm (tracker_v7). Split by a smaller factor:
+#     nearly every muon crossing the tracker makes a secondary above 80 MeV/c in its support rings
+#     (r > 700 mm), so x100 would add about one family event per event; x10 keeps most of the gain.
+#   DSInnerCryoShell: the inner cryostat wall, r 950-969.05 mm, Mu2e z 3239-14139 mm. About 6% of the
+#     reconstructed cosmic background starts there: knock-on electrons born in the steel, and photons
+#     from it that convert in the stopping target or the absorbers. Split x10: x100 gave 0.7 family
+#     events per event for little more gain. The region exists only to be split; its 10 mm cut is the
+#     default.
+# Muon knock-on electrons (muIoni) and bremsstrahlung (muBrems) are split. Pair production (muPairProd) is
+# not: Geant4 splits only interactions with one secondary, so its pairs stay unsplit at weight 1.
+# Muon decays in flight come from a second stage-2 stream (S2ResamplerSplitDecay.fcl, then
+# S2FamilySplitDecay.fcl) in which every muon decays within CosmicSplitDecayWindow ns of proper time;
+# the main stream drops those decays. Each stream is normalized to its own livetime and the two add.
 CosmicSplitFactor : 100
+CosmicSplitTrackerFactor : 10
+CosmicSplitWallFactor : 10
+CosmicSplitDecayWindow : 50
 CosmicSplit : {
   G4 : [
-    { process : muIoni     regions : [ DS2Vacuum ] factor : @local::CosmicSplitFactor },
-    { process : muBrems    regions : [ DS2Vacuum ] factor : @local::CosmicSplitFactor },
-    { process : muPairProd regions : [ DS2Vacuum ] factor : @local::CosmicSplitFactor }
+    { process : muIoni  regions : [ DS2Vacuum ]     factor : @local::CosmicSplitFactor },
+    { process : muBrems regions : [ DS2Vacuum ]     factor : @local::CosmicSplitFactor },
+    { process : muIoni  regions : [ TrackerMother ] factor : @local::CosmicSplitTrackerFactor },
+    { process : muBrems regions : [ TrackerMother ] factor : @local::CosmicSplitTrackerFactor },
+    { process : muIoni  regions : [ DSInnerCryoShell ] factor : @local::CosmicSplitWallFactor },
+    { process : muBrems regions : [ DSInnerCryoShell ] factor : @local::CosmicSplitWallFactor }
   ]
-  # a G4 region for the split volume, at the global production cut so only the splitting changes
-  regionCuts : { CalorimeterMother : 0.1 TrackerMother : 0.001 DS2Vacuum : 1.0 }
+  # 10 mm everywhere except the DS vacuum regions (1 mm), the tracker (0.001 mm, as in S2Resampler.fcl)
+  # and the calorimeter (0.1 mm). A 1 mm tracker cut makes stage 2 about 1.5 times faster but gave 0.96 +-
+  # 0.03 of the electrons counted with 0.001 mm, so it is not used.
+  minRangeCut : 10.0
+  regionCuts : { CalorimeterMother : 0.1 TrackerMother : 0.001 DS1Vacuum : 1.0 DS2Vacuum : 1.0 DS3Vacuum : 1.0
+                 DSInnerCryoShell : 10.0 }
   # Kill gammas, e+-, neutrons below 80 MeV everywhere at their first step (and everything in the dirt
   # below the hall). Needed with splitting: otherwise every soft split copy is tracked and kept, and one
   # event can carry 1000+ split families. Also removes soft particles that are not split (e.g. low-energy
@@ -294,11 +318,17 @@ CosmicSplit : {
   }
   splitter : {
     module_type : FamilySplitSource
-    processes : [ "muIoni", "muBrems", "muPairProd" ]
-    regions : [ { xc : -3904. rmax : 950. zmin : 4179. zmax : 8339. factor : @local::CosmicSplitFactor } ]
+    processes : [ "muIoni", "muBrems" ]
+    regions : [
+      { xc : -3904. rmax : 950. zmin : 4179. zmax : 8339. factor : @local::CosmicSplitFactor },
+      { xc : -3904. rmin : 376.9 rmax : 850.1 zmin : 8539.5 zmax : 11810.5 factor : @local::CosmicSplitTrackerFactor },
+      { xc : -3904. rmin : 950. rmax : 969.05 zmin : 3239. zmax : 14139. factor : @local::CosmicSplitWallFactor }
+    ]
     stride : 1000
     weightLabel : "FamilySplit"
     inputProcessName : "CosmicS2"
+    muonDecayWindow : @local::CosmicSplitDecayWindow
+    forcedDecayStream : false
   }
 }
 END_PROLOG

@@ -1,0 +1,6 @@
+# Second step of split cosmic stage 2, muon-decay stream (S2ResamplerSplitDecay.fcl): as
+# S2FamilySplit.fcl, but keeps only the events whose stage-2 primary muon decayed in flight, and multiplies every
+# weight by 1 - exp(-CosmicSplitDecayWindow / 2196.98 ns).
+# Yuri Oksuzian, 2026
+#include "Production/JobConfig/cosmic/S2FamilySplit.fcl"
+source.forcedDecayStream : true
