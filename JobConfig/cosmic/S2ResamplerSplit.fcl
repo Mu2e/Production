@@ -20,3 +20,9 @@ physics.producers.g4run.physics.secondaryBiasing : @local::CosmicSplit.G4
 # About 8% of the CPU.
 physics.filters.CosmicResampler.mu2e.products.volumeInfoMixer.evtOutInstanceName : @erase
 physics.producers.g4run.inputs.updateEventLevelVolumeInfos : @erase
+# Keep the events in which Geant4 makes more than 100,000 particles (the Mu2eG4 default): above the limit
+# Mu2eG4 stops saving particles and g4consistentFilter drops the event. Here that happens only for large
+# showers inside the calorimeter, where the soft kill is off (5 events in 9.5e6 particles); stock stage 2
+# drops 2.4e-5 per particle this way. The dropped events were simulated in full anyway, so the higher limit
+# costs memory for those events only, not CPU.
+physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize : 1000000
