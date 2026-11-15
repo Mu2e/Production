@@ -2,8 +2,9 @@
 # and write the event with all split families removed (event number * 1000, weight about 1) and one event
 # per split family (event number * 1000 + j, weight 1/factor of the region it was born in). Events whose stage-2 primary
 # muon decays within CosmicSplitDecayWindow are dropped; the decay stream (S2FamilySplitDecay.fcl)
-# provides them. Livetime is copied unchanged; downstream jobs apply the EventWeight "FamilySplit"
-# (EventNtuple stores it in evtwt).
+# provides them. Livetime is copied unchanged; downstream jobs apply the EventWeight "FamilySplit". (The
+# EventNtuple evtwt branch of AnalysisMDC2025 v02_01_00 does not hold usable values; join the weights by
+# event number.)
 # Yuri Oksuzian, 2026
 #include "Offline/fcl/standardServices.fcl"
 #include "Production/JobConfig/cosmic/prolog.fcl"
