@@ -43,6 +43,7 @@ outputs.Output.fileName : "dig.owner.val-trigger.dsconf.seq.art"
 physics.trigger_paths : [@sequence::Trig_valMenu.trigger_paths]
 #include "mu2e-trig-config/core/trigDigiInputsEpilog.fcl"
 
+
 #include "Production/JobConfig/common/epilog.fcl"
 #include "Production/JobConfig/reco/drop_trigger.fcl"
 

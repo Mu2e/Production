@@ -126,7 +126,6 @@ physics.producers.CrvPhotons.crvStepProcessNames  : ["cosmicSimReco"]
 physics.producers.makeSD.StrawGasStepModules : [ "StrawGasStepMaker" ]
 physics.producers.CaloShowerROMaker.caloShowerStepCollection : [ "CaloShowerStepMaker" ]
 # turn off very verbose
-physics.producers.CrvCoincidence.verboseLevel : 0
 physics.producers.CrvCoincidenceClusterFinder.verboseLevel : 0
 
 # print summaries

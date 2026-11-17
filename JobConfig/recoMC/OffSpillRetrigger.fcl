@@ -33,5 +33,6 @@ physics.EndPath : [ LoopHelixOutput, CentralHelixOutput ]
 physics.end_paths : [ EndPath ]
 
 #include "Production/JobConfig/recoMC/epilog.fcl"
+#include "Production/JobConfig/reco/run1a_epilog.fcl"
 #include "Production/JobConfig/common/epilog.fcl"
 #include "mu2e-trig-config/core/trigDigiInputsEpilog.fcl"

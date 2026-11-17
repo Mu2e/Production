@@ -131,7 +131,6 @@ Reconstruction : {
       }
       KKFitSettings: {
         @table::Mu2eKinKal.producers.KKDe.KKFitSettings
-        SampleSurfaces : ["ST_Outer","ST_Front","ST_Back"]
         AddHits : false
       }
       ExtrapolationSettings : @local::Mu2eKinKal.LHDRIFTXTRAP

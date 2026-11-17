@@ -1,0 +1,12 @@
+# Tracker conditions for digitizing with the nominal (Run 2) tracker
+#
+# Offline uses the Run 1A (reduced tracker) tracker conditions by default. To digitize or mix a
+# sample with the nominal tracker, include this file after the digitize or mixing fcl:
+#
+#   #include "Production/JobConfig/digitize/OnSpill.fcl"
+#   #include "Production/JobConfig/digitize/run2_epilog.fcl"
+#
+# To reconstruct such a sample, include Production/JobConfig/reco/run2_epilog.fcl after the
+# reco fcl.
+
+#include "Offline/TrackerConditions/fcl/run2conditions_epilog.fcl"

@@ -1,0 +1,8 @@
+# OnSpill digitization for the Run 1A (reduced tracker) scenario, stated explicitly.
+#
+# OnSpill.fcl already defaults to Run 1A: the digitize prolog includes the Run 1A trigger tuning,
+# and Offline uses the Run 1A tracker conditions by default. Use this file instead of OnSpill.fcl to
+# pin the scenario, so the job keeps Run 1A even if those defaults change. The scenario file must be
+# the first include: its values are bound with @protect_ignore, so the first binding wins.
+#include "mu2e-trig-config/core/conditions/run1a.fcl"
+#include "Production/JobConfig/digitize/OnSpill.fcl"

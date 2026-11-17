@@ -114,7 +114,6 @@ physics.producers.MakeSS : {
 #include "Production/JobConfig/digitize/epilog.fcl"
 #include "Production/JobConfig/recoMC/epilog.fcl"
 physics.analyzers.digiCompressionCheck.SelectEvents : [ TriggerPath ]
-physics.analyzers.recoCompressionCheck.SelectEvents : [ TriggerPath ]
 #
 # on-spill EWM
 physics.producers.EWMProducer.SpillType : 1
