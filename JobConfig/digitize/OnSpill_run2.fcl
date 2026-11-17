@@ -1,0 +1,9 @@
+# OnSpill digitization for the Run 2 (nominal tracker) scenario: Run 2 trigger tuning and Run 2
+# tracker conditions.
+#
+# The scenario file must be the first include: its values are bound with @protect_ignore, so the
+# first binding wins and the Run 1A default in the digitize prolog is ignored. Reconstruct the
+# output with Production/JobConfig/reco/run2_epilog.fcl included after the reco fcl.
+#include "mu2e-trig-config/core/conditions/run2.fcl"
+#include "Production/JobConfig/digitize/OnSpill.fcl"
+#include "Production/JobConfig/digitize/run2_epilog.fcl"
