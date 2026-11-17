@@ -10,6 +10,12 @@
 #include "Offline/Filters/fcl/prolog.fcl"
 #include "Offline/Compression/fcl/prolog.fcl"
 #include "Offline/CommonMC/fcl/prolog.fcl"
+# Trigger tuning for the Run 1A (reduced tracker) scenario. This MUST come before
+# trigProducers.fcl and trigFilters.fcl: run1a.fcl binds its values with @protect_ignore, so the
+# nominal (Run 2) defaults those files include are then ignored. Digitization and mixing share this
+# prolog, so both get the Run 1A trigger. To use the nominal trigger instead, include
+# mu2e-trig-config/core/conditions/run2.fcl or another scenario before this file.
+#include "mu2e-trig-config/core/conditions/run1a.fcl"
 #include "mu2e-trig-config/core/trigProducers.fcl"
 #include "mu2e-trig-config/core/trigFilters.fcl"
 #include "mu2e-trig-config/core/trigRecoSequences.fcl"
