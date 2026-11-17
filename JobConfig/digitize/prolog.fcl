@@ -234,6 +234,7 @@ Digitize: {
   Output : {
     module_type : RootOutput
     fileName    : "dig.owner.desc.version.sequencer.art"
+    compressionLevel : 505 # ZSTD level 5 (ROOT algorithm*100+level), as Reconstruction.Output; art's default is zlib level 7
   }
   #
   # trigger selections that can be used to finalize the triggerOutput selection, depending on digitization mode and source
