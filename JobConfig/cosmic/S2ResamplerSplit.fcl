@@ -1,0 +1,29 @@
+# Cosmic stage 2 with Geant4 secondary splitting, main stream: every knock-on electron and bremsstrahlung
+# photon of a muon in DS2Vacuum is made CosmicSplitFactor (100) times, in the tracker
+# CosmicSplitTrackerFactor (10) times and in the DS cryostat (walls, coils) and the downstream end of TS5
+# CosmicSplitWallFactor (10) times, each copy with weight 1/factor. The alternatives share one event, so
+# run S2FamilySplit.fcl on the output before digitization: it puts each split family in its own event and
+# attaches the weights (EventWeight "FamilySplit"). It also drops the events whose muon decays in flight
+# within CosmicSplitDecayWindow: those come from the decay stream, S2ResamplerSplitDecay.fcl, which must be
+# run too.
+# Gammas, e+- and neutrons below 80 MeV are killed except around the calorimeter (CosmicSplit.softKillCut),
+# so only the copies that can matter for a conversion-like track are tracked.
+# Needs Offline with physics.secondaryBiasing (Mu2eG4) and FamilySplitSource (Sources).
+# Yuri Oksuzian, 2026
+#include "Production/JobConfig/cosmic/S2Resampler.fcl"
+physics.producers.g4run.Mu2eG4CommonCut : @local::CosmicSplit.softKillCut
+physics.producers.g4run.physics.minRangeCut : @local::CosmicSplit.minRangeCut
+physics.producers.g4run.physics.minRangeRegionCuts : @local::CosmicSplit.regionCuts
+physics.producers.g4run.physics.secondaryBiasing : @local::CosmicSplit.G4
+# No per-event volume lists: the resampler merges the stage-1 list into every event and Mu2eG4 writes the
+# stage-2 list into every event, but the output keeps no volume information (S2Resampler's outputCommands).
+# About 8% of the CPU.
+physics.filters.CosmicResampler.mu2e.products.volumeInfoMixer.evtOutInstanceName : @erase
+physics.producers.g4run.inputs.updateEventLevelVolumeInfos : @erase
+# Keep the events in which Geant4 makes more than 100,000 particles (the Mu2eG4 default): above the limit
+# Mu2eG4 stops saving particles and g4consistentFilter drops the event. Here that happens only for large
+# showers inside the calorimeter, where the soft kill is off (5 events in 9.5e6 particles); stock stage 2
+# drops 2.4e-5 per particle this way. Geant4 tracks such an event in full either way. Keeping it costs up to
+# 0.5 GB of memory and up to 90 s in compressDetStepMCs, which compares every StepPointMC with every kept
+# SimParticle: about 0.3% of the CPU (grid re-run of the jobs that dropped an event).
+physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize : 1000000

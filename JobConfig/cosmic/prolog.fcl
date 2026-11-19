@@ -266,4 +266,119 @@ Cosmic: {
   ]
 
 }
+
+# Geant4 secondary splitting in stage 2 (S2ResamplerSplit.fcl), and the splitter job that puts each
+# split family in its own event (S2FamilySplit.fcl). The two must agree: Geant4 splits in G4 regions,
+# the splitter finds the split particles by birth position.
+#   DS2Vacuum: the tube r < 950 mm around the DS axis (x = -3904 mm), Mu2e z 4179-8339 mm; it holds the
+#     TS downstream absorber and the outer proton absorber, where most cosmic muon knock-on electrons
+#     that reach the tracker are made.
+#   TrackerMother: r 376.9-850.1 mm, Mu2e z 8539.5-11810.5 mm (tracker_v7). Split by a smaller factor:
+#     nearly every muon crossing the tracker makes a secondary above 80 MeV/c in its support rings
+#     (r > 700 mm), so x100 would add about one family event per event; x10 keeps most of the gain.
+#   Walls, split x10 (CosmicSplitWallFactor; x100 in the inner cryostat wall gave 0.63 extra family events
+#   per event, x10 0.06, for little more gain). These regions exist only to be split; their 10 mm cut is
+#   the default. About 11% of the reconstructed cosmic background starts in them: knock-on electrons born
+#   in the material, and photons from it that convert in the stopping target or the absorbers.
+#     DSInnerCryoShell     r 950-969.05,   z 3239-14139     inner cryostat wall (about 6%)
+#     DSCryoVacuumRegion   r 969.05-1303,  z 3269-14109     cryostat vacuum with the coils, thermal
+#                                                           shields and supports (19 volumes)
+#     DSOuterCryoShell     r 1303-1328,    z 3239-14139     outer cryostat wall
+#     TS5DownstreamEndwall r 296.35-793.45, z 4160-4179     downstream end of TS5, just upstream of DS2
+#     Coll53               r 248-294,      z 4160.02-4178.98
+#     Coll52               r 235-243,      z 2929-4178.98
+#     TS5InnerCryoShell    r 248-267,      z 2929-4160
+#     TS5DownstreamEndwall2 r 270.01-375,  z 4110-4160      second end-wall piece, inside the TS5 cryostat
+#   Each cylinder matches its volume exactly (100,000 sampled points per region in the GDML geometry, no
+#   point in one but not the other), except TS5DownstreamEndwall2: it is a cone (outer radius 321.7 to 375 mm
+#   over its first 25 mm), and its cylinder also holds a wedge of the TS5 insulating vacuum, where nothing is
+#   made.
+# Muon knock-on electrons (muIoni) and bremsstrahlung (muBrems) are split. Pair production (muPairProd) is
+# not: Geant4 splits only interactions with one secondary, so its pairs stay unsplit at weight 1.
+# Muon decays in flight come from a second stage-2 stream (S2ResamplerSplitDecay.fcl, then
+# S2FamilySplitDecay.fcl) in which every muon decays within CosmicSplitDecayWindow ns of proper time;
+# the main stream drops those decays. Each stream is normalized to its own livetime and the two add.
+CosmicSplitFactor : 100
+CosmicSplitTrackerFactor : 10
+CosmicSplitWallFactor : 10
+CosmicSplitDecayWindow : 50
+CosmicSplit : {
+  G4 : [
+    { process : muIoni  regions : [ DS2Vacuum ]     factor : @local::CosmicSplitFactor },
+    { process : muBrems regions : [ DS2Vacuum ]     factor : @local::CosmicSplitFactor },
+    { process : muIoni  regions : [ TrackerMother ] factor : @local::CosmicSplitTrackerFactor },
+    { process : muBrems regions : [ TrackerMother ] factor : @local::CosmicSplitTrackerFactor },
+    { process : muIoni  regions : [ DSInnerCryoShell, DSCryoVacuumRegion, DSOuterCryoShell, TS5DownstreamEndwall, Coll53, Coll52, TS5InnerCryoShell, TS5DownstreamEndwall2 ] factor : @local::CosmicSplitWallFactor },
+    { process : muBrems regions : [ DSInnerCryoShell, DSCryoVacuumRegion, DSOuterCryoShell, TS5DownstreamEndwall, Coll53, Coll52, TS5InnerCryoShell, TS5DownstreamEndwall2 ] factor : @local::CosmicSplitWallFactor }
+  ]
+  # 10 mm everywhere except the DS vacuum regions (1 mm) and the calorimeter (0.1 mm). The tracker gets
+  # 10 mm too (S2Resampler.fcl: 0.001 mm). Below the cut a delta ray is not made and its energy stays on
+  # its parent's step, in the same straw; above it the soft kill removes it with its energy. So a larger
+  # cut keeps more of the straw ionization and is faster: at 10 mm the electron threshold is 20 keV in the
+  # straw gas (990 eV at 0.001-1 mm) and at most 29.5 MeV (tungsten), below the soft kill's 80 MeV; 30 mm
+  # would reach 130 MeV in tungsten. Geant4 takes 0.89 of its time at 0.01 mm, and with 0.001 mm keV delta
+  # rays in the tracker solids were made, split x10 and killed (about half of the Geant4 time). The mean
+  # straw-hit energy of reconstructed electrons is still 7% below stock (delta rays above 20 keV).
+  minRangeCut : 10.0
+  regionCuts : { CalorimeterMother : 0.1 TrackerMother : 10.0 DS1Vacuum : 1.0 DS2Vacuum : 1.0 DS3Vacuum : 1.0
+                 DSInnerCryoShell : 10.0 DSCryoVacuumRegion : 10.0 DSOuterCryoShell : 10.0
+                 TS5DownstreamEndwall : 10.0 Coll53 : 10.0 Coll52 : 10.0 TS5InnerCryoShell : 10.0
+                 TS5DownstreamEndwall2 : 10.0 }
+  # Kill gammas, e+-, neutrons below 80 MeV (and everything in the dirt below the hall), except around the
+  # calorimeter. Needed with splitting: otherwise every soft split copy is tracked and kept, and one event
+  # can carry 1000+ split families. Mu2eG4CommonCut is applied at birth (stacking action) and at every step
+  # (stepping action, the track's current energy), so it also kills an electron that slows below 80 MeV.
+  # In the calorimeter that destroys the showers: with the kill everywhere, 6% of reconstructed split
+  # electrons had a calorimeter cluster against 69% in stock, and calorimeter-based selections kept almost
+  # nothing. So the kill applies only outside a regular octagonal prism around the calorimeter crystals:
+  # Mu2e z 11842-13220 mm (calorimeter.caloMotherZ0/Z1), inner radius 800 mm about the DS axis (crystals
+  # r < 719 mm), corners at 866 mm, inside the 950 mm bore. It must stay clear of the split cryostat-wall
+  # regions: a square of half-width 950 mm reached them at its corners, where soft split copies then
+  # survived as families (x1.6 per file). This costs x1.2 in CPU. A plane cut is true where
+  # (x - point) . normal >= 0. The soft kill also removes soft particles that are not split (e.g. delta
+  # rays in the straw gas above the tracker cut), so hit-level studies of those need S2Resampler.fcl.
+  softKillCut : {
+    type : union
+    pars : [
+      { type : intersection pars : [
+          { type : kineticEnergy cut : 80.0 },
+          { type : pdgId pars : [ 22, 11, -11, 2112 ] },
+          { type : union pars : [
+              { type : plane normal : [ 0, 0, -1 ] point : [ 0, 0, 11842 ] },
+              { type : plane normal : [ 0, 0, 1 ] point : [ 0, 0, 13220 ] },
+              { type : plane normal : [ 1, 0, 0 ] point : [ -3104, 0, 0 ] },
+              { type : plane normal : [ 0.707107, 0.707107, 0 ] point : [ -3338.31, 565.69, 0 ] },
+              { type : plane normal : [ 0, 1, 0 ] point : [ -3904, 800, 0 ] },
+              { type : plane normal : [ -0.707107, 0.707107, 0 ] point : [ -4469.69, 565.69, 0 ] },
+              { type : plane normal : [ -1, 0, 0 ] point : [ -4704, 0, 0 ] },
+              { type : plane normal : [ -0.707107, -0.707107, 0 ] point : [ -4469.69, -565.69, 0 ] },
+              { type : plane normal : [ 0, -1, 0 ] point : [ -3904, -800, 0 ] },
+              { type : plane normal : [ 0.707107, -0.707107, 0 ] point : [ -3338.31, -565.69, 0 ] }
+            ] }
+        ] },
+      { type : inVolume pars : [ worldDirtBottom ] }
+    ]
+  }
+  splitter : {
+    module_type : FamilySplitSource
+    processes : [ "muIoni", "muBrems" ]
+    regions : [
+      { xc : -3904. rmax : 950. zmin : 4179. zmax : 8339. factor : @local::CosmicSplitFactor },
+      { xc : -3904. rmin : 376.9 rmax : 850.1 zmin : 8539.5 zmax : 11810.5 factor : @local::CosmicSplitTrackerFactor },
+      { xc : -3904. rmin : 950. rmax : 969.05 zmin : 3239. zmax : 14139. factor : @local::CosmicSplitWallFactor },
+      { xc : -3904. rmin : 969.05 rmax : 1303. zmin : 3269. zmax : 14109. factor : @local::CosmicSplitWallFactor },
+      { xc : -3904. rmin : 1303. rmax : 1328. zmin : 3239. zmax : 14139. factor : @local::CosmicSplitWallFactor },
+      { xc : -3904. rmin : 296.35 rmax : 793.45 zmin : 4160. zmax : 4179. factor : @local::CosmicSplitWallFactor },
+      { xc : -3904. rmin : 248. rmax : 294. zmin : 4160.02 zmax : 4178.98 factor : @local::CosmicSplitWallFactor },
+      { xc : -3904. rmin : 235. rmax : 243. zmin : 2929. zmax : 4178.98 factor : @local::CosmicSplitWallFactor },
+      { xc : -3904. rmin : 248. rmax : 267. zmin : 2929. zmax : 4160. factor : @local::CosmicSplitWallFactor },
+      { xc : -3904. rmin : 270.01 rmax : 375. zmin : 4110. zmax : 4160. factor : @local::CosmicSplitWallFactor }
+    ]
+    stride : 1000
+    weightLabel : "FamilySplit"
+    inputProcessName : "CosmicS2"
+    muonDecayWindow : @local::CosmicSplitDecayWindow
+    forcedDecayStream : false
+  }
+}
 END_PROLOG

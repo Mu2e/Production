@@ -1,0 +1,10 @@
+# Cosmic stage 2 with Geant4 secondary splitting, muon-decay stream: as S2ResamplerSplit.fcl, but every
+# muon decays within CosmicSplitDecayWindow ns of its proper time (a stage-2 muon starts at 0), which
+# multiplies decays in flight by 1 / (1 - exp(-window / 2197 ns)), 44 for 50 ns. Run
+# S2FamilySplitDecay.fcl on the output: it keeps the events whose stage-2 primary muon decayed and
+# weights them by 1 - exp(-window / 2197 ns). Normalize this stream to its own livetime and add it to the
+# main stream. Use seeds different from the main stream's (mu2ejobfcl sets the seed from the job
+# index, so give the two streams different indices).
+# Yuri Oksuzian, 2026
+#include "Production/JobConfig/cosmic/S2ResamplerSplit.fcl"
+physics.producers.g4run.physics.muonMaxPreAssignedDecayProperTime : @local::CosmicSplitDecayWindow
