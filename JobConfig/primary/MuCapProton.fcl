@@ -1,0 +1,26 @@
+#
+# Generate muon capture protons over the full kinetic energy spectrum.
+# Base configuration for the muon capture charged particle primaries (p/d/t/alpha):
+# the other species include this file and replace the tool and the spectrum.
+#
+# Spectra: Offline/EventGenerator/fcl/prolog.fcl, MuCapChargedSpectra
+#
+# Original author: Michael MacKenzie, 2026
+#
+#include "Production/JobConfig/primary/TargetStopParticle.fcl"
+
+physics.producers.generate : {
+  module_type : SingleProcessGenerator
+  inputSimParticles: TargetStopResampler
+  stoppingTargetMaterial : "Al"
+  decayProducts :
+  {
+    tool_type : MuCapProtonGenerator
+    spectrumVariable : kineticEnergy
+    spectrum : @local::MuCapChargedSpectra.TWISTproton
+  }
+  verbosity : 0
+}
+
+physics.producers.FindMCPrimary.PrimaryProcess : "mu2eMuonCaptureAtRest"
+outputs.PrimaryOutput.fileName: "dts.owner.MuCapProton.version.sequencer.art"

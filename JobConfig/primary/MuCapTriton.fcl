@@ -1,0 +1,10 @@
+#
+# Generate muon capture tritons over the full kinetic energy spectrum
+#
+# Original author: Michael MacKenzie, 2026
+#
+#include "Production/JobConfig/primary/MuCapProton.fcl"
+
+physics.producers.generate.decayProducts.tool_type : MuCapTritonGenerator
+physics.producers.generate.decayProducts.spectrum : @local::MuCapChargedSpectra.AlCapTriton
+outputs.PrimaryOutput.fileName: "dts.owner.MuCapTriton.version.sequencer.art"
