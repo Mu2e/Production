@@ -30,6 +30,8 @@ outputs.CentralHelixOutput.outputCommands : [
   "keep mu2e::TimeClusters_SimpleTimeCluster_*_*",
   "keep mu2e::CaloClusters_CaloClusterMaker_*_*",
   "keep mu2e::CrvCoincidenceClusters_*_*_*",
+  "keep mu2e::TrkCrvMatchs_*_*_*",
+  "keep mu2e::TrkCrvMatchMCs_*_*_*",
   "keep mu2e::EventWindowMarker_*_*_*",
   "keep mu2e::ProtonBunchTime_*_*_*",
   "keep *_SelectReco*_*_*",
