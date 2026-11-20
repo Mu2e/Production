@@ -93,7 +93,7 @@ Digitize: {
     TrigMprDeKSFMC : {
       @table::CommonMC.TTSelectRecoMC
       ComboHitCollection : "TrigFlagPH"
-      KalSeedCollections  : [ "TrigKSFMprDe" ]
+      KalSeedCollections  : [ "TrigMprKSFDe" ]
       TimeClusterCollections : [ ]
     }
     TrigCprDeKSFMC : {
