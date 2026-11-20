@@ -1,0 +1,28 @@
+//
+// Configuration for CosmicDYB, extracted position (ExtractedDYB.fcl)
+//
+// The box is the target box of extractedCRYconfig.txt (x -10000..3000, y -5000..9880, z 17105..32220 mm), so DYB
+// and CRY generate through the same box: 47,500 muons per second above 0.5 GeV (CRY: 47,530), 53,787 above 106 MeV.
+// muEMin is the muon's total energy, just above the muon mass (DYBGenerator refuses below 100 MeV): the stock
+// 0.5 GeV of genconfig_cosmic_general_box.txt drops muons that still reach the CRV and can stop in it.
+//
+bool conversionGun.do = false;
+bool cosmicDYB.do = true;
+bool picapture.do = false;
+bool ejectedProtonGun.do = false;
+bool decayinorbitGun.do = false;
+bool piEplusNuGun.do = false;
+
+double cosmicDYB.mean   = -1.1;     // exactly one muon per event
+double cosmicDYB.muEMin = 106;      // MeV
+double cosmicDYB.muEMax = 5000e3;   // MeV
+double cosmicDYB.dx     = 6500;     // half-lengths, mm
+double cosmicDYB.dy     = 7440;
+double cosmicDYB.dz     = 7557.5;
+vector<double> cosmicDYB.productionCenterInMu2e = {-3500, 2440, 24662.5};
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
