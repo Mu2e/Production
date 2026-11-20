@@ -755,37 +755,32 @@ def ipaMichel_normalization(on_spill_time, ipa_de_min, run_mode='1BB'):
         "Production/JobConfig/ensemble/tables/ipa_spec_eff.tbl"
     )
     
-    fraction_sampled = 1.0 # Default to 1 (100%) if no cut is found or file is empty
-
+    # The table holds the fraction of the composite IPA Michel spectrum above each threshold
+    # (python/ipa-michel-efficiency.py), on a 0.505 MeV grid from 50 to 100 MeV. Interpolate
+    # between the two grid points that bracket the cut; a cut outside the grid is an error.
+    thresholds, fractions = [], []
     try:
         with open(spectrum_file_path, 'r') as spec_file:
             for line in spec_file:
                 if not line.strip() or line.strip().startswith('#'): continue # Skip empty/comment lines
-                try:
-                    # File expected format: [Energy_Threshold (MeV)] [Fraction_Passing_Cut]
-                    energy_threshold, efficiency_fraction = map(float, line.split())
-                    
-                    
-                    if energy_threshold > float(ipa_de_min):
-                        fraction_sampled = efficiency_fraction
-                        if VERBOSE:
-                            print("IPA_emin=", ipa_de_min)
-                            print("IPA_fraction_sampled=", fraction_sampled)
-                        # Calculate and return the result immediately upon finding the match
-                        n_ipa = (
-                            total_pot *
-                            ipa_stopped_mu_per_POT *
-                            IPA_DECAYS_PER_STOPPED_MUON *
-                            fraction_sampled
-                        )
-                        return n_ipa
-                except ValueError:
-                    print(f"Warning: Could not parse line in spectrum file: {line.strip()}")
-
+                # File expected format: [Energy_Threshold (MeV)] [Fraction_Passing_Cut]
+                energy_threshold, efficiency_fraction = map(float, line.split())
+                thresholds.append(energy_threshold)
+                fractions.append(efficiency_fraction)
     except FileNotFoundError:
         raise FileNotFoundError(f"IPA spectrum file not found at: {spectrum_file_path}")
 
-    print(f"Warning: No specific efficiency found for E_min > {ipa_de_min}. Using default fraction 1.0")
+    e_min = float(ipa_de_min)
+    if len(thresholds) < 2 or not (thresholds[0] <= e_min <= thresholds[-1]):
+        raise ValueError(f"IPA E_min = {e_min} MeV is outside the efficiency table "
+                         f"{spectrum_file_path} ({thresholds[0] if thresholds else '?'} to "
+                         f"{thresholds[-1] if thresholds else '?'} MeV)")
+    # the fraction falls roughly exponentially with the threshold: interpolate its logarithm
+    fraction_sampled = math.exp(np.interp(e_min, thresholds, np.log(fractions)))
+    if VERBOSE:
+        print("IPA_emin=", ipa_de_min)
+        print("IPA_fraction_sampled=", fraction_sampled)
+
     n_ipa = (
         total_pot *
         ipa_stopped_mu_per_POT *
