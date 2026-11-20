@@ -1,0 +1,11 @@
+# Extracted-position cosmics with the Daya Bay muon generator (CosmicDYB in the EventGenerator module) in place of
+# CRY: muons only, one per event, from the Daya Bay fit to the measured sea-level muon flux. Each muon's line goes
+# through one of 5 faces of a box (genconfig_cosmic_extracted_box.txt: CRY's extracted target box), and the muon
+# starts back at the surface. Everything else is ExtractedCRY.fcl, so the two samples differ only in the generator.
+# The generator writes a CosmicLivetime per SubRun (muons / its rate) with Offline#2184.
+#include "Production/JobConfig/cosmic/ExtractedCRY.fcl"
+physics.producers.generate : {
+  module_type : EventGenerator
+  inputfile   : "Production/JobConfig/cosmic/genconfig_cosmic_extracted_box.txt"
+}
+outputs.PrimaryOutput.fileName : "dts.owner.CosmicDYBExtracted.version.sequencer.art"
