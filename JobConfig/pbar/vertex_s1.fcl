@@ -38,7 +38,7 @@ services : {
     message                : @local::default_message
     TFileService           : { fileName : "nts.owner.pbar_s1_toVD91.version.sequencer.root" }
     RandomNumberGenerator  : {defaultEngineKind: "MixMaxRng"}
-    GeometryService        : { inputFile      : "Production/JobConfig/common/geom_baseline.txt"    }
+    GeometryService : { @table::Services.Core.GeometryService inputFile : "Production/JobConfig/common/geom_baseline.txt" }
     GlobalConstantsService : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
     Mu2eG4Helper           : {}
     SeedService            : @local::automaticSeeds
@@ -121,8 +121,6 @@ outputs : {
 physics.producers.g4run.inputs: {
    primaryType: "StepPoints"
    primaryTag: "pbarWrite"
-   simParticleNumberOffset : 100000
-   inputSimParticles          : "pbarWrite"
    inputMCTrajectories        : ""
    inputPhysVolumeMultiInfo   : "compressPV"
 }
