@@ -122,6 +122,22 @@ Digitize: {
       prescaleFactor : 1 # by default, don't prescale
       prescaleOffset : 0
     }
+    # Triggerable heavy charged particles (p, d, t, alpha), e.g. from muon capture. Up to 1000 MeV/c
+    # to cover the capture endpoints (p 406, d 543, t 640, alpha 761 MeV/c). Not used with pileup
+    # (mixing), where the pileup capture protons alone would pass it in most events
+    TriggerableHeavy : {
+      module_type : StrawDigiMCFilter
+      MinNDigis : 15
+      MinParticleMom : 69.0
+      MaxParticleMom : 1000.0
+      StrawDigiMCCollection : compressDigiMCs
+      particleTypes : [ 2212, 1000010020, 1000010030, 1000020040 ] # p, d, t, alpha
+    }
+    TriggerableHeavyPrescale : {
+      module_type : Prescaler
+      prescaleFactor : 1
+      prescaleOffset : 0
+    }
      TriggerableCH : {
       module_type : StrawDigiMCFilter
       MinNDigis : 15
@@ -156,7 +172,7 @@ Digitize: {
       MinParticleEnergy : 68.0
       MinTotalEnergy    : 1e6
       CaloShowerSimCollection : "compressDigiMCs"
-      particleTypes : [11, -11, 13, -13, 211, -211, 22, 2212, 2112]
+      particleTypes : [11, -11, 13, -13, 211, -211, 22, 2212, 2112, 1000010020, 1000010030, 1000020040]
     }
     TriggerableCaloPrescale : {
       module_type : Prescaler
@@ -179,6 +195,7 @@ Digitize: {
     compressDigiMCs ]
 
   TriggerableLHSequence : [ TriggerableLHPrescale, TriggerableLH ]
+  TriggerableHeavySequence : [ TriggerableHeavyPrescale, TriggerableHeavy ]
   TriggerableCHSequence : [ TriggerableCHPrescale, TriggerableCH ]
   TriggerableTwoTrackSequence : [ TriggerableTwoTrackPrescale, TriggerableTwoTrack ]
   TriggerableCaloSequence : [ TriggerableCaloPrescale, TriggerableCalo ]

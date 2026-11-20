@@ -1,0 +1,15 @@
+#
+# Generate muon capture deuterons flat in kinetic energy, from 0 to the kinematic endpoint
+# (MuCapChargedSpectra in Offline/EventGenerator/fcl/prolog.fcl). Events need reweighting
+# to the physical spectrum and rate.
+#
+# Original author: Michael MacKenzie, 2026
+#
+#include "Production/JobConfig/primary/MuCapDeuteron.fcl"
+
+physics.producers.generate.decayProducts.spectrum : {
+  spectrumShape : flat
+  elow : 0.
+  ehi  : 77.35 # MeV
+}
+outputs.PrimaryOutput.fileName: "dts.owner.MuCapDeuteronFlat.version.sequencer.art"
