@@ -32,18 +32,13 @@ Reconstruction : {
     @table::CrvRecoPackage.producers
     @table::CosmicReco.producers
 
-    # track-CRV association, one instance per KalSeedCollection: after SelectReco, on its clusters (the layer probe
-    # reads all CrvRecoPulses, which are still in the event); LoopHelix fits do not reach the CRV, so time only.
-    # DtRefCenter: median dtRef of the track's own cluster per fit, from MC truth (KKLine: the Offline default, from
-    # extracted MDC2025bb; the others from MDC2025au CosmicSignalOffSpill CH and LH reco); the nightly off-spill input
-    # (MDC2025an, 20000 events) gives KKCHmu 24.6 ns (433 clusters), KKDe 33.2, KKUe 29.9, KKDmu 30.1, KKUmu 26.6 (~4500 each)
+    # track-CRV association after SelectReco, on its clusters (the layer probe still sees all CrvRecoPulses).
+    # Only KKLine and KKCHmu: LoopHelix tracks do not intersect the CRV (brownd1978 on Production#595).
+    # DtRefCenter: median dtRef of the track's own cluster from MC truth (KKLine: Offline default from extracted
+    # MDC2025bb; KKCHmu 27 ns from MDC2025au CosmicSignalOffSpill CH reco).
     # SigmaV for the Run1 geometries, whose T1 and T2 are both CRV sector type 1: provisional, the extracted T1 value
     TrkCrvMatchLine : { @table::TrkCrvMatcherReco KalSeedCollection : "KKLine" SigmaV : [ 13 ] }
     TrkCrvMatchCHmu : { @table::TrkCrvMatcherReco KalSeedCollection : "KKCHmu" DtRefCenter : 27 SigmaV : [ 13 ] }
-    TrkCrvMatchDe : { @table::TrkCrvMatcherReco KalSeedCollection : "KKDe" DtRefCenter : 32 DoGeometric : false LayerProbe : false }
-    TrkCrvMatchUe : { @table::TrkCrvMatcherReco KalSeedCollection : "KKUe" DtRefCenter : 28 DoGeometric : false LayerProbe : false }
-    TrkCrvMatchDmu : { @table::TrkCrvMatcherReco KalSeedCollection : "KKDmu" DtRefCenter : 30 DoGeometric : false LayerProbe : false }
-    TrkCrvMatchUmu : { @table::TrkCrvMatcherReco KalSeedCollection : "KKUmu" DtRefCenter : 26 DoGeometric : false LayerProbe : false }
 
     # choose the hit flagger
     flagPH : @local::CalPatRec.producers.DeltaFinder
@@ -309,10 +304,9 @@ Reconstruction : {
   CaloReco : [ @sequence::CaloReco.Reco, @sequence::CaloCluster.Reco ]
   # CRV reco
   CrvReco : [ @sequence::CrvRecoPackage.CrvRecoSequence ]
-  # track-CRV association, after SelectReco
-  TrkCrvMatchLH : [ TrkCrvMatchDe, TrkCrvMatchUe, TrkCrvMatchDmu, TrkCrvMatchUmu ]
+  # track-CRV association, after SelectReco (KKLine, KKCHmu only)
   TrkCrvMatchNoField : [ TrkCrvMatchLine ]
-  TrkCrvMatchOffSpill : [ TrkCrvMatchCHmu, TrkCrvMatchDe, TrkCrvMatchUe, TrkCrvMatchDmu, TrkCrvMatchUmu ]
+  TrkCrvMatchOffSpill : [ TrkCrvMatchCHmu ]
 
   # define products to keep
   # First, high-level reco products, and associated sub-products
@@ -382,8 +376,7 @@ Reconstruction.OnSpillPath : [
   @sequence::Reconstruction.PreTrk,
   @sequence::Reconstruction.OnSpillTrk,
   LHFilter,
-  SelectReco,
-  @sequence::Reconstruction.TrkCrvMatchLH
+  SelectReco
 ]
 
 Reconstruction.CentralHelixPath : [

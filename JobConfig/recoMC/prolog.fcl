@@ -15,10 +15,6 @@ Reconstruction.producers : {
   # truth of the track-CRV association, one per TrkCrvMatcher instance, after compression
   TrkCrvMatchLineMC : { @table::TrkCrvMatchMC TrkCrvMatchCollection : "TrkCrvMatchLine" }
   TrkCrvMatchCHmuMC : { @table::TrkCrvMatchMC TrkCrvMatchCollection : "TrkCrvMatchCHmu" }
-  TrkCrvMatchDeMC : { @table::TrkCrvMatchMC TrkCrvMatchCollection : "TrkCrvMatchDe" }
-  TrkCrvMatchUeMC : { @table::TrkCrvMatchMC TrkCrvMatchCollection : "TrkCrvMatchUe" }
-  TrkCrvMatchDmuMC : { @table::TrkCrvMatchMC TrkCrvMatchCollection : "TrkCrvMatchDmu" }
-  TrkCrvMatchUmuMC : { @table::TrkCrvMatchMC TrkCrvMatchCollection : "TrkCrvMatchUmu" }
 
   # MC specific output pruning
   SelectReco : {
@@ -66,10 +62,6 @@ Reconstruction.producers : {
 # SelectRecoMC writes the CRV clusters under the CrvCoincidenceClusterFinder instance
 Reconstruction.producers.TrkCrvMatchLine.CrvCoincidenceClusterCollection : "SelectReco:CrvCoincidenceClusterFinder"
 Reconstruction.producers.TrkCrvMatchCHmu.CrvCoincidenceClusterCollection : "SelectReco:CrvCoincidenceClusterFinder"
-Reconstruction.producers.TrkCrvMatchDe.CrvCoincidenceClusterCollection : "SelectReco:CrvCoincidenceClusterFinder"
-Reconstruction.producers.TrkCrvMatchUe.CrvCoincidenceClusterCollection : "SelectReco:CrvCoincidenceClusterFinder"
-Reconstruction.producers.TrkCrvMatchDmu.CrvCoincidenceClusterCollection : "SelectReco:CrvCoincidenceClusterFinder"
-Reconstruction.producers.TrkCrvMatchUmu.CrvCoincidenceClusterCollection : "SelectReco:CrvCoincidenceClusterFinder"
 # analyzers specific to MC
 Reconstruction.analyzers : {
   @table::Reconstruction.analyzers
@@ -84,9 +76,8 @@ RecoMC : {
   # temporary build surface steps from StepPointMCs; this is a patch
   MCReco :  [@sequence::CaloMC.TruthMatch, CrvCoincidenceClusterMatchMC, compressRecoMCs, CrvCoincidenceClusterMCAssns ]
   # track-CRV association truth, after MCReco (needs compressRecoMCs and CrvCoincidenceClusterMCAssns)
-  TrkCrvMatchMCLH : [ TrkCrvMatchDeMC, TrkCrvMatchUeMC, TrkCrvMatchDmuMC, TrkCrvMatchUmuMC ]
   TrkCrvMatchMCNoField : [ TrkCrvMatchLineMC ]
-  TrkCrvMatchMCOffSpill : [ TrkCrvMatchCHmuMC, TrkCrvMatchDeMC, TrkCrvMatchUeMC, TrkCrvMatchDmuMC, TrkCrvMatchUmuMC ]
+  TrkCrvMatchMCOffSpill : [ TrkCrvMatchCHmuMC ]
 
   # MC truth matched to reco
   HighRecoMCProducts : [
@@ -116,8 +107,7 @@ Reconstruction.NoFieldPath : [
 
 Reconstruction.OnSpillPath : [
   @sequence::Reconstruction.OnSpillPath,
-  @sequence::RecoMC.MCReco,
-  @sequence::RecoMC.TrkCrvMatchMCLH
+  @sequence::RecoMC.MCReco
 ]
 
 Reconstruction.CentralHelixPath : [
