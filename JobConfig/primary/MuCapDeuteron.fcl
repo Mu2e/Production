@@ -1,0 +1,10 @@
+#
+# Generate muon capture deuterons over the full kinetic energy spectrum
+#
+# Original author: Michael MacKenzie, 2026
+#
+#include "Production/JobConfig/primary/MuCapProton.fcl"
+
+physics.producers.generate.decayProducts.tool_type : MuCapDeuteronGenerator
+physics.producers.generate.decayProducts.spectrum : @local::MuCapChargedSpectra.TWISTdeuteron
+outputs.PrimaryOutput.fileName: "dts.owner.MuCapDeuteron.version.sequencer.art"

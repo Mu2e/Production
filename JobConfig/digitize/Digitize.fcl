@@ -15,6 +15,7 @@ physics : {
   # define the digitization paths.  Trigger paths are added specific to digitization type
   DigitizePath : @local::Digitize.DigitizeSequence
   TriggerableLHPath : [ @sequence::Digitize.DigitizeSequence, @sequence::Digitize.TriggerableLHSequence ]
+  TriggerableHeavyPath : [ @sequence::Digitize.DigitizeSequence, @sequence::Digitize.TriggerableHeavySequence ]
   TriggerableCHPath : [ @sequence::Digitize.DigitizeSequence, @sequence::Digitize.TriggerableCHSequence ]
   TriggerableTwoTrackPath : [ @sequence::Digitize.DigitizeSequence, @sequence::Digitize.TriggerableTwoTrackSequence ]
   TriggerableCaloPath : [ @sequence::Digitize.DigitizeSequence, @sequence::Digitize.TriggerableCaloSequence ]

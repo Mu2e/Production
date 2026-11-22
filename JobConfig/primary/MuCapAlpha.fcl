@@ -1,0 +1,10 @@
+#
+# Generate muon capture alphas over the full kinetic energy spectrum
+#
+# Original author: Michael MacKenzie, 2026
+#
+#include "Production/JobConfig/primary/MuCapProton.fcl"
+
+physics.producers.generate.decayProducts.tool_type : MuCapAlphaGenerator
+physics.producers.generate.decayProducts.spectrum : @local::MuCapChargedSpectra.AlCapAlpha
+outputs.PrimaryOutput.fileName: "dts.owner.MuCapAlpha.version.sequencer.art"
