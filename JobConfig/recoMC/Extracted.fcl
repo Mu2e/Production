@@ -6,6 +6,8 @@ services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common_extracted.t
 # save the passive-material crossings found during extrapolation (CRV strongbacks) in the KalSeed intersections
 physics.producers.KKLine.KKFitSettings.SaveMaterialXings : true
 #include "Offline/CRVReco/fcl/epilog_extracted.fcl"
+# extracted geometry: the Offline SigmaV list per CRV sector type (EX, T1, T2, muon taggers)
+physics.producers.TrkCrvMatchLine.SigmaV : @local::TrkCrvMatcher.SigmaV
 
 # Disable KL filtering so track-less events are kept (needed for CRV
 # efficiency / tag-and-probe; matches OnSpill LHFilter disable).
