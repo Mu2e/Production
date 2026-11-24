@@ -1,0 +1,5 @@
+# FamilySplitSource on the output of S2ResamplerSplitSignalDecay.fcl: S2FamilySplitDecay.fcl with the
+# stripped-event weight from the stage-2 counts (see S2FamilySplitSignal.fcl).
+# Yuri Oksuzian, 2026
+#include "Production/JobConfig/cosmic/S2FamilySplitDecay.fcl"
+source.countsLabel : "familySplitCounter"

@@ -421,4 +421,32 @@ CosmicSplit : {
     }
   }
 }
+# The CosmicSignal selection in stage 2 (S2ResamplerSplitSignal.fcl, S2ResamplerSplitSignalDecay.fcl).
+# CosmicSplitCounter counts, for each SubRun, what FamilySplitSource needs for the stripped-event weight
+# (events, those the muon-decay rule keeps, the sum of their family weights) before the selection, with the
+# splitter's rules; FamilySplitSource then takes the weight from those counts (S2FamilySplitSignal.fcl,
+# countsLabel). CosmicSplitSignalCut is the selection of SpillSplitter.fcl (SignalFilter): a particle of
+# 30-250 MeV/c with at least 15 straw-gas steps spanning 16 planes. It is decided per particle, and every
+# FamilySplitSource output event holds a subset of its input event's particles with all their steps, so the
+# stage-2 events it drops give no output event that SpillSplitter.fcl would keep.
+CosmicSplitCounter : {
+  module_type : FamilySplitCounter
+  simParticles : "compressDetStepMCs"
+  processes : @local::CosmicSplit.splitter.processes
+  regions : @local::CosmicSplit.splitter.regions
+  muonDecayWindow : @local::CosmicSplit.splitter.muonDecayWindow
+  forcedDecayStream : @local::CosmicSplit.splitter.forcedDecayStream
+  decayFactor : @local::CosmicSplit.splitter.decayFactor
+  copiedPrimaries : @local::CosmicSplit.splitter.copiedPrimaries
+}
+CosmicSplitSignalCut : {
+  module_type : CosmicMixingFilter
+  StrawGasSteps : "compressDetStepMCs"
+  MinimumPartMom : 30
+  MaximumPartMom : 250
+  MinimumTrkSteps : 15
+  MinimumTrkPlanes : 0
+  MinimumTrkPlaneSpan : 16
+  MaxImpact : 1000
+}
 END_PROLOG

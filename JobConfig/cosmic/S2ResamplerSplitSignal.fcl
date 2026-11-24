@@ -1,0 +1,14 @@
+# Cosmic stage 2 with Geant4 secondary splitting, main stream, writing only the events the CosmicSignal
+# selection (SpillSplitter.fcl SignalFilter) can use: S2ResamplerSplit.fcl, then FamilySplitCounter, which
+# records per SubRun what FamilySplitSource needs for the stripped-event weight, and the selection itself
+# (CosmicSplitSignalCut). Run S2FamilySplitSignal.fcl on the output, then SpillSplitter.fcl as for
+# S2ResamplerSplit.fcl: its SignalOutput holds the same events with the same weights. Its CaloOutput and
+# CalibOutput select other events and come out incomplete; make those from S2ResamplerSplit.fcl. The output
+# keeps under 1% of S2ResamplerSplit.fcl's events, 3-4% of its bytes (the kept events carry the tracker steps).
+# Yuri Oksuzian, 2026
+#include "Production/JobConfig/cosmic/S2ResamplerSplit.fcl"
+physics.producers.familySplitCounter : @local::CosmicSplitCounter
+physics.filters.signalCut : @local::CosmicSplitSignalCut
+physics.PrimaryPath : [ @sequence::physics.PrimaryPath, familySplitCounter, signalCut ]
+outputs.PrimaryOutput.outputCommands : [ @sequence::outputs.PrimaryOutput.outputCommands,
+                                         "keep mu2e::FamilySplitSummary_*_*_*" ]

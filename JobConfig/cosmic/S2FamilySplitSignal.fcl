@@ -1,0 +1,6 @@
+# FamilySplitSource on the output of S2ResamplerSplitSignal.fcl: as S2FamilySplit.fcl, with the stripped-event
+# weight from the stage-2 counts (FamilySplitSummary of the module familySplitCounter) instead of from the
+# events in the file, which the stage-2 selection has thinned.
+# Yuri Oksuzian, 2026
+#include "Production/JobConfig/cosmic/S2FamilySplit.fcl"
+source.countsLabel : "familySplitCounter"

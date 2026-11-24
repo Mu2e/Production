@@ -1,0 +1,13 @@
+# Cosmic stage 2 with Geant4 secondary splitting, muon-decay stream, writing only the events the CosmicSignal
+# selection can use: S2ResamplerSplitDecay.fcl with the counter and the selection of S2ResamplerSplitSignal.fcl.
+# Run S2FamilySplitSignalDecay.fcl on the output. The output keeps about 1% of S2ResamplerSplitDecay.fcl's events,
+# about 5% of its bytes.
+# Yuri Oksuzian, 2026
+#include "Production/JobConfig/cosmic/S2ResamplerSplitDecay.fcl"
+physics.producers.familySplitCounter : @local::CosmicSplitCounter
+physics.producers.familySplitCounter.forcedDecayStream : true
+physics.producers.familySplitCounter.decayFactor : @local::CosmicSplitDecayCopies
+physics.filters.signalCut : @local::CosmicSplitSignalCut
+physics.PrimaryPath : [ @sequence::physics.PrimaryPath, familySplitCounter, signalCut ]
+outputs.PrimaryOutput.outputCommands : [ @sequence::outputs.PrimaryOutput.outputCommands,
+                                         "keep mu2e::FamilySplitSummary_*_*_*" ]
