@@ -1,5 +1,14 @@
 # FamilySplitSource on the output of S2ResamplerSplitSignalDecay.fcl: S2FamilySplitDecay.fcl with the
-# stripped-event weight from the stage-2 counts (see S2FamilySplitSignal.fcl).
+# stripped-event weight from the stage-2 counts and the CosmicSignal selection (see S2FamilySplitSignal.fcl).
 # Yuri Oksuzian, 2026
 #include "Production/JobConfig/cosmic/S2FamilySplitDecay.fcl"
+services : {
+  @table::Services.Core
+  scheduler : { wantSummary : true }
+}
 source.countsLabel : "familySplitCounter"
+physics.filters.signalCut : @local::CosmicSplitSignalCut
+physics.filters.signalCut.SimParticles : "compressDetStepMCs"   # the source's art::Ptr do not resolve in this job
+physics.SignalPath : [ signalCut ]
+physics.trigger_paths : [ SignalPath ]
+outputs.PrimaryOutput.SelectEvents : [ SignalPath ]

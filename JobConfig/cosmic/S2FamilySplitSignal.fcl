@@ -1,6 +1,19 @@
-# FamilySplitSource on the output of S2ResamplerSplitSignal.fcl: as S2FamilySplit.fcl, with the stripped-event
-# weight from the stage-2 counts (FamilySplitSummary of the module familySplitCounter) instead of from the
-# events in the file, which the stage-2 selection has thinned.
+# FamilySplitSource on the output of S2ResamplerSplitSignal.fcl, writing only the events that pass the
+# CosmicSignal selection of SpillSplitter.fcl (SignalFilter, CosmicSplitSignalCut): the output is the CosmicSignal
+# dataset, the input of digitization, and SpillSplitter.fcl is not run. The stripped-event weight comes from the
+# stage-2 counts (FamilySplitSummary of the module familySplitCounter), since the stage-2 selection has thinned
+# the file. On a stage-2 file written without that selection (S2ResamplerSplit.fcl) set source.countsLabel : ""
+# to get the events and weights of S2FamilySplit.fcl followed by SpillSplitter.fcl's SignalOutput. The selection
+# needs the geometry and the field: the services are those of SpillSplitter.fcl's selection (Services.Core).
 # Yuri Oksuzian, 2026
 #include "Production/JobConfig/cosmic/S2FamilySplit.fcl"
+services : {
+  @table::Services.Core
+  scheduler : { wantSummary : true }
+}
 source.countsLabel : "familySplitCounter"
+physics.filters.signalCut : @local::CosmicSplitSignalCut
+physics.filters.signalCut.SimParticles : "compressDetStepMCs"   # the source's art::Ptr do not resolve in this job
+physics.SignalPath : [ signalCut ]
+physics.trigger_paths : [ SignalPath ]
+outputs.PrimaryOutput.SelectEvents : [ SignalPath ]

@@ -421,14 +421,16 @@ CosmicSplit : {
     }
   }
 }
-# The CosmicSignal selection in stage 2 (S2ResamplerSplitSignal.fcl, S2ResamplerSplitSignalDecay.fcl).
+# The CosmicSignal selection in stage 2 (S2ResamplerSplitSignal.fcl, S2ResamplerSplitSignalDecay.fcl) and in the
+# FamilySplitSource job (S2FamilySplitSignal.fcl, S2FamilySplitSignalDecay.fcl).
 # CosmicSplitCounter counts, for each SubRun, what FamilySplitSource needs for the stripped-event weight
 # (events, those the muon-decay rule keeps, the sum of their family weights) before the selection, with the
-# splitter's rules; FamilySplitSource then takes the weight from those counts (S2FamilySplitSignal.fcl,
-# countsLabel). CosmicSplitSignalCut is the selection of SpillSplitter.fcl (SignalFilter): a particle of
-# 30-250 MeV/c with at least 15 straw-gas steps spanning 16 planes. It is decided per particle, and every
-# FamilySplitSource output event holds a subset of its input event's particles with all their steps, so the
-# stage-2 events it drops give no output event that SpillSplitter.fcl would keep.
+# splitter's rules; FamilySplitSource then takes the weight from those counts (countsLabel).
+# CosmicSplitSignalCut is the selection of SpillSplitter.fcl (SignalFilter): a particle of 30-250 MeV/c with at
+# least 15 straw-gas steps spanning 16 planes. It is decided per particle, and every FamilySplitSource output event
+# holds a subset of its input event's particles with all their steps, so the stage-2 events it drops give no output
+# event that passes it. The FamilySplitSource job runs it again on each event it writes, so that its output is the
+# CosmicSignal dataset and SpillSplitter.fcl is not run.
 CosmicSplitCounter : {
   module_type : FamilySplitCounter
   simParticles : "compressDetStepMCs"
