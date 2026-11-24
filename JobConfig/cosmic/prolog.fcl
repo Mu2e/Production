@@ -293,15 +293,28 @@ Cosmic: {
 #   point in one but not the other), except TS5DownstreamEndwall2: it is a cone (outer radius 321.7 to 375 mm
 #   over its first 25 mm), and its cylinder also holds a wedge of the TS5 insulating vacuum, where nothing is
 #   made.
-# Muon knock-on electrons (muIoni) and bremsstrahlung (muBrems) are split. Pair production (muPairProd) is
-# not: Geant4 splits only interactions with one secondary, so its pairs stay unsplit at weight 1.
+# Muon knock-on electrons (muIoni) and bremsstrahlung (muBrems) are split by Geant4 secondary biasing.
+# Pair production (muPairProd) makes two secondaries, which Geant4 biasing does not split; Mu2eG4
+# physics.processCopies makes each pair-production interaction of a muon N times instead, with the same
+# factors in the same regions.
 # Muon decays in flight come from a second stage-2 stream (S2ResamplerSplitDecay.fcl, then
 # S2FamilySplitDecay.fcl) in which every muon decays within CosmicSplitDecayWindow ns of proper time;
-# the main stream drops those decays. Each stream is normalized to its own livetime and the two add.
+# the main stream drops those decays. Each stream is normalized to its own livetime and the two add. In
+# the decay stream each decay in flight is made CosmicSplitDecayCopies times (processCopies, everywhere).
+# Stage-1 e+-, gammas above CosmicSplitStage1MinMomentum (mostly made in the concrete above the DS by stage
+# 1, where no stage-2 split reaches them) are written CosmicSplitStage1Copies times by StepPointMCCopier
+# before Geant4, so each becomes that many independent primaries. An event with more than
+# CosmicSplitStage1MaxCopied of them (a shower; 2.4% of these particles in a 644,000-event test) is not
+# copied: its particles count at weight 1. Without the cap one shower brought 80-100 of them, 1,100-1,400
+# families in one event.
 CosmicSplitFactor : 100
 CosmicSplitTrackerFactor : 10
 CosmicSplitWallFactor : 10
 CosmicSplitDecayWindow : 50
+CosmicSplitDecayCopies : 10
+CosmicSplitStage1Copies : 14
+CosmicSplitStage1MinMomentum : 80.
+CosmicSplitStage1MaxCopied : 30
 CosmicSplit : {
   G4 : [
     { process : muIoni  regions : [ DS2Vacuum ]     factor : @local::CosmicSplitFactor },
@@ -311,6 +324,24 @@ CosmicSplit : {
     { process : muIoni  regions : [ DSInnerCryoShell, DSCryoVacuumRegion, DSOuterCryoShell, TS5DownstreamEndwall, Coll53, Coll52, TS5InnerCryoShell, TS5DownstreamEndwall2 ] factor : @local::CosmicSplitWallFactor },
     { process : muBrems regions : [ DSInnerCryoShell, DSCryoVacuumRegion, DSOuterCryoShell, TS5DownstreamEndwall, Coll53, Coll52, TS5InnerCryoShell, TS5DownstreamEndwall2 ] factor : @local::CosmicSplitWallFactor }
   ]
+  # Mu2eG4 physics.processCopies, main stream: muon pair production, as G4 above
+  copies : [
+    { process : muPairProd particles : [ "mu-", "mu+" ] regions : [ DS2Vacuum ]     factor : @local::CosmicSplitFactor },
+    { process : muPairProd particles : [ "mu-", "mu+" ] regions : [ TrackerMother ] factor : @local::CosmicSplitTrackerFactor },
+    { process : muPairProd particles : [ "mu-", "mu+" ] regions : [ DSInnerCryoShell, DSCryoVacuumRegion, DSOuterCryoShell, TS5DownstreamEndwall, Coll53, Coll52, TS5InnerCryoShell, TS5DownstreamEndwall2 ] factor : @local::CosmicSplitWallFactor }
+  ]
+  # added in the decay stream: every muon decay in flight, everywhere (decays at rest are not copied)
+  decayCopies : [
+    { process : Decay particles : [ "mu-", "mu+" ] factor : @local::CosmicSplitDecayCopies }
+  ]
+  stage1Copier : {
+    module_type : StepPointMCCopier
+    input : "CosmicResampler:crvStage1"
+    pdgIds : [ 11, -11, 22 ]
+    minMomentum : @local::CosmicSplitStage1MinMomentum
+    copies : @local::CosmicSplitStage1Copies
+    maxCopied : @local::CosmicSplitStage1MaxCopied
+  }
   # 10 mm everywhere except the DS vacuum regions (1 mm) and the calorimeter (0.1 mm). The tracker gets
   # 10 mm too (S2Resampler.fcl: 0.001 mm). Below the cut a delta ray is not made and its energy stays on
   # its parent's step, in the same straw; above it the soft kill removes it with its energy. So a larger
@@ -361,7 +392,7 @@ CosmicSplit : {
   }
   splitter : {
     module_type : FamilySplitSource
-    processes : [ "muIoni", "muBrems" ]
+    processes : [ "muIoni", "muBrems", "muPairProd" ]
     regions : [
       { xc : -3904. rmax : 950. zmin : 4179. zmax : 8339. factor : @local::CosmicSplitFactor },
       { xc : -3904. rmin : 376.9 rmax : 850.1 zmin : 8539.5 zmax : 11810.5 factor : @local::CosmicSplitTrackerFactor },
@@ -374,11 +405,20 @@ CosmicSplit : {
       { xc : -3904. rmin : 248. rmax : 267. zmin : 2929. zmax : 4160. factor : @local::CosmicSplitWallFactor },
       { xc : -3904. rmin : 270.01 rmax : 375. zmin : 4110. zmax : 4160. factor : @local::CosmicSplitWallFactor }
     ]
-    stride : 1000
+    # output event number = input event number * stride + family index: at most stride - 1 families per input
+    # event; 500,000 particles per job * 4000 = 2.0e9 still fits a signed 32-bit event number (EventNtuple)
+    stride : 4000
     weightLabel : "FamilySplit"
     inputProcessName : "CosmicS2"
     muonDecayWindow : @local::CosmicSplitDecayWindow
     forcedDecayStream : false
+    decayFactor : 0
+    copiedPrimaries : {
+      pdgIds : [ 11, -11, 22 ]
+      minMomentum : @local::CosmicSplitStage1MinMomentum
+      factor : @local::CosmicSplitStage1Copies
+      copierLabel : "copyStage1"
+    }
   }
 }
 END_PROLOG

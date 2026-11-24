@@ -6,15 +6,27 @@
 # attaches the weights (EventWeight "FamilySplit"). It also drops the events whose muon decays in flight
 # within CosmicSplitDecayWindow: those come from the decay stream, S2ResamplerSplitDecay.fcl, which must be
 # run too.
+# Muon pair production is made as many times in the same regions (physics.processCopies), and each stage-1
+# e+- or gamma above CosmicSplitStage1MinMomentum enters Geant4 CosmicSplitStage1Copies times
+# (StepPointMCCopier).
 # Gammas, e+- and neutrons below 80 MeV are killed except around the calorimeter (CosmicSplit.softKillCut),
 # so only the copies that can matter for a conversion-like track are tracked.
-# Needs Offline with physics.secondaryBiasing (Mu2eG4) and FamilySplitSource (Sources).
+# Needs Offline with physics.secondaryBiasing and physics.processCopies (Mu2eG4), StepPointMCCopier
+# (CommonMC) and FamilySplitSource (Sources).
 # Yuri Oksuzian, 2026
 #include "Production/JobConfig/cosmic/S2Resampler.fcl"
 physics.producers.g4run.Mu2eG4CommonCut : @local::CosmicSplit.softKillCut
 physics.producers.g4run.physics.minRangeCut : @local::CosmicSplit.minRangeCut
 physics.producers.g4run.physics.minRangeRegionCuts : @local::CosmicSplit.regionCuts
 physics.producers.g4run.physics.secondaryBiasing : @local::CosmicSplit.G4
+physics.producers.g4run.physics.processCopies : @local::CosmicSplit.copies
+# copies of the stage-1 e+-, gammas: Geant4 reads its primaries from them. The output keeps the uncopied
+# CosmicResampler:crvStage1 only (S2KeptProducts), and the copier's EventWeight (1/N copied, 1 not; kept with
+# every EventWeight by Primary.GeneralProducts), which S2FamilySplit.fcl reads and does not pass on.
+physics.producers.copyStage1 : @local::CosmicSplit.stage1Copier
+physics.producers.g4run.inputs.primaryTag : "copyStage1:crvStage1"
+physics.PrimaryPath : [ genCounter, cosmicTimeOffset, CosmicResampler, copyStage1,
+                        @sequence::Common.g4Sequence, @sequence::Primary.PrimarySequence, s2Counter ]
 # No per-event volume lists: the resampler merges the stage-1 list into every event and Mu2eG4 writes the
 # stage-2 list into every event, but the output keeps no volume information (S2Resampler's outputCommands).
 # About 8% of the CPU.
