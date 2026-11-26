@@ -267,9 +267,10 @@ Cosmic: {
 
 }
 
-# Geant4 secondary splitting in stage 2 (S2ResamplerSplit.fcl), and the splitter job that puts each
-# split family in its own event (S2FamilySplit.fcl). The two must agree: Geant4 splits in G4 regions,
-# the splitter finds the split particles by birth position.
+# Secondary splitting in stage 2 (S2ResamplerSplit.fcl), and the splitter job that puts each
+# split family in its own event (S2FamilySplit.fcl). Mu2eG4 splits in G4 regions and gives each copy
+# 1/factor of its parent's weight; Mu2eG4 saves the weight (SimParticle::weight) and the splitter finds
+# the split particles and their factors by it, so regions and factors are set only here.
 #   DS2Vacuum: the tube r < 950 mm around the DS axis (x = -3904 mm), Mu2e z 4179-8339 mm; it holds the
 #     TS downstream absorber and the outer proton absorber, where most cosmic muon knock-on electrons
 #     that reach the tracker are made.
@@ -289,21 +290,17 @@ Cosmic: {
 #     Coll52               r 235-243,      z 2929-4178.98
 #     TS5InnerCryoShell    r 248-267,      z 2929-4160
 #     TS5DownstreamEndwall2 r 270.01-375,  z 4110-4160      second end-wall piece, inside the TS5 cryostat
-#   Each cylinder matches its volume exactly (100,000 sampled points per region in the GDML geometry, no
-#   point in one but not the other), except TS5DownstreamEndwall2: it is a cone (outer radius 321.7 to 375 mm
-#   over its first 25 mm), and its cylinder also holds a wedge of the TS5 insulating vacuum, where nothing is
-#   made.
-# Muon knock-on electrons (muIoni) and bremsstrahlung (muBrems) are split by Geant4 secondary biasing.
-# Pair production (muPairProd) makes two secondaries, which Geant4 biasing does not split; Mu2eG4
-# physics.processCopies makes each pair-production interaction of a muon N times instead, with the same
-# factors in the same regions.
+#   TS5DownstreamEndwall2 is a cone (outer radius 321.7 to 375 mm over its first 25 mm).
+# Mu2eG4 physics.processCopies makes each muon knock-on (muIoni), bremsstrahlung (muBrems) and pair-production
+# (muPairProd) interaction in these regions N times, each copy with weight 1/N.
 # Muon decays in flight come from a second stage-2 stream (S2ResamplerSplitDecay.fcl, then
 # S2FamilySplitDecay.fcl) in which every muon decays within CosmicSplitDecayWindow ns of proper time;
 # the main stream drops those decays. Each stream is normalized to its own livetime and the two add. In
 # the decay stream each decay in flight is made CosmicSplitDecayCopies times (processCopies, everywhere).
 # Stage-1 e+-, gammas above CosmicSplitStage1MinMomentum (mostly made in the concrete above the DS by stage
 # 1, where no stage-2 split reaches them) are written CosmicSplitStage1Copies times by StepPointMCCopier
-# before Geant4, so each becomes that many independent primaries. An event with more than
+# before Geant4, so each becomes that many independent primaries, each with weight 1/N (Mu2eG4
+# inputs.primaryWeights). An event with more than
 # CosmicSplitStage1MaxCopied of them (a shower; 2.4% of these particles in a 644,000-event test) is not
 # copied: its particles count at weight 1. Without the cap one shower brought 80-100 of them, 1,100-1,400
 # families in one event.
@@ -316,16 +313,14 @@ CosmicSplitStage1Copies : 14
 CosmicSplitStage1MinMomentum : 80.
 CosmicSplitStage1MaxCopied : 30
 CosmicSplit : {
-  G4 : [
-    { process : muIoni  regions : [ DS2Vacuum ]     factor : @local::CosmicSplitFactor },
-    { process : muBrems regions : [ DS2Vacuum ]     factor : @local::CosmicSplitFactor },
-    { process : muIoni  regions : [ TrackerMother ] factor : @local::CosmicSplitTrackerFactor },
-    { process : muBrems regions : [ TrackerMother ] factor : @local::CosmicSplitTrackerFactor },
-    { process : muIoni  regions : [ DSInnerCryoShell, DSCryoVacuumRegion, DSOuterCryoShell, TS5DownstreamEndwall, Coll53, Coll52, TS5InnerCryoShell, TS5DownstreamEndwall2 ] factor : @local::CosmicSplitWallFactor },
-    { process : muBrems regions : [ DSInnerCryoShell, DSCryoVacuumRegion, DSOuterCryoShell, TS5DownstreamEndwall, Coll53, Coll52, TS5InnerCryoShell, TS5DownstreamEndwall2 ] factor : @local::CosmicSplitWallFactor }
-  ]
-  # Mu2eG4 physics.processCopies, main stream: muon pair production, as G4 above
+  # Mu2eG4 physics.processCopies, main stream
   copies : [
+    { process : muIoni     particles : [ "mu-", "mu+" ] regions : [ DS2Vacuum ]     factor : @local::CosmicSplitFactor },
+    { process : muBrems    particles : [ "mu-", "mu+" ] regions : [ DS2Vacuum ]     factor : @local::CosmicSplitFactor },
+    { process : muIoni     particles : [ "mu-", "mu+" ] regions : [ TrackerMother ] factor : @local::CosmicSplitTrackerFactor },
+    { process : muBrems    particles : [ "mu-", "mu+" ] regions : [ TrackerMother ] factor : @local::CosmicSplitTrackerFactor },
+    { process : muIoni     particles : [ "mu-", "mu+" ] regions : [ DSInnerCryoShell, DSCryoVacuumRegion, DSOuterCryoShell, TS5DownstreamEndwall, Coll53, Coll52, TS5InnerCryoShell, TS5DownstreamEndwall2 ] factor : @local::CosmicSplitWallFactor },
+    { process : muBrems    particles : [ "mu-", "mu+" ] regions : [ DSInnerCryoShell, DSCryoVacuumRegion, DSOuterCryoShell, TS5DownstreamEndwall, Coll53, Coll52, TS5InnerCryoShell, TS5DownstreamEndwall2 ] factor : @local::CosmicSplitWallFactor },
     { process : muPairProd particles : [ "mu-", "mu+" ] regions : [ DS2Vacuum ]     factor : @local::CosmicSplitFactor },
     { process : muPairProd particles : [ "mu-", "mu+" ] regions : [ TrackerMother ] factor : @local::CosmicSplitTrackerFactor },
     { process : muPairProd particles : [ "mu-", "mu+" ] regions : [ DSInnerCryoShell, DSCryoVacuumRegion, DSOuterCryoShell, TS5DownstreamEndwall, Coll53, Coll52, TS5InnerCryoShell, TS5DownstreamEndwall2 ] factor : @local::CosmicSplitWallFactor }
@@ -392,19 +387,8 @@ CosmicSplit : {
   }
   splitter : {
     module_type : FamilySplitSource
-    processes : [ "muIoni", "muBrems", "muPairProd" ]
-    regions : [
-      { xc : -3904. rmax : 950. zmin : 4179. zmax : 8339. factor : @local::CosmicSplitFactor },
-      { xc : -3904. rmin : 376.9 rmax : 850.1 zmin : 8539.5 zmax : 11810.5 factor : @local::CosmicSplitTrackerFactor },
-      { xc : -3904. rmin : 950. rmax : 969.05 zmin : 3239. zmax : 14139. factor : @local::CosmicSplitWallFactor },
-      { xc : -3904. rmin : 969.05 rmax : 1303. zmin : 3269. zmax : 14109. factor : @local::CosmicSplitWallFactor },
-      { xc : -3904. rmin : 1303. rmax : 1328. zmin : 3239. zmax : 14139. factor : @local::CosmicSplitWallFactor },
-      { xc : -3904. rmin : 296.35 rmax : 793.45 zmin : 4160. zmax : 4179. factor : @local::CosmicSplitWallFactor },
-      { xc : -3904. rmin : 248. rmax : 294. zmin : 4160.02 zmax : 4178.98 factor : @local::CosmicSplitWallFactor },
-      { xc : -3904. rmin : 235. rmax : 243. zmin : 2929. zmax : 4178.98 factor : @local::CosmicSplitWallFactor },
-      { xc : -3904. rmin : 248. rmax : 267. zmin : 2929. zmax : 4160. factor : @local::CosmicSplitWallFactor },
-      { xc : -3904. rmin : 270.01 rmax : 375. zmin : 4110. zmax : 4160. factor : @local::CosmicSplitWallFactor }
-    ]
+    # finds the split particles and their factors from the Geant4 track weights (SimParticle::weight):
+    # copies and decayCopies above are the only place the regions and factors are set
     # output event number = input event number * stride + family index: at most stride - 1 families per input
     # event; 500,000 particles per job * 4000 = 2.0e9 still fits a signed 32-bit event number (EventNtuple)
     stride : 4000
@@ -412,13 +396,6 @@ CosmicSplit : {
     inputProcessName : "CosmicS2"
     muonDecayWindow : @local::CosmicSplitDecayWindow
     forcedDecayStream : false
-    decayFactor : 0
-    copiedPrimaries : {
-      pdgIds : [ 11, -11, 22 ]
-      minMomentum : @local::CosmicSplitStage1MinMomentum
-      factor : @local::CosmicSplitStage1Copies
-      copierLabel : "copyStage1"
-    }
   }
 }
 # The CosmicSignal selection in stage 2 (S2ResamplerSplitSignal.fcl, S2ResamplerSplitSignalDecay.fcl) and in the
@@ -434,12 +411,8 @@ CosmicSplit : {
 CosmicSplitCounter : {
   module_type : FamilySplitCounter
   simParticles : "compressDetStepMCs"
-  processes : @local::CosmicSplit.splitter.processes
-  regions : @local::CosmicSplit.splitter.regions
   muonDecayWindow : @local::CosmicSplit.splitter.muonDecayWindow
   forcedDecayStream : @local::CosmicSplit.splitter.forcedDecayStream
-  decayFactor : @local::CosmicSplit.splitter.decayFactor
-  copiedPrimaries : @local::CosmicSplit.splitter.copiedPrimaries
 }
 CosmicSplitSignalCut : {
   module_type : CosmicMixingFilter

@@ -6,7 +6,6 @@
 #include "Production/JobConfig/cosmic/S2ResamplerSplitDecay.fcl"
 physics.producers.familySplitCounter : @local::CosmicSplitCounter
 physics.producers.familySplitCounter.forcedDecayStream : true
-physics.producers.familySplitCounter.decayFactor : @local::CosmicSplitDecayCopies
 physics.filters.signalCut : @local::CosmicSplitSignalCut
 physics.PrimaryPath : [ @sequence::physics.PrimaryPath, familySplitCounter, signalCut ]
 outputs.PrimaryOutput.outputCommands : [ @sequence::outputs.PrimaryOutput.outputCommands,

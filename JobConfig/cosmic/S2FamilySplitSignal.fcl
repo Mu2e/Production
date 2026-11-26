@@ -13,7 +13,6 @@ services : {
 }
 source.countsLabel : "familySplitCounter"
 physics.filters.signalCut : @local::CosmicSplitSignalCut
-physics.filters.signalCut.SimParticles : "compressDetStepMCs"   # the source's art::Ptr do not resolve in this job
 physics.SignalPath : [ signalCut ]
 physics.trigger_paths : [ SignalPath ]
 outputs.PrimaryOutput.SelectEvents : [ SignalPath ]
