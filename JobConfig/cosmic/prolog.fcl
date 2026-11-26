@@ -337,16 +337,15 @@ CosmicSplit : {
     copies : @local::CosmicSplitStage1Copies
     maxCopied : @local::CosmicSplitStage1MaxCopied
   }
-  # 10 mm everywhere except the DS vacuum regions (1 mm) and the calorimeter (0.1 mm). The tracker gets
-  # 10 mm too (S2Resampler.fcl: 0.001 mm). Below the cut a delta ray is not made and its energy stays on
-  # its parent's step, in the same straw; above it the soft kill removes it with its energy. So a larger
-  # cut keeps more of the straw ionization and is faster: at 10 mm the electron threshold is 20 keV in the
-  # straw gas (990 eV at 0.001-1 mm) and at most 29.5 MeV (tungsten), below the soft kill's 80 MeV; 30 mm
-  # would reach 130 MeV in tungsten. Geant4 takes 0.89 of its time at 0.01 mm, and with 0.001 mm keV delta
-  # rays in the tracker solids were made, split x10 and killed (about half of the Geant4 time). The mean
-  # straw-hit energy of reconstructed electrons is still 7% below stock (delta rays above 20 keV).
+  # 10 mm everywhere except the DS vacuum regions (1 mm), the calorimeter (0.1 mm) and the tracker
+  # (0.01 mm; S2Resampler.fcl: 0.001 mm). Outside the tracker the cut stays below the soft kill: at 10 mm
+  # the electron threshold is at most 29.5 MeV (tungsten), below 80 MeV; 30 mm would reach 130 MeV. In the
+  # tracker the delta rays of the electron must be made and tracked, as in stock: with 10 mm there (and the
+  # soft kill without its EM exemption, softKillCut) reconstructed electrons had a mean straw-hit energy of
+  # 1.374 keV against stock's 1.477 and chi2/ndof 1.32 against 1.88; with 0.01 mm and the exemption,
+  # 1.467 keV and 1.70.
   minRangeCut : 10.0
-  regionCuts : { CalorimeterMother : 0.1 TrackerMother : 10.0 DS1Vacuum : 1.0 DS2Vacuum : 1.0 DS3Vacuum : 1.0
+  regionCuts : { CalorimeterMother : 0.1 TrackerMother : 0.01 DS1Vacuum : 1.0 DS2Vacuum : 1.0 DS3Vacuum : 1.0
                  DSInnerCryoShell : 10.0 DSCryoVacuumRegion : 10.0 DSOuterCryoShell : 10.0
                  TS5DownstreamEndwall : 10.0 Coll53 : 10.0 Coll52 : 10.0 TS5InnerCryoShell : 10.0
                  TS5DownstreamEndwall2 : 10.0 }
@@ -361,8 +360,13 @@ CosmicSplit : {
   # r < 719 mm), corners at 866 mm, inside the 950 mm bore. It must stay clear of the split cryostat-wall
   # regions: a square of half-width 950 mm reached them at its corners, where soft split copies then
   # survived as families (x1.6 per file). This costs x1.2 in CPU. A plane cut is true where
-  # (x - point) . normal >= 0. The soft kill also removes soft particles that are not split (e.g. delta
-  # rays in the straw gas above the tracker cut), so hit-level studies of those need S2Resampler.fcl.
+  # (x - point) . normal >= 0.
+  # Inside the DS cryostat and the downstream end of TS5 (an octagonal prism of apothem 1330 mm about the DS
+  # axis, Mu2e z 2929-14139 mm) the kill also spares particles made by e+-/gamma EM processes (Mu2eG4 cut
+  # notCreatorProcess): an electron's own delta rays, bremsstrahlung photons and their conversions, which
+  # put about 4 extra hits on each stock track. Soft particles made by muons (the split copies) or hadrons
+  # are still killed there. With the 0.01 mm tracker cut this costs about x1.65 in stage-2 CPU. Soft
+  # particles made outside the prism are still killed, so hit-level studies of those need S2Resampler.fcl.
   softKillCut : {
     type : union
     pars : [
@@ -380,6 +384,19 @@ CosmicSplit : {
               { type : plane normal : [ -0.707107, -0.707107, 0 ] point : [ -4469.69, -565.69, 0 ] },
               { type : plane normal : [ 0, -1, 0 ] point : [ -3904, -800, 0 ] },
               { type : plane normal : [ 0.707107, -0.707107, 0 ] point : [ -3338.31, -565.69, 0 ] }
+            ] },
+          { type : union pars : [
+              { type : notCreatorProcess pars : [ "eIoni", "eBrem", "conv", "compt", "phot", "annihil" ] },
+              { type : plane normal : [ 0, 0, -1 ] point : [ 0, 0, 2929 ] },
+              { type : plane normal : [ 0, 0, 1 ] point : [ 0, 0, 14139 ] },
+              { type : plane normal : [ 1, 0, 0 ] point : [ -2574, 0, 0 ] },
+              { type : plane normal : [ 0.707107, 0.707107, 0 ] point : [ -2963.55, 940.45, 0 ] },
+              { type : plane normal : [ 0, 1, 0 ] point : [ -3904, 1330, 0 ] },
+              { type : plane normal : [ -0.707107, 0.707107, 0 ] point : [ -4844.45, 940.45, 0 ] },
+              { type : plane normal : [ -1, 0, 0 ] point : [ -5234, 0, 0 ] },
+              { type : plane normal : [ -0.707107, -0.707107, 0 ] point : [ -4844.45, -940.45, 0 ] },
+              { type : plane normal : [ 0, -1, 0 ] point : [ -3904, -1330, 0 ] },
+              { type : plane normal : [ 0.707107, -0.707107, 0 ] point : [ -2963.55, -940.45, 0 ] }
             ] }
         ] },
       { type : inVolume pars : [ worldDirtBottom ] }

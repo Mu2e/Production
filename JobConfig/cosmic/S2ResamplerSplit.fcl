@@ -9,7 +9,8 @@
 # Each stage-1 e+- or gamma above CosmicSplitStage1MinMomentum enters Geant4 CosmicSplitStage1Copies times
 # (StepPointMCCopier).
 # Gammas, e+- and neutrons below 80 MeV are killed except around the calorimeter (CosmicSplit.softKillCut),
-# so only the copies that can matter for a conversion-like track are tracked.
+# so only the copies that can matter for a conversion-like track are tracked; inside the DS cryostat those
+# made by e+-/gamma EM processes are kept, so tracks carry their tracker hits as in stock.
 # Needs Offline with physics.processCopies and inputs.primaryWeights (Mu2eG4), StepPointMCCopier
 # (CommonMC) and FamilySplitSource (Sources).
 # Yuri Oksuzian, 2026
