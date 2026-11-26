@@ -5,3 +5,4 @@
 # Yuri Oksuzian, 2026
 #include "Production/JobConfig/cosmic/S2FamilySplitMain.fcl"
 source.forcedDecayStream : true
+outputs.PrimaryOutput.fileName : "dts.owner.CosmicSplitSignalMuDIF.version.sequencer.art"

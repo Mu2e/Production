@@ -5,10 +5,10 @@
 # (S2FamilySplitMuDIF.fcl) provides them. The stripped-event weight comes from the stage-2 counts
 # (FamilySplitSummary of the module familySplitCounter), since the stage-2 cut has thinned the file.
 # Only the events that pass the CosmicSignal selection of SpillSplitter.fcl (SignalFilter, CosmicSplitSignalCut)
-# are written: the output is the CosmicSignal dataset, the input of digitization, and SpillSplitter.fcl is not
-# run. The selection needs the geometry and the field: the services are those of SpillSplitter.fcl's selection
-# (Services.Core). Livetime is copied unchanged; downstream jobs apply the EventWeight "FamilySplit"
-# (EventNtuple evtwt from AnalysisMDC2025 v02_03_01).
+# are written: the output (CosmicSplitSignal) is the split CosmicSignal dataset, the input of digitization, and
+# SpillSplitter.fcl is not run. The selection needs the geometry and the field: the services are those of
+# SpillSplitter.fcl's selection (Services.Core). Livetime is copied unchanged; downstream jobs apply the
+# EventWeight "FamilySplit" (EventNtuple evtwt from AnalysisMDC2025 v02_03_01).
 # For a test on a stage-2 file with every event, set source.countsLabel : "" (the counts then come from the file);
 # outputs.PrimaryOutput.SelectEvents : [] writes every event without the selection.
 # Yuri Oksuzian, 2026
@@ -30,7 +30,7 @@ physics : {
 outputs : {
   PrimaryOutput : {
     module_type : RootOutput
-    fileName : @nil
+    fileName : "dts.owner.CosmicSplitSignal.version.sequencer.art"
   }
 }
 # the stripped-event weight from the stage-2 counts, then the CosmicSignal selection
