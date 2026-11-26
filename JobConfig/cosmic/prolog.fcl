@@ -293,8 +293,8 @@ Cosmic: {
 #   TS5DownstreamEndwall2 is a cone (outer radius 321.7 to 375 mm over its first 25 mm).
 # Mu2eG4 physics.processCopies makes each muon knock-on (muIoni), bremsstrahlung (muBrems) and pair-production
 # (muPairProd) interaction in these regions N times, each copy with weight 1/N.
-# Muon decays in flight come from a second stage-2 stream (S2ResamplerSplitDecay.fcl, then
-# S2FamilySplitDecay.fcl) in which every muon decays within CosmicSplitDecayWindow ns of proper time;
+# Muon decays in flight come from a second stage-2 stream (S2ResamplerSplitMuDIF.fcl, then
+# S2FamilySplitMuDIF.fcl) in which every muon decays within CosmicSplitDecayWindow ns of proper time;
 # the main stream drops those decays. Each stream is normalized to its own livetime and the two add. In
 # the decay stream each decay in flight is made CosmicSplitDecayCopies times (processCopies, everywhere).
 # Stage-1 e+-, gammas above CosmicSplitStage1MinMomentum (mostly made in the concrete above the DS by stage
@@ -415,8 +415,8 @@ CosmicSplit : {
     forcedDecayStream : false
   }
 }
-# The CosmicSignal selection in stage 2 (S2ResamplerSplitMain.fcl, S2ResamplerSplitDecay.fcl) and in the
-# FamilySplitSource job (S2FamilySplitMain.fcl, S2FamilySplitDecay.fcl).
+# The CosmicSignal selection in stage 2 (S2ResamplerSplitMain.fcl, S2ResamplerSplitMuDIF.fcl) and in the
+# FamilySplitSource job (S2FamilySplitMain.fcl, S2FamilySplitMuDIF.fcl).
 # CosmicSplitCounter counts, for each SubRun, what FamilySplitSource needs for the stripped-event weight
 # (events, those the muon-decay rule keeps, the sum of their family weights) before the selection, with the
 # splitter's rules; FamilySplitSource then takes the weight from those counts (countsLabel).

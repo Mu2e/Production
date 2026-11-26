@@ -14,7 +14,7 @@
 # Run S2FamilySplitMain.fcl on the output: it puts each split family in its own event, attaches the weights
 # (EventWeight "FamilySplit") and applies the CosmicSignal selection; its output is the digitization input. It
 # also drops the events whose muon decays in flight within CosmicSplitDecayWindow: those come from the decay
-# stream, S2ResamplerSplitDecay.fcl, which must be run too.
+# stream, S2ResamplerSplitMuDIF.fcl, which must be run too.
 # For a test that needs every stage-2 event, drop signalCut from physics.PrimaryPath.
 # Needs Offline with physics.processCopies and inputs.primaryWeights (Mu2eG4), StepPointMCCopier
 # (CommonMC), FamilySplitCounter and FamilySplitSource (Sources).

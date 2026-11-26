@@ -2,7 +2,7 @@
 # stage-2 event once and writes the event with all split families removed (event number * stride, weight
 # 1 - S/E, about 0.98) and one event per split family (event number * stride + j, the family's weight). Events
 # whose stage-2 primary muon decays in flight within CosmicSplitDecayWindow are dropped; the decay stream
-# (S2FamilySplitDecay.fcl) provides them. The stripped-event weight comes from the stage-2 counts
+# (S2FamilySplitMuDIF.fcl) provides them. The stripped-event weight comes from the stage-2 counts
 # (FamilySplitSummary of the module familySplitCounter), since the stage-2 cut has thinned the file.
 # Only the events that pass the CosmicSignal selection of SpillSplitter.fcl (SignalFilter, CosmicSplitSignalCut)
 # are written: the output is the CosmicSignal dataset, the input of digitization, and SpillSplitter.fcl is not
