@@ -365,7 +365,7 @@ CosmicSplit : {
   # axis, Mu2e z 2929-14139 mm) the kill also spares particles made by e+-/gamma EM processes (Mu2eG4 cut
   # notCreatorProcess): an electron's own delta rays, bremsstrahlung photons and their conversions, which
   # put about 4 extra hits on each stock track. Soft particles made by muons (the split copies) or hadrons
-  # are still killed there. With the 0.01 mm tracker cut this costs about x1.65 in stage-2 CPU. Soft
+  # are still killed there. With the 0.01 mm tracker cut this costs x2.4 in stage-2 CPU per particle. Soft
   # particles made outside the prism are still killed, so hit-level studies of those need S2Resampler.fcl.
   softKillCut : {
     type : union
