@@ -267,8 +267,8 @@ Cosmic: {
 
 }
 
-# Secondary splitting in stage 2 (S2ResamplerSplit.fcl), and the splitter job that puts each
-# split family in its own event (S2FamilySplit.fcl). Mu2eG4 splits in G4 regions and gives each copy
+# Secondary splitting in stage 2 (S2ResamplerSplitMain.fcl), and the splitter job that puts each
+# split family in its own event (S2FamilySplitMain.fcl). Mu2eG4 splits in G4 regions and gives each copy
 # 1/factor of its parent's weight; Mu2eG4 saves the weight (SimParticle::weight) and the splitter finds
 # the split particles and their factors by it, so regions and factors are set only here.
 #   DS2Vacuum: the tube r < 950 mm around the DS axis (x = -3904 mm), Mu2e z 4179-8339 mm; it holds the
@@ -415,8 +415,8 @@ CosmicSplit : {
     forcedDecayStream : false
   }
 }
-# The CosmicSignal selection in stage 2 (S2ResamplerSplitSignal.fcl, S2ResamplerSplitSignalDecay.fcl) and in the
-# FamilySplitSource job (S2FamilySplitSignal.fcl, S2FamilySplitSignalDecay.fcl).
+# The CosmicSignal selection in stage 2 (S2ResamplerSplitMain.fcl, S2ResamplerSplitDecay.fcl) and in the
+# FamilySplitSource job (S2FamilySplitMain.fcl, S2FamilySplitDecay.fcl).
 # CosmicSplitCounter counts, for each SubRun, what FamilySplitSource needs for the stripped-event weight
 # (events, those the muon-decay rule keeps, the sum of their family weights) before the selection, with the
 # splitter's rules; FamilySplitSource then takes the weight from those counts (countsLabel).

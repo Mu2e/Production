@@ -1,0 +1,41 @@
+# Second step of split cosmic stage 2, main stream (S2ResamplerSplitMain.fcl): FamilySplitSource reads each
+# stage-2 event once and writes the event with all split families removed (event number * stride, weight
+# 1 - S/E, about 0.98) and one event per split family (event number * stride + j, the family's weight). Events
+# whose stage-2 primary muon decays in flight within CosmicSplitDecayWindow are dropped; the decay stream
+# (S2FamilySplitDecay.fcl) provides them. The stripped-event weight comes from the stage-2 counts
+# (FamilySplitSummary of the module familySplitCounter), since the stage-2 cut has thinned the file.
+# Only the events that pass the CosmicSignal selection of SpillSplitter.fcl (SignalFilter, CosmicSplitSignalCut)
+# are written: the output is the CosmicSignal dataset, the input of digitization, and SpillSplitter.fcl is not
+# run. The selection needs the geometry and the field: the services are those of SpillSplitter.fcl's selection
+# (Services.Core). Livetime is copied unchanged; downstream jobs apply the EventWeight "FamilySplit"
+# (EventNtuple evtwt from AnalysisMDC2025 v02_03_01).
+# For a test on a stage-2 file with every event, set source.countsLabel : "" (the counts then come from the file);
+# outputs.PrimaryOutput.SelectEvents : [] writes every event without the selection.
+# Yuri Oksuzian, 2026
+#include "Offline/fcl/standardServices.fcl"
+#include "Production/JobConfig/cosmic/prolog.fcl"
+# The stage-2 process name: the source re-creates every product under its stage-2 name, and art derives a
+# ProductID from that name, so the copied products keep their ProductIDs and the source can repoint their
+# art::Ptr to this event.
+process_name : CosmicS2
+source : @local::CosmicSplit.splitter
+services : {
+  @table::Services.Core
+  scheduler : { wantSummary : true }
+}
+physics : {
+  EndPath : [ PrimaryOutput ]
+  end_paths : [ EndPath ]
+}
+outputs : {
+  PrimaryOutput : {
+    module_type : RootOutput
+    fileName : @nil
+  }
+}
+# the stripped-event weight from the stage-2 counts, then the CosmicSignal selection
+source.countsLabel : "familySplitCounter"
+physics.filters.signalCut : @local::CosmicSplitSignalCut
+physics.SignalPath : [ signalCut ]
+physics.trigger_paths : [ SignalPath ]
+outputs.PrimaryOutput.SelectEvents : [ SignalPath ]
