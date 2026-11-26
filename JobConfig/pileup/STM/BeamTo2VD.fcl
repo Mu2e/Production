@@ -1,35 +1,35 @@
-# Propagate beam to both VD101 and VD116 for STM studies
+# Propagate beam to both VD101 and VD136 for STM studies
 # Extends BeamToVD.fcl with a second virtual detector path
 #include "Production/JobConfig/pileup/STM/BeamToVD.fcl"
 
 process_name: BeamTo2VD
 
-# Add VD116 extraction, compression, and filtering
-physics.producers.extractVirtualDetectorSteps116 : {
+# Add VD136 extraction, compression, and filtering
+physics.producers.extractVirtualDetectorSteps136 : {
   module_type : STMResamplingProducer
   StepPointMCsTag : @local::ResamplingProducer.StepPointMCsTag
-  VirtualDetectorID : 116
+  VirtualDetectorID : 136
 }
-physics.producers.compressDetStepMCsSTM116 : @local::physics.producers.compressDetStepMCsSTM
-physics.producers.compressDetStepMCsSTM116.stepPointMCTags : ["extractVirtualDetectorSteps116"]
+physics.producers.compressDetStepMCsSTM136 : @local::physics.producers.compressDetStepMCsSTM
+physics.producers.compressDetStepMCsSTM136.stepPointMCTags : ["extractVirtualDetectorSteps136"]
 
-physics.filters.filterVirtualDetectorSteps116 : {
+physics.filters.filterVirtualDetectorSteps136 : {
   module_type: STMResamplingFilter
-  StepPointMCsTag : "compressDetStepMCsSTM116"
+  StepPointMCsTag : "compressDetStepMCsSTM136"
 }
 
-physics.analyzers.countVirtualDetectorHits.virtualDetectorIDs : [88, 89, 90, 100, 101, 116]
+physics.analyzers.countVirtualDetectorHits.virtualDetectorIDs : [88, 89, 90, 100, 101, 116, 136]
 
 # Add second trigger path
-physics.STMCompressedPath116 : [@sequence::Pileup.beamResamplerSequence, @sequence::Common.g4Sequence, extractVirtualDetectorSteps116, compressDetStepMCsSTM116, filterVirtualDetectorSteps116]
-physics.trigger_paths : [STMCompressedPath, STMCompressedPath116]
+physics.STMCompressedPath136 : [@sequence::Pileup.beamResamplerSequence, @sequence::Common.g4Sequence, extractVirtualDetectorSteps136, compressDetStepMCsSTM136, filterVirtualDetectorSteps136]
+physics.trigger_paths : [STMCompressedPath, STMCompressedPath136]
 
-# Rename VD101 output to compressedOutput101 and add VD116 output
+# Rename VD101 output to compressedOutput101 and add VD136 output
 outputs.compressedOutput101 : @local::outputs.compressedOutput
 outputs.compressedOutput101.SelectEvents : [STMCompressedPath]
 outputs.compressedOutput101.fileName : "dts.owner.BeamToVD101.version.sequencer.art"
-outputs.compressedOutput116 : @local::outputs.compressedOutput
-outputs.compressedOutput116.SelectEvents : [STMCompressedPath116]
-outputs.compressedOutput116.fileName : "dts.owner.BeamToVD116.version.sequencer.art"
+outputs.compressedOutput136 : @local::outputs.compressedOutput
+outputs.compressedOutput136.SelectEvents : [STMCompressedPath136]
+outputs.compressedOutput136.fileName : "dts.owner.BeamToVD136.version.sequencer.art"
 
-physics.outPathCompressed : [genCountLogger, countVirtualDetectorHits, compressedOutput101, compressedOutput116]
+physics.outPathCompressed : [genCountLogger, countVirtualDetectorHits, compressedOutput101, compressedOutput136]
