@@ -1,0 +1,8 @@
+# Second step of split cosmic stage 2, muon decay-in-flight (MuDIF) stream (S2ResamplerSplitMuDIF.fcl): as
+# S2FamilySplitMain.fcl, but keeps only the events whose stage-2 primary muon decayed in flight, and multiplies
+# every weight by 1 - exp(-CosmicSplitDecayWindow / 2196.98 ns). The daughters of each muon decay in flight are
+# CosmicSplitDecayCopies alternatives, each its own family (found by their weights).
+# Yuri Oksuzian, 2026
+#include "Production/JobConfig/cosmic/S2FamilySplitMain.fcl"
+source.forcedDecayStream : true
+outputs.PrimaryOutput.fileName : "dts.owner.CosmicSplitSignalMuDIF.version.sequencer.art"

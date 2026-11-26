@@ -1,0 +1,52 @@
+# Cosmic stage 2 with secondary splitting, main stream, for the conversion-electron background: every knock-on
+# (muIoni), bremsstrahlung (muBrems) and pair-production (muPairProd) interaction of a muon in DS2Vacuum is made
+# CosmicSplitFactor (100) times, in the tracker CosmicSplitTrackerFactor (10) times and in the DS cryostat (walls,
+# coils) and the downstream end of TS5 CosmicSplitWallFactor (10) times, each copy with weight 1/factor. Each
+# stage-1 e+- or gamma above CosmicSplitStage1MinMomentum enters Geant4 CosmicSplitStage1Copies times
+# (StepPointMCCopier), each copy with weight 1/copies.
+# Gammas, e+- and neutrons below 80 MeV are killed except around the calorimeter (CosmicSplit.softKillCut),
+# so only the copies that can matter for a conversion-like track are tracked; inside the DS cryostat those
+# made by e+-/gamma EM processes are kept, so tracks carry their tracker hits as in stock. The output therefore
+# serves the CosmicSignal selection only (SpillSplitter.fcl SignalOutput), not calorimeter, CRV or calibration
+# studies, and the job writes only the events that selection can use (CosmicSplitSignalCut): under 1% of them,
+# 3-4% of the bytes. FamilySplitCounter records per SubRun what FamilySplitSource needs for the stripped-event
+# weight before the cut.
+# Run S2FamilySplitMain.fcl on the output: it puts each split family in its own event, attaches the weights
+# (EventWeight "FamilySplit") and applies the CosmicSignal selection; its output is the digitization input. It
+# also drops the events whose muon decays in flight within CosmicSplitDecayWindow: those come from the decay
+# stream, S2ResamplerSplitMuDIF.fcl, which must be run too.
+# The output name is set by the job definition, as for S2Resampler.fcl (CosmicSplitS2 so far).
+# For a test that needs every stage-2 event, drop signalCut from physics.PrimaryPath.
+# Needs Offline with physics.processCopies and inputs.primaryWeights (Mu2eG4), StepPointMCCopier
+# (CommonMC), FamilySplitCounter and FamilySplitSource (Sources).
+# Yuri Oksuzian, 2026
+#include "Production/JobConfig/cosmic/S2Resampler.fcl"
+physics.producers.g4run.Mu2eG4CommonCut : @local::CosmicSplit.softKillCut
+physics.producers.g4run.physics.minRangeCut : @local::CosmicSplit.minRangeCut
+physics.producers.g4run.physics.minRangeRegionCuts : @local::CosmicSplit.regionCuts
+physics.producers.g4run.physics.processCopies : @local::CosmicSplit.copies
+# copies of the stage-1 e+-, gammas: Geant4 reads its primaries and their weights (1/N for a copy) from them.
+# The output keeps the uncopied CosmicResampler:crvStage1 only (S2KeptProducts).
+physics.producers.copyStage1 : @local::CosmicSplit.stage1Copier
+physics.producers.g4run.inputs.primaryTag : "copyStage1:crvStage1"
+physics.producers.g4run.inputs.primaryWeights : "copyStage1:crvStage1"
+physics.PrimaryPath : [ genCounter, cosmicTimeOffset, CosmicResampler, copyStage1,
+                        @sequence::Common.g4Sequence, @sequence::Primary.PrimarySequence, s2Counter ]
+# No per-event volume lists: the resampler merges the stage-1 list into every event and Mu2eG4 writes the
+# stage-2 list into every event, but the output keeps no volume information (S2Resampler's outputCommands).
+# About 8% of the CPU.
+physics.filters.CosmicResampler.mu2e.products.volumeInfoMixer.evtOutInstanceName : @erase
+physics.producers.g4run.inputs.updateEventLevelVolumeInfos : @erase
+# Keep the events in which Geant4 makes more than 100,000 particles (the Mu2eG4 default): above the limit
+# Mu2eG4 stops saving particles and g4consistentFilter drops the event. Here that happens only for large
+# showers inside the calorimeter, where the soft kill is off (5 events in 9.5e6 particles); stock stage 2
+# drops 2.4e-5 per particle this way. Geant4 tracks such an event in full either way. Keeping it costs up to
+# 0.5 GB of memory and up to 90 s in compressDetStepMCs, which compares every StepPointMC with every kept
+# SimParticle: about 0.3% of the CPU (grid re-run of the jobs that dropped an event).
+physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize : 1000000
+# the counts for the stripped-event weight, then the CosmicSignal cut
+physics.producers.familySplitCounter : @local::CosmicSplitCounter
+physics.filters.signalCut : @local::CosmicSplitSignalCut
+physics.PrimaryPath : [ @sequence::physics.PrimaryPath, familySplitCounter, signalCut ]
+outputs.PrimaryOutput.outputCommands : [ @sequence::outputs.PrimaryOutput.outputCommands,
+                                         "keep mu2e::FamilySplitSummary_*_*_*" ]

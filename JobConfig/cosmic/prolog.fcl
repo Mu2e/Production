@@ -266,4 +266,179 @@ Cosmic: {
   ]
 
 }
+
+# Secondary splitting in stage 2 (S2ResamplerSplitMain.fcl), and the splitter job that puts each
+# split family in its own event (S2FamilySplitMain.fcl). Mu2eG4 splits in G4 regions and gives each copy
+# 1/factor of its parent's weight; Mu2eG4 saves the weight (SimParticle::weight) and the splitter finds
+# the split particles and their factors by it, so regions and factors are set only here.
+#   DS2Vacuum: the tube r < 950 mm around the DS axis (x = -3904 mm), Mu2e z 4179-8339 mm; it holds the
+#     TS downstream absorber and the outer proton absorber, where most cosmic muon knock-on electrons
+#     that reach the tracker are made.
+#   TrackerMother: r 376.9-850.1 mm, Mu2e z 8539.5-11810.5 mm (tracker_v7). Split by a smaller factor:
+#     nearly every muon crossing the tracker makes a secondary above 80 MeV/c in its support rings
+#     (r > 700 mm), so x100 would add about one family event per event; x10 keeps most of the gain.
+#   Walls, split x10 (CosmicSplitWallFactor; x100 in the inner cryostat wall gave 0.63 extra family events
+#   per event, x10 0.06, for little more gain). These regions exist only to be split; their 10 mm cut is
+#   the default. About 11% of the reconstructed cosmic background starts in them: knock-on electrons born
+#   in the material, and photons from it that convert in the stopping target or the absorbers.
+#     DSInnerCryoShell     r 950-969.05,   z 3239-14139     inner cryostat wall (about 6%)
+#     DSCryoVacuumRegion   r 969.05-1303,  z 3269-14109     cryostat vacuum with the coils, thermal
+#                                                           shields and supports (19 volumes)
+#     DSOuterCryoShell     r 1303-1328,    z 3239-14139     outer cryostat wall
+#     TS5DownstreamEndwall r 296.35-793.45, z 4160-4179     downstream end of TS5, just upstream of DS2
+#     Coll53               r 248-294,      z 4160.02-4178.98
+#     Coll52               r 235-243,      z 2929-4178.98
+#     TS5InnerCryoShell    r 248-267,      z 2929-4160
+#     TS5DownstreamEndwall2 r 270.01-375,  z 4110-4160      second end-wall piece, inside the TS5 cryostat
+#   TS5DownstreamEndwall2 is a cone (outer radius 321.7 to 375 mm over its first 25 mm).
+# Mu2eG4 physics.processCopies makes each muon knock-on (muIoni), bremsstrahlung (muBrems) and pair-production
+# (muPairProd) interaction in these regions N times, each copy with weight 1/N.
+# Muon decays in flight come from a second stage-2 stream (S2ResamplerSplitMuDIF.fcl, then
+# S2FamilySplitMuDIF.fcl) in which every muon decays within CosmicSplitDecayWindow ns of proper time;
+# the main stream drops those decays. Each stream is normalized to its own livetime and the two add. In
+# the decay stream each decay in flight is made CosmicSplitDecayCopies times (processCopies, everywhere).
+# Stage-1 e+-, gammas above CosmicSplitStage1MinMomentum (mostly made in the concrete above the DS by stage
+# 1, where no stage-2 split reaches them) are written CosmicSplitStage1Copies times by StepPointMCCopier
+# before Geant4, so each becomes that many independent primaries, each with weight 1/N (Mu2eG4
+# inputs.primaryWeights). An event with more than
+# CosmicSplitStage1MaxCopied of them (a shower; 2.4% of these particles in a 644,000-event test) is not
+# copied: its particles count at weight 1. Without the cap one shower brought 80-100 of them, 1,100-1,400
+# families in one event.
+CosmicSplitFactor : 100
+CosmicSplitTrackerFactor : 10
+CosmicSplitWallFactor : 10
+CosmicSplitDecayWindow : 50
+CosmicSplitDecayCopies : 10
+CosmicSplitStage1Copies : 14
+CosmicSplitStage1MinMomentum : 80.
+CosmicSplitStage1MaxCopied : 30
+CosmicSplit : {
+  # Mu2eG4 physics.processCopies, main stream
+  copies : [
+    { process : muIoni     particles : [ "mu-", "mu+" ] regions : [ DS2Vacuum ]     factor : @local::CosmicSplitFactor },
+    { process : muBrems    particles : [ "mu-", "mu+" ] regions : [ DS2Vacuum ]     factor : @local::CosmicSplitFactor },
+    { process : muIoni     particles : [ "mu-", "mu+" ] regions : [ TrackerMother ] factor : @local::CosmicSplitTrackerFactor },
+    { process : muBrems    particles : [ "mu-", "mu+" ] regions : [ TrackerMother ] factor : @local::CosmicSplitTrackerFactor },
+    { process : muIoni     particles : [ "mu-", "mu+" ] regions : [ DSInnerCryoShell, DSCryoVacuumRegion, DSOuterCryoShell, TS5DownstreamEndwall, Coll53, Coll52, TS5InnerCryoShell, TS5DownstreamEndwall2 ] factor : @local::CosmicSplitWallFactor },
+    { process : muBrems    particles : [ "mu-", "mu+" ] regions : [ DSInnerCryoShell, DSCryoVacuumRegion, DSOuterCryoShell, TS5DownstreamEndwall, Coll53, Coll52, TS5InnerCryoShell, TS5DownstreamEndwall2 ] factor : @local::CosmicSplitWallFactor },
+    { process : muPairProd particles : [ "mu-", "mu+" ] regions : [ DS2Vacuum ]     factor : @local::CosmicSplitFactor },
+    { process : muPairProd particles : [ "mu-", "mu+" ] regions : [ TrackerMother ] factor : @local::CosmicSplitTrackerFactor },
+    { process : muPairProd particles : [ "mu-", "mu+" ] regions : [ DSInnerCryoShell, DSCryoVacuumRegion, DSOuterCryoShell, TS5DownstreamEndwall, Coll53, Coll52, TS5InnerCryoShell, TS5DownstreamEndwall2 ] factor : @local::CosmicSplitWallFactor }
+  ]
+  # added in the decay stream: every muon decay in flight, everywhere (decays at rest are not copied)
+  decayCopies : [
+    { process : Decay particles : [ "mu-", "mu+" ] factor : @local::CosmicSplitDecayCopies }
+  ]
+  stage1Copier : {
+    module_type : StepPointMCCopier
+    input : "CosmicResampler:crvStage1"
+    pdgIds : [ 11, -11, 22 ]
+    minMomentum : @local::CosmicSplitStage1MinMomentum
+    copies : @local::CosmicSplitStage1Copies
+    maxCopied : @local::CosmicSplitStage1MaxCopied
+  }
+  # 10 mm everywhere except the DS vacuum regions (1 mm), the calorimeter (0.1 mm) and the tracker
+  # (0.01 mm; S2Resampler.fcl: 0.001 mm). Outside the tracker the cut stays below the soft kill: at 10 mm
+  # the electron threshold is at most 29.5 MeV (tungsten), below 80 MeV; 30 mm would reach 130 MeV. In the
+  # tracker the delta rays of the electron must be made and tracked, as in stock: with 10 mm there (and the
+  # soft kill without its EM exemption, softKillCut) reconstructed electrons had a mean straw-hit energy of
+  # 1.374 keV against stock's 1.477 and chi2/ndof 1.32 against 1.88; with 0.01 mm and the exemption,
+  # 1.467 keV and 1.70.
+  minRangeCut : 10.0
+  regionCuts : { CalorimeterMother : 0.1 TrackerMother : 0.01 DS1Vacuum : 1.0 DS2Vacuum : 1.0 DS3Vacuum : 1.0
+                 DSInnerCryoShell : 10.0 DSCryoVacuumRegion : 10.0 DSOuterCryoShell : 10.0
+                 TS5DownstreamEndwall : 10.0 Coll53 : 10.0 Coll52 : 10.0 TS5InnerCryoShell : 10.0
+                 TS5DownstreamEndwall2 : 10.0 }
+  # Kill gammas, e+-, neutrons below 80 MeV (and everything in the dirt below the hall), except around the
+  # calorimeter. Needed with splitting: otherwise every soft split copy is tracked and kept, and one event
+  # can carry 1000+ split families. Mu2eG4CommonCut is applied at birth (stacking action) and at every step
+  # (stepping action, the track's current energy), so it also kills an electron that slows below 80 MeV.
+  # In the calorimeter that destroys the showers: with the kill everywhere, 6% of reconstructed split
+  # electrons had a calorimeter cluster against 69% in stock, and calorimeter-based selections kept almost
+  # nothing. So the kill applies only outside a regular octagonal prism around the calorimeter crystals:
+  # Mu2e z 11842-13220 mm (calorimeter.caloMotherZ0/Z1), inner radius 800 mm about the DS axis (crystals
+  # r < 719 mm), corners at 866 mm, inside the 950 mm bore. It must stay clear of the split cryostat-wall
+  # regions: a square of half-width 950 mm reached them at its corners, where soft split copies then
+  # survived as families (x1.6 per file). This costs x1.2 in CPU. A plane cut is true where
+  # (x - point) . normal >= 0.
+  # Inside the DS cryostat and the downstream end of TS5 (an octagonal prism of apothem 1330 mm about the DS
+  # axis, Mu2e z 2929-14139 mm) the kill also spares particles made by e+-/gamma EM processes (Mu2eG4 cut
+  # notCreatorProcess): an electron's own delta rays, bremsstrahlung photons and their conversions, which
+  # put about 4 extra hits on each stock track. Soft particles made by muons (the split copies) or hadrons
+  # are still killed there. With the 0.01 mm tracker cut this costs x2.4 in stage-2 CPU per particle. Soft
+  # particles made outside the prism are still killed, so hit-level studies of those need S2Resampler.fcl.
+  softKillCut : {
+    type : union
+    pars : [
+      { type : intersection pars : [
+          { type : kineticEnergy cut : 80.0 },
+          { type : pdgId pars : [ 22, 11, -11, 2112 ] },
+          { type : union pars : [
+              { type : plane normal : [ 0, 0, -1 ] point : [ 0, 0, 11842 ] },
+              { type : plane normal : [ 0, 0, 1 ] point : [ 0, 0, 13220 ] },
+              { type : plane normal : [ 1, 0, 0 ] point : [ -3104, 0, 0 ] },
+              { type : plane normal : [ 0.707107, 0.707107, 0 ] point : [ -3338.31, 565.69, 0 ] },
+              { type : plane normal : [ 0, 1, 0 ] point : [ -3904, 800, 0 ] },
+              { type : plane normal : [ -0.707107, 0.707107, 0 ] point : [ -4469.69, 565.69, 0 ] },
+              { type : plane normal : [ -1, 0, 0 ] point : [ -4704, 0, 0 ] },
+              { type : plane normal : [ -0.707107, -0.707107, 0 ] point : [ -4469.69, -565.69, 0 ] },
+              { type : plane normal : [ 0, -1, 0 ] point : [ -3904, -800, 0 ] },
+              { type : plane normal : [ 0.707107, -0.707107, 0 ] point : [ -3338.31, -565.69, 0 ] }
+            ] },
+          { type : union pars : [
+              { type : notCreatorProcess pars : [ "eIoni", "eBrem", "conv", "compt", "phot", "annihil" ] },
+              { type : plane normal : [ 0, 0, -1 ] point : [ 0, 0, 2929 ] },
+              { type : plane normal : [ 0, 0, 1 ] point : [ 0, 0, 14139 ] },
+              { type : plane normal : [ 1, 0, 0 ] point : [ -2574, 0, 0 ] },
+              { type : plane normal : [ 0.707107, 0.707107, 0 ] point : [ -2963.55, 940.45, 0 ] },
+              { type : plane normal : [ 0, 1, 0 ] point : [ -3904, 1330, 0 ] },
+              { type : plane normal : [ -0.707107, 0.707107, 0 ] point : [ -4844.45, 940.45, 0 ] },
+              { type : plane normal : [ -1, 0, 0 ] point : [ -5234, 0, 0 ] },
+              { type : plane normal : [ -0.707107, -0.707107, 0 ] point : [ -4844.45, -940.45, 0 ] },
+              { type : plane normal : [ 0, -1, 0 ] point : [ -3904, -1330, 0 ] },
+              { type : plane normal : [ 0.707107, -0.707107, 0 ] point : [ -2963.55, -940.45, 0 ] }
+            ] }
+        ] },
+      { type : inVolume pars : [ worldDirtBottom ] }
+    ]
+  }
+  splitter : {
+    module_type : FamilySplitSource
+    # finds the split particles and their factors from the Geant4 track weights (SimParticle::weight):
+    # copies and decayCopies above are the only place the regions and factors are set
+    # output event number = input event number * stride + family index: at most stride - 1 families per input
+    # event; 500,000 particles per job * 4000 = 2.0e9 still fits a signed 32-bit event number (EventNtuple)
+    stride : 4000
+    weightLabel : "FamilySplit"
+    inputProcessName : "CosmicS2"
+    muonDecayWindow : @local::CosmicSplitDecayWindow
+    forcedDecayStream : false
+  }
+}
+# The CosmicSignal selection in stage 2 (S2ResamplerSplitMain.fcl, S2ResamplerSplitMuDIF.fcl) and in the
+# FamilySplitSource job (S2FamilySplitMain.fcl, S2FamilySplitMuDIF.fcl).
+# CosmicSplitCounter counts, for each SubRun, what FamilySplitSource needs for the stripped-event weight
+# (events, those the muon-decay rule keeps, the sum of their family weights) before the selection, with the
+# splitter's rules; FamilySplitSource then takes the weight from those counts (countsLabel).
+# CosmicSplitSignalCut is the selection of SpillSplitter.fcl (SignalFilter): a particle of 30-250 MeV/c with at
+# least 15 straw-gas steps spanning 16 planes. It is decided per particle, and every FamilySplitSource output event
+# holds a subset of its input event's particles with all their steps, so the stage-2 events it drops give no output
+# event that passes it. The FamilySplitSource job runs it again on each event it writes, so that its output is the
+# CosmicSignal dataset and SpillSplitter.fcl is not run.
+CosmicSplitCounter : {
+  module_type : FamilySplitCounter
+  simParticles : "compressDetStepMCs"
+  muonDecayWindow : @local::CosmicSplit.splitter.muonDecayWindow
+  forcedDecayStream : @local::CosmicSplit.splitter.forcedDecayStream
+}
+CosmicSplitSignalCut : {
+  module_type : CosmicMixingFilter
+  StrawGasSteps : "compressDetStepMCs"
+  MinimumPartMom : 30
+  MaximumPartMom : 250
+  MinimumTrkSteps : 15
+  MinimumTrkPlanes : 0
+  MinimumTrkPlaneSpan : 16
+  MaxImpact : 1000
+}
 END_PROLOG

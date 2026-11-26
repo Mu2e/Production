@@ -1,0 +1,13 @@
+# Cosmic stage 2 with secondary splitting, muon decay-in-flight (MuDIF) stream: as S2ResamplerSplitMain.fcl, but
+# every muon decays within CosmicSplitDecayWindow ns of its proper time (a stage-2 muon starts at 0), which multiplies
+# decays in flight by 1 / (1 - exp(-window / 2197 ns)), 44 for 50 ns. Each muon decay in flight is made
+# CosmicSplitDecayCopies times (physics.processCopies). Run S2FamilySplitMuDIF.fcl on the output: it keeps the
+# events whose stage-2 primary muon decayed in flight and weights them by 1 - exp(-window / 2197 ns). Normalize
+# this stream to its own livetime and add it to the main stream. Use seeds different from the main stream's
+# (mu2ejobfcl sets the seed from the job index, so give the two streams different indices). The output keeps
+# about 1% of the events, about 5% of the bytes. Output name set by the job definition (CosmicSplitS2MuDIF so far).
+# Yuri Oksuzian, 2026
+#include "Production/JobConfig/cosmic/S2ResamplerSplitMain.fcl"
+physics.producers.g4run.physics.muonMaxPreAssignedDecayProperTime : @local::CosmicSplitDecayWindow
+physics.producers.g4run.physics.processCopies : [ @sequence::CosmicSplit.copies, @sequence::CosmicSplit.decayCopies ]
+physics.producers.familySplitCounter.forcedDecayStream : true
